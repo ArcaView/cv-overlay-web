@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Upload,
   FileText,
@@ -12,6 +13,8 @@ import {
   Download,
   Loader2,
   X,
+  Star,
+  Sparkles,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -27,6 +30,7 @@ const BulkParse = () => {
   const [files, setFiles] = useState<FileWithStatus[]>([]);
   const [processing, setProcessing] = useState(false);
   const [jobDescription, setJobDescription] = useState("");
+  const [useLLMScoring, setUseLLMScoring] = useState(false);
 
   const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -91,6 +95,11 @@ const BulkParse = () => {
   const completedCount = files.filter(f => f.status === 'completed').length;
   const errorCount = files.filter(f => f.status === 'error').length;
   const pendingCount = files.filter(f => f.status === 'pending').length;
+
+  // Find the top candidate based on score
+  const topCandidate = files
+    .filter(f => f.status === 'completed' && f.score)
+    .sort((a, b) => (b.score?.overall_score || 0) - (a.score?.overall_score || 0))[0];
 
   const downloadResults = () => {
     const results = files
@@ -166,6 +175,75 @@ const BulkParse = () => {
               </CardHeader>
             </Card>
           </div>
+        )}
+
+        {/* Star Candidate & LLM Scoring */}
+        {topCandidate && (
+          <Card className="bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-950/20 dark:to-amber-950/20 border-yellow-200 dark:border-yellow-800">
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-yellow-500 rounded-lg">
+                    <Star className="w-6 h-6 text-white fill-white" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl">Star Candidate</CardTitle>
+                    <CardDescription>Highest scoring match for this role</CardDescription>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 bg-white/50 dark:bg-black/20 px-3 py-2 rounded-lg">
+                  <Sparkles className="w-4 h-4 text-purple-600" />
+                  <Label htmlFor="llm-scoring" className="text-sm font-medium cursor-pointer">
+                    LLM Scoring
+                  </Label>
+                  <Switch
+                    id="llm-scoring"
+                    checked={useLLMScoring}
+                    onCheckedChange={setUseLLMScoring}
+                    disabled={processing}
+                  />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="text-2xl font-bold">{topCandidate.result?.candidate_name}</p>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <FileText className="w-4 h-4" />
+                    <span>{topCandidate.file.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-2">
+                    <Badge variant={topCandidate.score.fit === 'excellent' ? 'default' : 'secondary'}>
+                      {topCandidate.score.fit}
+                    </Badge>
+                    <span className="text-sm text-muted-foreground">
+                      {topCandidate.result?.experience_years} years exp • {topCandidate.result?.skills_count} skills
+                    </span>
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <div className="text-5xl font-bold bg-gradient-to-br from-yellow-600 to-amber-600 bg-clip-text text-transparent">
+                    {topCandidate.score.overall_score}%
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">Overall Match</p>
+                </div>
+              </div>
+
+              {useLLMScoring && (
+                <div className="mt-4 p-3 bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <Sparkles className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
+                    <p className="text-sm text-muted-foreground">
+                      <span className="font-medium text-purple-700 dark:text-purple-400">LLM Enhancement Active:</span> Scores are being enhanced with advanced AI analysis for deeper insights into candidate-role fit, soft skills assessment, and cultural alignment predictions.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         )}
 
         <div className="grid lg:grid-cols-3 gap-6">
