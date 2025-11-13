@@ -182,21 +182,6 @@ const PricingPage = () => {
             </div>
           </div>
         </section>
-
-        {/* CTA Section */}
-        <section className="py-20">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Still Have Questions?
-            </h2>
-            <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Our team is here to help you find the right plan for your needs.
-            </p>
-            <Button variant="outline" size="lg">
-              Contact Sales
-            </Button>
-          </div>
-        </section>
       </main>
 
       <Footer />
