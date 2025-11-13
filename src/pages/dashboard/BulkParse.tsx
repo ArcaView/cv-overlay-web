@@ -5,6 +5,23 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Upload,
   FileText,
@@ -15,6 +32,8 @@ import {
   X,
   Star,
   Sparkles,
+  Plus,
+  Briefcase,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -31,6 +50,13 @@ const BulkParse = () => {
   const [processing, setProcessing] = useState(false);
   const [jobDescription, setJobDescription] = useState("");
   const [useLLMScoring, setUseLLMScoring] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<string>("");
+  const [roles, setRoles] = useState([
+    { id: "1", title: "Senior Frontend Developer", department: "Engineering" },
+    { id: "2", title: "Product Manager", department: "Product" },
+  ]);
+  const [newRoleDialogOpen, setNewRoleDialogOpen] = useState(false);
+  const [newRoleTitle, setNewRoleTitle] = useState("");
 
   const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -44,6 +70,19 @@ const BulkParse = () => {
 
   const removeFile = (index: number) => {
     setFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleCreateRole = () => {
+    if (!newRoleTitle.trim()) return;
+    const newRole = {
+      id: Math.random().toString(36).substr(2, 9),
+      title: newRoleTitle,
+      department: "New",
+    };
+    setRoles([...roles, newRole]);
+    setSelectedRole(newRole.id);
+    setNewRoleTitle("");
+    setNewRoleDialogOpen(false);
   };
 
   const handleBulkParse = async () => {
@@ -283,6 +322,66 @@ const BulkParse = () => {
                     </p>
                   </div>
                 </label>
+              </div>
+
+              {/* Role Selection */}
+              <div className="space-y-2">
+                <Label htmlFor="role-select">Attach to Role (Optional)</Label>
+                <div className="flex gap-2">
+                  <Select value={selectedRole} onValueChange={setSelectedRole}>
+                    <SelectTrigger id="role-select" className="flex-1">
+                      <SelectValue placeholder="Select a role..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {roles.map((role) => (
+                        <SelectItem key={role.id} value={role.id}>
+                          <div className="flex items-center gap-2">
+                            <Briefcase className="w-3 h-3" />
+                            {role.title}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Dialog open={newRoleDialogOpen} onOpenChange={setNewRoleDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="icon">
+                        <Plus className="w-4 h-4" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Create New Role</DialogTitle>
+                        <DialogDescription>
+                          Quickly create a new role to attach these CVs to.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="new-role-title">Role Title</Label>
+                          <Input
+                            id="new-role-title"
+                            placeholder="e.g., Senior Software Engineer"
+                            value={newRoleTitle}
+                            onChange={(e) => setNewRoleTitle(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setNewRoleDialogOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button onClick={handleCreateRole} disabled={!newRoleTitle.trim()}>
+                          Create Role
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Organize CVs by attaching them to specific roles
+                </p>
               </div>
 
               <div className="space-y-2">

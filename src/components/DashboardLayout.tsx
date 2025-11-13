@@ -9,7 +9,7 @@ import {
   Settings,
   BarChart3,
   CreditCard,
-  Users,
+  Briefcase,
   FileText,
   Upload,
 } from "lucide-react";
@@ -56,10 +56,10 @@ const navItems = [
     description: "Subscription and invoices",
   },
   {
-    title: "Team",
-    href: "/dashboard/team",
-    icon: Users,
-    description: "Manage team members",
+    title: "Open Roles",
+    href: "/dashboard/roles",
+    icon: Briefcase,
+    description: "Manage open positions",
   },
   {
     title: "Settings",
