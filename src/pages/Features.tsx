@@ -224,13 +224,13 @@ const FeaturesPage = () => {
               Start with our generous free tier or contact sales for enterprise plans.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a 
-                href="#get-started"
+              <a
+                href="/pricing"
                 className="inline-flex items-center justify-center h-11 px-8 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 font-medium transition-colors"
               >
                 Get Started Free
               </a>
-              <a 
+              <a
                 href="/pricing"
                 className="inline-flex items-center justify-center h-11 px-8 rounded-md border-2 border-primary bg-background text-primary hover:bg-primary/5 font-medium transition-colors"
               >

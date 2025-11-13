@@ -4,7 +4,6 @@ import { Features } from "@/components/Features";
 import { HowItWorks } from "@/components/HowItWorks";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Quote } from "lucide-react";
 
 const testimonials = [
@@ -61,29 +60,6 @@ const HomePage = () => {
               </Card>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-b from-primary/5 to-background" id="get-started">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-5xl font-bold mb-6">
-            Start Building Today
-          </h2>
-          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Get started with our generous free tier. No credit card required.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="hero" size="lg">
-              Create Free Account
-            </Button>
-            <Button variant="outline" size="lg">
-              Schedule Demo
-            </Button>
-          </div>
-          <p className="text-sm text-muted-foreground mt-6">
-            1,000 free parses/month • No credit card required • Cancel anytime
-          </p>
         </div>
       </section>
 

@@ -23,7 +23,7 @@ export const Hero = () => {
           
           <div className="flex flex-col sm:flex-row gap-4 mb-12">
             <Button asChild size="lg" variant="hero">
-              <Link to="/docs">
+              <Link to="/pricing">
                 Get Started <ArrowRight className="ml-2 w-4 h-4" />
               </Link>
             </Button>
