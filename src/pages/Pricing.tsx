@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const plans = [
   {
@@ -112,12 +113,13 @@ const PricingPage = () => {
                   </CardHeader>
                   
                   <CardContent className="space-y-4">
-                    <Button 
+                    <Button
+                      asChild
                       variant={plan.popular ? "hero" : "default"}
                       className="w-full"
                       size="lg"
                     >
-                      {plan.cta}
+                      <Link to="/dashboard">{plan.cta}</Link>
                     </Button>
                     
                     <ul className="space-y-3 pt-4">
