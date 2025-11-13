@@ -14,7 +14,7 @@ export const Navbar = () => {
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-lg">P</span>
             </div>
-            <span className="font-bold text-xl">ParseScore</span>
+            <span className="font-bold text-xl">Qualifyr.AI</span>
           </Link>
 
           {/* Desktop Navigation */}

@@ -96,10 +96,10 @@ export const Footer = () => {
               <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-sm">P</span>
               </div>
-              <span className="font-semibold">ParseScore</span>
+              <span className="font-semibold">Qualifyr.AI</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              © 2025 ParseScore. All rights reserved.
+              © 2025 Qualifyr.AI. All rights reserved.
             </p>
           </div>
         </div>

@@ -7,22 +7,6 @@ import { Check } from "lucide-react";
 
 const plans = [
   {
-    name: "Starter",
-    price: "Free",
-    description: "Perfect for testing and small projects",
-    features: [
-      "1,000 parses/month",
-      "500 scores/month",
-      "PDF & DOCX support",
-      "Baseline scoring",
-      "Email support",
-      "99.5% uptime SLA",
-      "Community access",
-    ],
-    cta: "Get Started",
-    popular: false,
-  },
-  {
     name: "Pro",
     price: "$99",
     period: "/month",
@@ -38,7 +22,7 @@ const plans = [
       "Custom skill taxonomies",
       "Webhook support",
     ],
-    cta: "Start Pro Trial",
+    cta: "Get Started",
     popular: true,
   },
   {
@@ -63,6 +47,15 @@ const plans = [
 ];
 
 const PricingPage = () => {
+  const handlePlanClick = (planName: string) => {
+    if (planName === "Enterprise") {
+      window.location.href = "mailto:sales@Qualifyr.AI.io?subject=Enterprise%20Inquiry";
+    } else {
+      // TODO: Replace with your Stripe link
+      window.location.href = "https://buy.stripe.com/test_your_link_here";
+    }
+  }; // <-- This closing brace was missing!
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -76,7 +69,7 @@ const PricingPage = () => {
               Simple, Transparent Pricing
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Start for free. Scale as you grow. No hidden fees or surprises.
+              Choose the plan that fits your needs. Start scoring CVs today.
             </p>
           </div>
         </section>
@@ -84,7 +77,7 @@ const PricingPage = () => {
         {/* Pricing Cards */}
         <section className="py-20">
           <div className="container mx-auto px-4">
-            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
               {plans.map((plan, index) => (
                 <Card 
                   key={index} 
@@ -116,6 +109,7 @@ const PricingPage = () => {
                       variant={plan.popular ? "hero" : "default"}
                       className="w-full"
                       size="lg"
+                      onClick={() => handlePlanClick(plan.name)}
                     >
                       {plan.cta}
                     </Button>
@@ -192,7 +186,11 @@ const PricingPage = () => {
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
               Our team is here to help you find the right plan for your needs.
             </p>
-            <Button variant="outline" size="lg">
+            <Button 
+              variant="outline" 
+              size="lg"
+              onClick={() => window.location.href = "mailto:sales@Qualifyr.AI.io"}
+            >
               Contact Sales
             </Button>
           </div>
