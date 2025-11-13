@@ -8,6 +8,8 @@ import Features from "./pages/Features";
 import Pricing from "./pages/Pricing";
 import Docs from "./pages/Docs";
 import Overview from "./pages/dashboard/Overview";
+import ParseCV from "./pages/dashboard/ParseCV";
+import BulkParse from "./pages/dashboard/BulkParse";
 import DeveloperDashboard from "./pages/dashboard/DeveloperDashboard";
 import NotFound from "./pages/NotFound";
 
@@ -25,6 +27,8 @@ const App = () => (
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/docs" element={<Docs />} />
           <Route path="/dashboard" element={<Overview />} />
+          <Route path="/dashboard/parse" element={<ParseCV />} />
+          <Route path="/dashboard/bulk-parse" element={<BulkParse />} />
           <Route path="/dashboard/developer" element={<DeveloperDashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

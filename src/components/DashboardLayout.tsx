@@ -10,6 +10,8 @@ import {
   BarChart3,
   CreditCard,
   Users,
+  FileText,
+  Upload,
 } from "lucide-react";
 
 interface DashboardLayoutProps {
@@ -22,6 +24,18 @@ const navItems = [
     href: "/dashboard",
     icon: LayoutDashboard,
     description: "Business metrics and insights",
+  },
+  {
+    title: "Parse CV",
+    href: "/dashboard/parse",
+    icon: FileText,
+    description: "Parse a single CV",
+  },
+  {
+    title: "Bulk Parse",
+    href: "/dashboard/bulk-parse",
+    icon: Upload,
+    description: "Parse multiple CVs",
   },
   {
     title: "Developer",
