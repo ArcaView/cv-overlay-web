@@ -2,6 +2,8 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   Upload,
   FileText,
@@ -17,12 +19,14 @@ interface FileWithStatus {
   file: File;
   status: 'pending' | 'processing' | 'completed' | 'error';
   result?: any;
+  score?: any;
   error?: string;
 }
 
 const BulkParse = () => {
   const [files, setFiles] = useState<FileWithStatus[]>([]);
   const [processing, setProcessing] = useState(false);
+  const [jobDescription, setJobDescription] = useState("");
 
   const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -56,17 +60,26 @@ const BulkParse = () => {
       // Randomly succeed or fail for demo
       const success = Math.random() > 0.1;
 
+      const parseResult = success ? {
+        id: `parse_${Math.random().toString(36).substr(2, 9)}`,
+        name: files[i].file.name,
+        candidate_name: `Candidate ${i + 1}`,
+        skills_count: Math.floor(Math.random() * 15) + 5,
+        experience_years: Math.floor(Math.random() * 10) + 1,
+      } : undefined;
+
+      // Generate score if job description is provided
+      const scoreResult = success && jobDescription.trim() ? {
+        overall_score: Math.floor(Math.random() * 30) + 70, // 70-100
+        fit: Math.random() > 0.5 ? 'excellent' : Math.random() > 0.3 ? 'good' : 'fair',
+      } : undefined;
+
       setFiles(prev => prev.map((f, idx) =>
         idx === i ? {
           ...f,
           status: success ? 'completed' as const : 'error' as const,
-          result: success ? {
-            id: `parse_${Math.random().toString(36).substr(2, 9)}`,
-            name: files[i].file.name,
-            candidate_name: `Candidate ${i + 1}`,
-            skills_count: Math.floor(Math.random() * 15) + 5,
-            experience_years: Math.floor(Math.random() * 10) + 1,
-          } : undefined,
+          result: parseResult,
+          score: scoreResult,
           error: success ? undefined : 'Failed to parse document'
         } : f
       ));
@@ -82,7 +95,10 @@ const BulkParse = () => {
   const downloadResults = () => {
     const results = files
       .filter(f => f.status === 'completed')
-      .map(f => f.result);
+      .map(f => ({
+        ...f.result,
+        score: f.score
+      }));
 
     const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -191,6 +207,23 @@ const BulkParse = () => {
                 </label>
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="job-description" className="text-sm font-medium">
+                  Job Description (Optional)
+                </Label>
+                <Textarea
+                  id="job-description"
+                  placeholder="Paste the job description here to score candidates against requirements..."
+                  value={jobDescription}
+                  onChange={(e) => setJobDescription(e.target.value)}
+                  className="min-h-[100px] resize-none"
+                  disabled={processing}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Add a job description to automatically score each candidate's fit
+                </p>
+              </div>
+
               <Button
                 onClick={handleBulkParse}
                 disabled={files.length === 0 || processing || pendingCount === 0}
@@ -268,6 +301,7 @@ const BulkParse = () => {
                           <p className="text-xs text-muted-foreground">
                             {(fileItem.file.size / 1024).toFixed(1)} KB
                             {fileItem.result && ` • ${fileItem.result.candidate_name}`}
+                            {fileItem.score && ` • Score: ${fileItem.score.overall_score}%`}
                             {fileItem.error && ` • ${fileItem.error}`}
                           </p>
                         </div>

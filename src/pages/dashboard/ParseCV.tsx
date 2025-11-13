@@ -3,6 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   Upload,
   FileText,
@@ -11,6 +13,7 @@ import {
   Download,
   Eye,
   Copy,
+  Target,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -18,6 +21,9 @@ const ParseCV = () => {
   const [file, setFile] = useState<File | null>(null);
   const [parsing, setParsing] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const [jobDescription, setJobDescription] = useState("");
+  const [scoring, setScoring] = useState(false);
+  const [scoreResult, setScoreResult] = useState<any>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -83,6 +89,32 @@ const ParseCV = () => {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
+  };
+
+  const handleScore = async () => {
+    if (!result || !jobDescription.trim()) return;
+
+    setScoring(true);
+
+    // Simulate scoring API call - replace with actual API call
+    setTimeout(() => {
+      setScoreResult({
+        overall_score: 87,
+        fit: "excellent",
+        breakdown: {
+          skills: 92,
+          experience: 85,
+          education: 78,
+          certifications: 95,
+          stability: 88
+        },
+        risk_flags: [],
+        rationale: `Strong match for the position. The candidate has ${result.candidate.experience.length} years of relevant experience with ${result.candidate.skills.length} key skills matching the requirements. Education background aligns well with the role.`,
+        matched_skills: result.candidate.skills.slice(0, 4),
+        missing_skills: ["Kubernetes", "GraphQL"]
+      });
+      setScoring(false);
+    }, 1500);
   };
 
   return (
@@ -154,6 +186,24 @@ const ParseCV = () => {
                 </div>
               )}
 
+              {/* Job Description */}
+              <div className="space-y-2 pt-4 border-t">
+                <Label htmlFor="job-description">
+                  Job Description (Optional)
+                </Label>
+                <Textarea
+                  id="job-description"
+                  placeholder="Paste the job description here to score the candidate against the role..."
+                  value={jobDescription}
+                  onChange={(e) => setJobDescription(e.target.value)}
+                  rows={4}
+                  className="resize-none"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Add a job description to automatically score the candidate's fit
+                </p>
+              </div>
+
               <Button
                 onClick={handleParse}
                 disabled={!file || parsing}
@@ -200,8 +250,9 @@ const ParseCV = () => {
 
               {result && (
                 <Tabs defaultValue="overview" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2">
+                  <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="overview">Overview</TabsTrigger>
+                    <TabsTrigger value="score">Score</TabsTrigger>
                     <TabsTrigger value="json">Raw JSON</TabsTrigger>
                   </TabsList>
 
@@ -287,6 +338,128 @@ const ParseCV = () => {
                         Score Candidate
                       </Button>
                     </div>
+                  </TabsContent>
+
+                  <TabsContent value="score" className="space-y-4 mt-4">
+                    {!jobDescription && (
+                      <div className="text-center py-12 text-muted-foreground">
+                        <Target className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                        <p>Add a job description to score this candidate</p>
+                        <p className="text-sm mt-1">Scroll up to the upload section to add job requirements</p>
+                      </div>
+                    )}
+
+                    {jobDescription && !scoreResult && (
+                      <div className="text-center py-8">
+                        <Button
+                          onClick={handleScore}
+                          disabled={scoring}
+                          size="lg"
+                        >
+                          {scoring ? (
+                            <>
+                              <CheckCircle2 className="w-4 h-4 mr-2 animate-spin" />
+                              Scoring...
+                            </>
+                          ) : (
+                            <>
+                              <Target className="w-4 h-4 mr-2" />
+                              Score Candidate
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+
+                    {scoreResult && (
+                      <div className="space-y-4">
+                        {/* Overall Score */}
+                        <div className="text-center p-6 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg border">
+                          <p className="text-sm text-muted-foreground mb-2">Overall Match Score</p>
+                          <p className="text-5xl font-bold text-primary mb-2">{scoreResult.overall_score}</p>
+                          <Badge
+                            className={
+                              scoreResult.fit === 'excellent'
+                                ? 'bg-success/10 text-success border-success/20'
+                                : scoreResult.fit === 'good'
+                                ? 'bg-primary/10 text-primary border-primary/20'
+                                : 'bg-warning/10 text-warning border-warning/20'
+                            }
+                          >
+                            {scoreResult.fit.toUpperCase()} FIT
+                          </Badge>
+                        </div>
+
+                        {/* Score Breakdown */}
+                        <div className="space-y-3">
+                          <p className="font-medium">Score Breakdown</p>
+                          {Object.entries(scoreResult.breakdown).map(([key, value]: [string, any]) => (
+                            <div key={key}>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span className="capitalize">{key}</span>
+                                <span className="font-medium">{value}/100</span>
+                              </div>
+                              <div className="w-full bg-muted rounded-full h-2">
+                                <div
+                                  className={`h-2 rounded-full ${
+                                    value >= 85 ? 'bg-success' : value >= 70 ? 'bg-primary' : 'bg-warning'
+                                  }`}
+                                  style={{ width: `${value}%` }}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Rationale */}
+                        <div className="pt-4 border-t">
+                          <p className="font-medium mb-2">Rationale</p>
+                          <p className="text-sm text-muted-foreground">{scoreResult.rationale}</p>
+                        </div>
+
+                        {/* Matched Skills */}
+                        <div className="pt-4 border-t">
+                          <p className="font-medium mb-2">Matched Skills</p>
+                          <div className="flex flex-wrap gap-2">
+                            {scoreResult.matched_skills.map((skill: string, idx: number) => (
+                              <Badge key={idx} className="bg-success/10 text-success border-success/20">
+                                <CheckCircle2 className="w-3 h-3 mr-1" />
+                                {skill}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Missing Skills */}
+                        {scoreResult.missing_skills.length > 0 && (
+                          <div className="pt-4 border-t">
+                            <p className="font-medium mb-2">Missing Skills</p>
+                            <div className="flex flex-wrap gap-2">
+                              {scoreResult.missing_skills.map((skill: string, idx: number) => (
+                                <Badge key={idx} variant="secondary">
+                                  <AlertCircle className="w-3 h-3 mr-1" />
+                                  {skill}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="flex gap-2 pt-4">
+                          <Button
+                            variant="outline"
+                            className="flex-1"
+                            onClick={() => setScoreResult(null)}
+                          >
+                            Score Again
+                          </Button>
+                          <Button variant="outline" className="flex-1">
+                            <Download className="w-4 h-4 mr-2" />
+                            Export Score
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </TabsContent>
 
                   <TabsContent value="json" className="mt-4">
