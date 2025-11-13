@@ -21,16 +21,11 @@ export const Hero = () => {
             Developer-first API that transforms resumes into structured JSON and scores candidate fit with transparent, explainable AI. Integrate in minutes, scale to millions.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 mb-12">
-            <Button asChild size="lg" variant="hero">
-              <Link to="/pricing">
-                Get Started <ArrowRight className="ml-2 w-4 h-4" />
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline">
-              <Link to="/pricing">View Pricing</Link>
-            </Button>
-          </div>
+          <Button asChild size="lg" variant="hero" className="mb-12">
+            <Link to="/pricing">
+              Get Started <ArrowRight className="ml-2 w-4 h-4" />
+            </Link>
+          </Button>
 
           <div className="w-full bg-card rounded-xl shadow-xl border border-border p-6 md:p-8">
             <div className="grid md:grid-cols-2 gap-6">
