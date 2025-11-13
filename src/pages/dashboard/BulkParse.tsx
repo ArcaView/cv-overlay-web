@@ -326,7 +326,7 @@ const BulkParse = () => {
 
               {/* Role Selection */}
               <div className="space-y-2">
-                <Label htmlFor="role-select">Attach to Role (Optional)</Label>
+                <Label htmlFor="role-select">Attach to Role *</Label>
                 <div className="flex gap-2">
                   <Select value={selectedRole} onValueChange={setSelectedRole}>
                     <SelectTrigger id="role-select" className="flex-1">
@@ -380,7 +380,7 @@ const BulkParse = () => {
                   </Dialog>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Organize CVs by attaching them to specific roles
+                  Required - Select an existing role or create a new one
                 </p>
               </div>
 
@@ -403,7 +403,7 @@ const BulkParse = () => {
 
               <Button
                 onClick={handleBulkParse}
-                disabled={files.length === 0 || processing || pendingCount === 0}
+                disabled={files.length === 0 || processing || pendingCount === 0 || !selectedRole}
                 className="w-full"
                 size="lg"
               >

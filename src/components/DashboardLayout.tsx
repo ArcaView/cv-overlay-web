@@ -38,6 +38,12 @@ const navItems = [
     description: "Parse multiple CVs",
   },
   {
+    title: "Open Roles",
+    href: "/dashboard/roles",
+    icon: Briefcase,
+    description: "Manage open positions",
+  },
+  {
     title: "Developer",
     href: "/dashboard/developer",
     icon: Code2,
@@ -54,12 +60,6 @@ const navItems = [
     href: "/dashboard/billing",
     icon: CreditCard,
     description: "Subscription and invoices",
-  },
-  {
-    title: "Open Roles",
-    href: "/dashboard/roles",
-    icon: Briefcase,
-    description: "Manage open positions",
   },
   {
     title: "Settings",
