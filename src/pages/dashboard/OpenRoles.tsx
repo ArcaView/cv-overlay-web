@@ -15,6 +15,16 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Briefcase,
   Plus,
   MapPin,
@@ -24,8 +34,10 @@ import {
   Edit,
   Trash2,
   Calendar,
+  AlertTriangle,
 } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface Role {
   id: string;
@@ -41,6 +53,7 @@ interface Role {
 }
 
 const OpenRoles = () => {
+  const navigate = useNavigate();
   const [roles, setRoles] = useState<Role[]>([
     {
       id: '1',
@@ -70,6 +83,8 @@ const OpenRoles = () => {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [roleToDelete, setRoleToDelete] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     department: '',
@@ -114,8 +129,15 @@ const OpenRoles = () => {
   };
 
   const handleDeleteRole = (id: string) => {
-    if (confirm('Are you sure you want to delete this role?')) {
-      setRoles(roles.filter(r => r.id !== id));
+    setRoleToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteRole = () => {
+    if (roleToDelete) {
+      setRoles(roles.filter(r => r.id !== roleToDelete));
+      setDeleteDialogOpen(false);
+      setRoleToDelete(null);
     }
   };
 
@@ -339,7 +361,10 @@ const OpenRoles = () => {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent
+                  className="cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => navigate(`/dashboard/roles/${role.id}`)}
+                >
                   <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
                     {role.description}
                   </p>
@@ -358,6 +383,42 @@ const OpenRoles = () => {
             ))
           )}
         </div>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 bg-destructive/10 rounded-full">
+                  <AlertTriangle className="w-5 h-5 text-destructive" />
+                </div>
+                <AlertDialogTitle>Delete Role</AlertDialogTitle>
+              </div>
+              <AlertDialogDescription className="text-base">
+                Are you sure you want to delete this role? This action cannot be undone.
+                {roleToDelete && roles.find(r => r.id === roleToDelete)?.candidates && roles.find(r => r.id === roleToDelete)!.candidates > 0 && (
+                  <div className="mt-3 p-3 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                    <p className="text-sm text-yellow-800 dark:text-yellow-400 font-medium">
+                      Warning: This role has {roles.find(r => r.id === roleToDelete)!.candidates} candidate(s) attached.
+                      Deleting this role will not delete the candidate data, but they will no longer be associated with this role.
+                    </p>
+                  </div>
+                )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setRoleToDelete(null)}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmDeleteRole}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Delete Role
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </DashboardLayout>
   );

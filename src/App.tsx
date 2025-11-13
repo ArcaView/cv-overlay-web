@@ -12,6 +12,7 @@ import ParseCV from "./pages/dashboard/ParseCV";
 import BulkParse from "./pages/dashboard/BulkParse";
 import DeveloperDashboard from "./pages/dashboard/DeveloperDashboard";
 import OpenRoles from "./pages/dashboard/OpenRoles";
+import RoleDetails from "./pages/dashboard/RoleDetails";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/dashboard/bulk-parse" element={<BulkParse />} />
           <Route path="/dashboard/developer" element={<DeveloperDashboard />} />
           <Route path="/dashboard/roles" element={<OpenRoles />} />
+          <Route path="/dashboard/roles/:id" element={<RoleDetails />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
