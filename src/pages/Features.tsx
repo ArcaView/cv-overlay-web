@@ -232,7 +232,7 @@ const FeaturesPage = () => {
                 Get Started
               </a>
               <a
-                href="/docs"
+                href="/pricing"
                 className="inline-flex items-center justify-center h-11 px-8 rounded-md border-2 border-primary bg-background text-primary hover:bg-primary/5 font-medium transition-colors"
               >
                 View Docs
