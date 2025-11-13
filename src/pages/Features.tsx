@@ -215,26 +215,27 @@ const FeaturesPage = () => {
         </section>
 
         {/* CTA Section */}
+        {/* CTA Section */}
         <section className="py-20">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Ready to Transform Your Hiring Pipeline?
             </h2>
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Start with our generous free tier or contact sales for enterprise plans.
+              Choose the plan that fits your needs and start screening candidates faster.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a 
-                href="#get-started"
+              <a
+                href="/pricing"
                 className="inline-flex items-center justify-center h-11 px-8 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 font-medium transition-colors"
               >
-                Get Started Free
+                Get Started
               </a>
-              <a 
-                href="/pricing"
+              <a
+                href="/docs"
                 className="inline-flex items-center justify-center h-11 px-8 rounded-md border-2 border-primary bg-background text-primary hover:bg-primary/5 font-medium transition-colors"
               >
-                View Pricing
+                View Docs
               </a>
             </div>
           </div>
