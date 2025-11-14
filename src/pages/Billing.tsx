@@ -57,9 +57,13 @@ const Billing = () => {
       window.location.href = url;
     } catch (error) {
       console.error('Error redirecting to Stripe:', error);
+      console.log('DEV mode:', import.meta.env.DEV);
+      console.log('Environment:', import.meta.env.MODE);
 
       // Development mode: Show helpful message instead of error
-      if (import.meta.env.DEV) {
+      const isDev = import.meta.env.DEV || import.meta.env.MODE === 'development';
+
+      if (isDev) {
         const actionMessages: Record<string, string> = {
           'update_subscription': 'change your plan',
           'cancel_subscription': 'cancel your subscription',
