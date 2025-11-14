@@ -37,12 +37,8 @@ const App = () => {
           <Route path="/docs" element={<Docs />} />
 
           {/* Dashboard Routes */}
-          <Route path="/dashboard" element={<DashboardLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="analytics" element={<Analytics />} />
-            <Route path="billing" element={<Billing />} />
-            <Route path="settings" element={<Settings />} />
-          </Route>
+          <Route path="/dashboard" element={<div style={{padding: '20px', fontSize: '24px', color: 'red'}}>DASHBOARD ROUTE WORKS!</div>} />
+          <Route path="/dashboard/analytics" element={<div style={{padding: '20px', fontSize: '24px', color: 'green'}}>ANALYTICS ROUTE WORKS!</div>} />
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
