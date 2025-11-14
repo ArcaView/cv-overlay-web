@@ -13,6 +13,9 @@ import BulkParse from "./pages/dashboard/BulkParse";
 import DeveloperDashboard from "./pages/dashboard/DeveloperDashboard";
 import OpenRoles from "./pages/dashboard/OpenRoles";
 import RoleDetails from "./pages/dashboard/RoleDetails";
+import Analytics from "./pages/Analytics";
+import Billing from "./pages/Billing";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +37,12 @@ const App = () => (
           <Route path="/dashboard/developer" element={<DeveloperDashboard />} />
           <Route path="/dashboard/roles" element={<OpenRoles />} />
           <Route path="/dashboard/roles/:id" element={<RoleDetails />} />
+          <Route path="/dashboard/analytics" element={<Analytics />} />
+          <Route path="/dashboard/billing" element={<Billing />} />
+          <Route path="/dashboard/settings" element={<Settings />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/billing" element={<Billing />} />
+          <Route path="/settings" element={<Settings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
