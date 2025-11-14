@@ -525,7 +525,7 @@ const Settings = () => {
                         Add an extra layer of security to your account
                       </p>
                     </div>
-                    <Button variant="outline">Enable</Button>
+                    <Button variant="outline" disabled>Enable (Coming Soon)</Button>
                   </div>
                 </CardContent>
               </Card>
