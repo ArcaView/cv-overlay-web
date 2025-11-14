@@ -11,24 +11,27 @@ const ToastViewport = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Viewport>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Viewport>
 >(({ className, ...props }, ref) => (
-  <ToastPrimitives.Viewport
-    ref={ref}
-    className={cn(
-      "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] flex max-h-screen w-full flex-col gap-2 p-4 md:max-w-[420px]",
-      className,
-    )}
-    {...props}
-  />
+  <>
+    <div className="fixed inset-0 z-[99] bg-black/40 backdrop-blur-sm" />
+    <ToastPrimitives.Viewport
+      ref={ref}
+      className={cn(
+        "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] flex max-h-screen w-full flex-col gap-2 p-4 md:max-w-[420px]",
+        className,
+      )}
+      {...props}
+    />
+  </>
 ));
 ToastViewport.displayName = ToastPrimitives.Viewport.displayName;
 
 const toastVariants = cva(
-  "group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-lg border-2 p-6 pr-8 shadow-2xl transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+  "group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-lg border p-6 pr-8 shadow-2xl transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
   {
     variants: {
       variant: {
-        default: "border-primary bg-primary/10 backdrop-blur-sm text-foreground ring-2 ring-primary/20",
-        destructive: "destructive group border-destructive bg-destructive/90 backdrop-blur-sm text-destructive-foreground ring-2 ring-destructive/50",
+        default: "border-border bg-white dark:bg-gray-950 text-foreground",
+        destructive: "destructive group border-destructive bg-white dark:bg-gray-950 text-destructive",
       },
     },
     defaultVariants: {
