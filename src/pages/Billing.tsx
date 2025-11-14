@@ -1,10 +1,70 @@
+/**
+ * Billing Page - Manages subscriptions via Stripe Customer Portal
+ *
+ * BACKEND REQUIREMENTS:
+ *
+ * POST /api/create-portal-session
+ * - Creates a Stripe Customer Portal session
+ * - Returns: { url: string } - The portal URL to redirect to
+ *
+ * Backend Implementation Example (Node.js):
+ * ```
+ * const session = await stripe.billingPortal.sessions.create({
+ *   customer: customerId, // From authenticated user
+ *   return_url: 'https://yourdomain.com/billing',
+ * });
+ * return { url: session.url };
+ * ```
+ *
+ * Stripe Docs: https://stripe.com/docs/billing/subscriptions/integrating-customer-portal
+ */
+
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CreditCard, Download, Calendar, DollarSign } from "lucide-react";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const Billing = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  // Redirect to Stripe Customer Portal
+  const handleStripePortal = async (action?: string) => {
+    setIsLoading(true);
+    try {
+      // TODO: Replace with your actual API endpoint
+      const response = await fetch('/api/create-portal-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          // Optional: pass action type to pre-configure portal
+          action: action, // 'update_subscription', 'cancel_subscription', 'update_payment_method'
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create portal session');
+      }
+
+      const { url } = await response.json();
+
+      // Redirect to Stripe Customer Portal
+      window.location.href = url;
+    } catch (error) {
+      console.error('Error redirecting to Stripe:', error);
+      toast({
+        title: "Error",
+        description: "Failed to redirect to billing portal. Please try again.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+    }
+  };
   const currentPlan = {
     name: "Professional",
     price: "$99",
@@ -82,8 +142,20 @@ const Billing = () => {
                   </div>
 
                   <div className="flex gap-3 pt-4">
-                    <Button variant="outline">Change Plan</Button>
-                    <Button variant="outline">Cancel Subscription</Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleStripePortal('update_subscription')}
+                      disabled={isLoading}
+                    >
+                      Change Plan
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleStripePortal('cancel_subscription')}
+                      disabled={isLoading}
+                    >
+                      Cancel Subscription
+                    </Button>
                   </div>
                 </div>
               </CardContent>
@@ -103,7 +175,12 @@ const Billing = () => {
                       <p className="text-sm text-muted-foreground">Expires {paymentMethod.expiry}</p>
                     </div>
                   </div>
-                  <Button variant="outline" className="w-full">
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => handleStripePortal('update_payment_method')}
+                    disabled={isLoading}
+                  >
                     Update Payment Method
                   </Button>
                 </div>
