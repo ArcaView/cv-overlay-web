@@ -1,5 +1,4 @@
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
+import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,19 +10,16 @@ import { User, Key, Bell, Shield, Webhook } from "lucide-react";
 
 const Settings = () => {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
+    <DashboardLayout>
+      <div className="p-6 space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Settings</h1>
+          <p className="text-muted-foreground">
+            Manage your account settings and preferences
+          </p>
+        </div>
 
-      <main className="flex-1">
-        <div className="container mx-auto px-4 py-12">
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold mb-2">Settings</h1>
-            <p className="text-muted-foreground">
-              Manage your account settings and preferences
-            </p>
-          </div>
-
-          <Tabs defaultValue="profile" className="space-y-6">
+        <Tabs defaultValue="profile" className="space-y-6">
             <TabsList className="grid w-full grid-cols-5 lg:w-auto">
               <TabsTrigger value="profile" className="flex items-center gap-2">
                 <User className="h-4 w-4" />
@@ -219,12 +215,9 @@ const Settings = () => {
                 </CardContent>
               </Card>
             </TabsContent>
-          </Tabs>
-        </div>
-      </main>
-
-      <Footer />
-    </div>
+        </Tabs>
+      </div>
+    </DashboardLayout>
   );
 };
 

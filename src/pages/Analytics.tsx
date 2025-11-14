@@ -1,5 +1,4 @@
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
+import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3, TrendingUp, Activity, Users } from "lucide-react";
 
@@ -36,19 +35,16 @@ const Analytics = () => {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
+    <DashboardLayout>
+      <div className="p-6 space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Analytics Dashboard</h1>
+          <p className="text-muted-foreground">
+            Monitor your API usage, performance, and quality metrics
+          </p>
+        </div>
 
-      <main className="flex-1">
-        <div className="container mx-auto px-4 py-12">
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold mb-2">Analytics Dashboard</h1>
-            <p className="text-muted-foreground">
-              Monitor your API usage, performance, and quality metrics
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {stats.map((stat, index) => {
               const Icon = stat.icon;
               return (
@@ -68,9 +64,9 @@ const Analytics = () => {
                 </Card>
               );
             })}
-          </div>
+        </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>API Usage Overview</CardTitle>
@@ -126,12 +122,9 @@ const Analytics = () => {
                 </div>
               </CardContent>
             </Card>
-          </div>
         </div>
-      </main>
-
-      <Footer />
-    </div>
+      </div>
+    </DashboardLayout>
   );
 };
 
