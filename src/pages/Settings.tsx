@@ -3,12 +3,51 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Key, Bell, Shield, Webhook } from "lucide-react";
+import { User, Key, Shield } from "lucide-react";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const Settings = () => {
+  const { toast } = useToast();
+
+  // Profile state
+  const [profileData, setProfileData] = useState({
+    firstName: "John",
+    lastName: "Doe",
+    email: "john@example.com",
+    company: "Acme Inc.",
+  });
+
+  const [isProfileLoading, setIsProfileLoading] = useState(false);
+
+  const handleProfileChange = (field: string, value: string) => {
+    setProfileData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleProfileSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsProfileLoading(true);
+
+    try {
+      // TODO: Replace with actual API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      toast({
+        title: "Profile updated",
+        description: "Your profile information has been successfully updated.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProfileLoading(false);
+    }
+  };
   return (
     <DashboardLayout>
       <div className="p-6 space-y-6">
@@ -20,7 +59,7 @@ const Settings = () => {
         </div>
 
         <Tabs defaultValue="profile" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5 lg:w-auto">
+            <TabsList className="grid w-full grid-cols-3 lg:w-auto">
               <TabsTrigger value="profile" className="flex items-center gap-2">
                 <User className="h-4 w-4" />
                 <span className="hidden sm:inline">Profile</span>
@@ -29,17 +68,9 @@ const Settings = () => {
                 <Key className="h-4 w-4" />
                 <span className="hidden sm:inline">API Keys</span>
               </TabsTrigger>
-              <TabsTrigger value="notifications" className="flex items-center gap-2">
-                <Bell className="h-4 w-4" />
-                <span className="hidden sm:inline">Notifications</span>
-              </TabsTrigger>
               <TabsTrigger value="security" className="flex items-center gap-2">
                 <Shield className="h-4 w-4" />
                 <span className="hidden sm:inline">Security</span>
-              </TabsTrigger>
-              <TabsTrigger value="webhooks" className="flex items-center gap-2">
-                <Webhook className="h-4 w-4" />
-                <span className="hidden sm:inline">Webhooks</span>
               </TabsTrigger>
             </TabsList>
 
@@ -51,26 +82,54 @@ const Settings = () => {
                     Update your account profile information and email address
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName">First Name</Label>
-                      <Input id="firstName" placeholder="John" defaultValue="John" />
+                <CardContent>
+                  <form onSubmit={handleProfileSubmit} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="firstName">First Name</Label>
+                        <Input
+                          id="firstName"
+                          placeholder="John"
+                          value={profileData.firstName}
+                          onChange={(e) => handleProfileChange('firstName', e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="lastName">Last Name</Label>
+                        <Input
+                          id="lastName"
+                          placeholder="Doe"
+                          value={profileData.lastName}
+                          onChange={(e) => handleProfileChange('lastName', e.target.value)}
+                          required
+                        />
+                      </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="lastName">Last Name</Label>
-                      <Input id="lastName" placeholder="Doe" defaultValue="Doe" />
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="john@example.com"
+                        value={profileData.email}
+                        onChange={(e) => handleProfileChange('email', e.target.value)}
+                        required
+                      />
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="john@example.com" defaultValue="john@example.com" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="company">Company</Label>
-                    <Input id="company" placeholder="Acme Inc." defaultValue="Acme Inc." />
-                  </div>
-                  <Button>Save Changes</Button>
+                    <div className="space-y-2">
+                      <Label htmlFor="company">Company</Label>
+                      <Input
+                        id="company"
+                        placeholder="Acme Inc."
+                        value={profileData.company}
+                        onChange={(e) => handleProfileChange('company', e.target.value)}
+                      />
+                    </div>
+                    <Button type="submit" disabled={isProfileLoading}>
+                      {isProfileLoading ? "Saving..." : "Save Changes"}
+                    </Button>
+                  </form>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -102,58 +161,6 @@ const Settings = () => {
                   </div>
                   <Separator />
                   <Button variant="outline">Generate New API Key</Button>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="notifications" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Notification Preferences</CardTitle>
-                  <CardDescription>
-                    Configure how and when you receive notifications
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Email Notifications</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Receive email updates about your account activity
-                      </p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  <Separator />
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Usage Alerts</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Get notified when you reach 80% of your API quota
-                      </p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  <Separator />
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Security Alerts</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Receive alerts about security events and API key usage
-                      </p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  <Separator />
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Product Updates</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Stay informed about new features and improvements
-                      </p>
-                    </div>
-                    <Switch />
-                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -190,28 +197,6 @@ const Settings = () => {
                     </div>
                     <Button variant="outline">Enable</Button>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="webhooks" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Webhook Endpoints</CardTitle>
-                  <CardDescription>
-                    Configure webhooks to receive real-time updates
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    No webhooks configured yet. Add a webhook endpoint to receive real-time notifications
-                    about parse completions, quality score updates, and other events.
-                  </p>
-                  <div className="space-y-2">
-                    <Label htmlFor="webhookUrl">Webhook URL</Label>
-                    <Input id="webhookUrl" placeholder="https://your-domain.com/webhook" />
-                  </div>
-                  <Button>Add Webhook</Button>
                 </CardContent>
               </Card>
             </TabsContent>
