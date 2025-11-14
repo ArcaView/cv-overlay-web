@@ -6,19 +6,33 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, Key, Shield } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useUser } from "@/contexts/UserContext";
 
 const Settings = () => {
   const { toast } = useToast();
+  const { user, updateProfile } = useUser();
 
-  // Profile state
+  // Profile state - initialize from user context
   const [profileData, setProfileData] = useState({
-    firstName: "John",
-    lastName: "Doe",
-    email: "john@example.com",
-    company: "Acme Inc.",
+    firstName: "",
+    lastName: "",
+    email: "",
+    company: "",
   });
+
+  // Load user data when component mounts or user changes
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        company: user.company,
+      });
+    }
+  }, [user]);
 
   const [isProfileLoading, setIsProfileLoading] = useState(false);
 
@@ -33,6 +47,9 @@ const Settings = () => {
     try {
       // TODO: Replace with actual API call
       await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Update user profile in context
+      updateProfile(profileData);
 
       toast({
         title: "Profile updated",

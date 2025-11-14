@@ -3,10 +3,12 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { UserProvider } from "@/contexts/UserContext";
 import Index from "./pages/Index";
 import Features from "./pages/Features";
 import Pricing from "./pages/Pricing";
 import Docs from "./pages/Docs";
+import Auth from "./pages/Auth";
 import Overview from "./pages/dashboard/Overview";
 import ParseCV from "./pages/dashboard/ParseCV";
 import BulkParse from "./pages/dashboard/BulkParse";
@@ -22,15 +24,17 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
+    <UserProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/features" element={<Features />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/docs" element={<Docs />} />
+          <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<Overview />} />
           <Route path="/dashboard/parse" element={<ParseCV />} />
           <Route path="/dashboard/bulk-parse" element={<BulkParse />} />
@@ -45,9 +49,10 @@ const App = () => (
           <Route path="/settings" element={<Settings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </UserProvider>
   </QueryClientProvider>
 );
 

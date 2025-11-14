@@ -32,7 +32,7 @@ export const Navbar = () => {
               Docs
             </Link>
             <Button asChild variant="default" size="sm">
-              <Link to="/pricing">Get Started</Link>
+              <Link to="/auth">Get Started</Link>
             </Button>
           </div>
 
@@ -78,7 +78,7 @@ export const Navbar = () => {
               Docs
             </Link>
             <Button asChild variant="default" size="sm" className="w-full">
-              <Link to="/pricing">Get Started</Link>
+              <Link to="/auth">Get Started</Link>
             </Button>
           </div>
         )}

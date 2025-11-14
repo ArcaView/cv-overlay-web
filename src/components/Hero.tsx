@@ -22,7 +22,7 @@ export const Hero = () => {
           </p>
           
           <Button asChild size="lg" variant="hero" className="mb-12">
-            <Link to="/pricing">
+            <Link to="/auth">
               Get Started <ArrowRight className="ml-2 w-4 h-4" />
             </Link>
           </Button>
