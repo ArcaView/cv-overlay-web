@@ -6,6 +6,9 @@ export function Toaster() {
 
   return (
     <ToastProvider>
+      {toasts.length > 0 && (
+        <div className="fixed inset-0 z-[99] bg-black/40 backdrop-blur-sm" />
+      )}
       {toasts.map(function ({ id, title, description, action, ...props }) {
         return (
           <Toast key={id} {...props}>
