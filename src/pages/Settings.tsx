@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { User, Key, Shield, Eye, EyeOff, Copy } from "lucide-react";
+import { User, Key, Shield, Eye, EyeOff, Copy, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/contexts/UserContext";
@@ -65,6 +65,8 @@ const Settings = () => {
   const [isGeneratingKey, setIsGeneratingKey] = useState(false);
   const [showKeyDialog, setShowKeyDialog] = useState(false);
   const [newKeyName, setNewKeyName] = useState("");
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [keyToDelete, setKeyToDelete] = useState<ApiKey | null>(null);
 
   // Save API keys to localStorage whenever they change
   useEffect(() => {
@@ -197,6 +199,32 @@ const Settings = () => {
       return;
     }
     generateNewApiKey(newKeyName);
+  };
+
+  const handleDeleteKeyClick = (key: ApiKey) => {
+    setKeyToDelete(key);
+    setShowDeleteDialog(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!keyToDelete) return;
+
+    setApiKeys(prev => prev.filter(key => key.id !== keyToDelete.id));
+
+    // Remove from revealed keys if it was revealed
+    setRevealedKeys(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(keyToDelete.id);
+      return newSet;
+    });
+
+    toast({
+      title: "API Key Deleted",
+      description: `${keyToDelete.name} has been permanently deleted.`,
+    });
+
+    setShowDeleteDialog(false);
+    setKeyToDelete(null);
   };
 
   const maskApiKey = (key: string) => {
@@ -333,23 +361,34 @@ const Settings = () => {
                               </Button>
                             </div>
                           </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => toggleRevealKey(apiKey.id)}
-                          >
-                            {isRevealed ? (
-                              <>
-                                <EyeOff className="h-4 w-4 mr-2" />
-                                Hide
-                              </>
-                            ) : (
-                              <>
-                                <Eye className="h-4 w-4 mr-2" />
-                                Reveal
-                              </>
-                            )}
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => toggleRevealKey(apiKey.id)}
+                            >
+                              {isRevealed ? (
+                                <>
+                                  <EyeOff className="h-4 w-4 mr-2" />
+                                  Hide
+                                </>
+                              ) : (
+                                <>
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  Reveal
+                                </>
+                              )}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDeleteKeyClick(apiKey)}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </Button>
+                          </div>
                         </div>
                       );
                     })}
@@ -441,6 +480,53 @@ const Settings = () => {
                 disabled={isGeneratingKey}
               >
                 {isGeneratingKey ? "Generating..." : "Generate Key"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog for deleting API key with warning */}
+        <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="text-destructive">Delete API Key</DialogTitle>
+              <DialogDescription>
+                This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
+                <p className="text-sm font-semibold text-destructive mb-2">
+                  ⚠️ Warning: This action is permanent
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Deleting <span className="font-semibold">{keyToDelete?.name}</span> will immediately revoke access for any applications using this API key. This cannot be undone.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm">
+                  <span className="font-semibold">Key:</span> <span className="font-mono text-muted-foreground">{keyToDelete && maskApiKey(keyToDelete.key)}</span>
+                </p>
+                <p className="text-sm">
+                  <span className="font-semibold">Created:</span> <span className="text-muted-foreground">{keyToDelete && formatDate(keyToDelete.createdAt)}</span>
+                </p>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowDeleteDialog(false);
+                  setKeyToDelete(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleConfirmDelete}
+              >
+                Delete API Key
               </Button>
             </DialogFooter>
           </DialogContent>
