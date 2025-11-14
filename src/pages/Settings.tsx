@@ -631,13 +631,13 @@ const Settings = () => {
                 Update your password. Make sure it meets all security requirements.
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4">
+            <div className="space-y-3 py-2">
               {passwordErrors.length > 0 && (
-                <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
-                  <p className="text-sm font-semibold text-destructive mb-2">
+                <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3">
+                  <p className="text-sm font-semibold text-destructive mb-1">
                     Please fix the following errors:
                   </p>
-                  <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+                  <ul className="list-disc list-inside text-sm text-muted-foreground space-y-0.5">
                     {passwordErrors.map((error, index) => (
                       <li key={index}>{error}</li>
                     ))}
@@ -645,7 +645,7 @@ const Settings = () => {
                 </div>
               )}
 
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <Label htmlFor="currentPasswordDialog">Current Password</Label>
                 <Input
                   id="currentPasswordDialog"
@@ -655,7 +655,7 @@ const Settings = () => {
                 />
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <Label htmlFor="newPasswordDialog">New Password</Label>
                 <Input
                   id="newPasswordDialog"
@@ -665,7 +665,7 @@ const Settings = () => {
                 />
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <Label htmlFor="confirmPasswordDialog">Confirm New Password</Label>
                 <Input
                   id="confirmPasswordDialog"
@@ -680,9 +680,9 @@ const Settings = () => {
                 />
               </div>
 
-              <div className="rounded-lg border bg-muted/50 p-4">
-                <p className="text-sm font-semibold mb-2">Password Requirements:</p>
-                <ul className="list-disc list-inside text-xs text-muted-foreground space-y-1">
+              <div className="rounded-lg border bg-muted/50 p-3">
+                <p className="text-sm font-semibold mb-1">Password Requirements:</p>
+                <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5">
                   <li>At least 8 characters long</li>
                   <li>One uppercase letter</li>
                   <li>One lowercase letter</li>
