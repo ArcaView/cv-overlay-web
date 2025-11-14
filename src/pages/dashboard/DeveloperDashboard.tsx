@@ -3,6 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Key,
   BarChart3,
@@ -17,13 +20,61 @@ import {
   Code2
 } from "lucide-react";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const DeveloperDashboard = () => {
+  const { toast } = useToast();
   const [showApiKey, setShowApiKey] = useState(false);
+  const [showKeyDialog, setShowKeyDialog] = useState(false);
+  const [newKeyName, setNewKeyName] = useState("");
+  const [isGeneratingKey, setIsGeneratingKey] = useState(false);
   const apiKey = "ps_live_1234567890abcdef1234567890abcdef";
 
-  const copyToClipboard = (text: string) => {
+  const copyToClipboard = (text: string, keyName: string = "API Key") => {
     navigator.clipboard.writeText(text);
+    toast({
+      title: "Copied!",
+      description: `${keyName} copied to clipboard`,
+    });
+  };
+
+  const handleGenerateKeyClick = () => {
+    setNewKeyName("Production Key");
+    setShowKeyDialog(true);
+  };
+
+  const handleConfirmGenerateKey = async () => {
+    if (!newKeyName.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a name for the API key.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingKey(true);
+
+    try {
+      // TODO: Replace with actual API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      toast({
+        title: "API Key Generated",
+        description: "Your new API key has been created. Make sure to copy it now.",
+      });
+
+      setShowKeyDialog(false);
+      setNewKeyName("");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to generate API key. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingKey(false);
+    }
   };
 
   return (
@@ -116,7 +167,7 @@ const DeveloperDashboard = () => {
                       Manage your API authentication keys
                     </CardDescription>
                   </div>
-                  <Button size="sm">
+                  <Button size="sm" onClick={handleGenerateKeyClick}>
                     Create New Key
                   </Button>
                 </div>
@@ -151,7 +202,7 @@ const DeveloperDashboard = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => copyToClipboard(apiKey)}
+                        onClick={() => copyToClipboard(apiKey, "Production Key")}
                       >
                         <Copy className="w-4 h-4" />
                       </Button>
@@ -314,6 +365,49 @@ const DeveloperDashboard = () => {
           </Card>
         </div>
       </div>
+
+      {/* Create API Key Dialog */}
+      <Dialog open={showKeyDialog} onOpenChange={setShowKeyDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Generate New API Key</DialogTitle>
+            <DialogDescription>
+              Create a new API key for authentication. Make sure to copy it immediately as it won't be shown again.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="key-name">Key Name</Label>
+              <Input
+                id="key-name"
+                placeholder="e.g., Production Key"
+                value={newKeyName}
+                onChange={(e) => setNewKeyName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleConfirmGenerateKey();
+                  }
+                }}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowKeyDialog(false)}
+              disabled={isGeneratingKey}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmGenerateKey}
+              disabled={isGeneratingKey}
+            >
+              {isGeneratingKey ? "Generating..." : "Generate Key"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };
