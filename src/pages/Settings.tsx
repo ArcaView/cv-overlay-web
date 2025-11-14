@@ -68,6 +68,16 @@ const Settings = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [keyToDelete, setKeyToDelete] = useState<ApiKey | null>(null);
 
+  // Password change state
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
   // Save API keys to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem("qualifyr_api_keys", JSON.stringify(apiKeys));
@@ -227,6 +237,89 @@ const Settings = () => {
     setKeyToDelete(null);
   };
 
+  const validatePassword = (password: string): string[] => {
+    const errors: string[] = [];
+
+    if (password.length < 8) {
+      errors.push("Password must be at least 8 characters long");
+    }
+    if (!/[A-Z]/.test(password)) {
+      errors.push("Password must contain at least one uppercase letter");
+    }
+    if (!/[a-z]/.test(password)) {
+      errors.push("Password must contain at least one lowercase letter");
+    }
+    if (!/[0-9]/.test(password)) {
+      errors.push("Password must contain at least one number");
+    }
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      errors.push("Password must contain at least one special character");
+    }
+
+    return errors;
+  };
+
+  const handleChangePasswordClick = () => {
+    setPasswordData({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
+    setPasswordErrors([]);
+    setShowPasswordDialog(true);
+  };
+
+  const handleConfirmPasswordChange = async () => {
+    const errors: string[] = [];
+
+    // Validate current password exists
+    if (!passwordData.currentPassword) {
+      errors.push("Current password is required");
+    }
+
+    // Validate new password
+    const passwordValidationErrors = validatePassword(passwordData.newPassword);
+    errors.push(...passwordValidationErrors);
+
+    // Check if passwords match
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      errors.push("New passwords do not match");
+    }
+
+    if (errors.length > 0) {
+      setPasswordErrors(errors);
+      return;
+    }
+
+    setIsChangingPassword(true);
+
+    try {
+      // TODO: Replace with actual API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      toast({
+        title: "Password Updated",
+        description: "Your password has been successfully changed.",
+      });
+
+      setShowPasswordDialog(false);
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+      setPasswordErrors([]);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update password. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
   const maskApiKey = (key: string) => {
     const prefix = key.substring(0, 8);
     return `${prefix}••••••••••••••••`;
@@ -380,10 +473,9 @@ const Settings = () => {
                               )}
                             </Button>
                             <Button
-                              variant="outline"
+                              variant="destructive"
                               size="sm"
                               onClick={() => handleDeleteKeyClick(apiKey)}
-                              className="text-destructive hover:text-destructive"
                             >
                               <Trash2 className="h-4 w-4 mr-2" />
                               Delete
@@ -414,19 +506,17 @@ const Settings = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="currentPassword">Current Password</Label>
-                    <Input id="currentPassword" type="password" />
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Password</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Change your password to keep your account secure
+                      </p>
+                    </div>
+                    <Button variant="outline" onClick={handleChangePasswordClick}>
+                      Change Password
+                    </Button>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="newPassword">New Password</Label>
-                    <Input id="newPassword" type="password" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                    <Input id="confirmPassword" type="password" />
-                  </div>
-                  <Button>Update Password</Button>
                   <Separator />
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
@@ -527,6 +617,101 @@ const Settings = () => {
                 onClick={handleConfirmDelete}
               >
                 Delete API Key
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog for changing password */}
+        <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Change Password</DialogTitle>
+              <DialogDescription>
+                Update your password. Make sure it meets all security requirements.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              {passwordErrors.length > 0 && (
+                <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
+                  <p className="text-sm font-semibold text-destructive mb-2">
+                    Please fix the following errors:
+                  </p>
+                  <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+                    {passwordErrors.map((error, index) => (
+                      <li key={index}>{error}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="currentPasswordDialog">Current Password</Label>
+                <Input
+                  id="currentPasswordDialog"
+                  type="password"
+                  value={passwordData.currentPassword}
+                  onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="newPasswordDialog">New Password</Label>
+                <Input
+                  id="newPasswordDialog"
+                  type="password"
+                  value={passwordData.newPassword}
+                  onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="confirmPasswordDialog">Confirm New Password</Label>
+                <Input
+                  id="confirmPasswordDialog"
+                  type="password"
+                  value={passwordData.confirmPassword}
+                  onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleConfirmPasswordChange();
+                    }
+                  }}
+                />
+              </div>
+
+              <div className="rounded-lg border bg-muted/50 p-4">
+                <p className="text-sm font-semibold mb-2">Password Requirements:</p>
+                <ul className="list-disc list-inside text-xs text-muted-foreground space-y-1">
+                  <li>At least 8 characters long</li>
+                  <li>One uppercase letter</li>
+                  <li>One lowercase letter</li>
+                  <li>One number</li>
+                  <li>One special character (!@#$%^&*, etc.)</li>
+                </ul>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowPasswordDialog(false);
+                  setPasswordData({
+                    currentPassword: "",
+                    newPassword: "",
+                    confirmPassword: "",
+                  });
+                  setPasswordErrors([]);
+                }}
+                disabled={isChangingPassword}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleConfirmPasswordChange}
+                disabled={isChangingPassword}
+              >
+                {isChangingPassword ? "Updating..." : "Update Password"}
               </Button>
             </DialogFooter>
           </DialogContent>
