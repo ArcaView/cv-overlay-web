@@ -137,7 +137,7 @@ const FeaturesPage = () => {
               Production-Grade CV Parsing & Scoring
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Enterprise features designed for scale. From prototype to production, ParseScore provides everything you need to build intelligent hiring tools.
+              Enterprise features designed for scale. From prototype to production, Qualifyr.AI provides everything you need to build intelligent hiring tools.
             </p>
           </div>
         </section>

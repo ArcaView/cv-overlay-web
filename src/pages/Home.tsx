@@ -8,7 +8,7 @@ import { Quote } from "lucide-react";
 
 const testimonials = [
   {
-    quote: "ParseScore cut our CV processing time by 90%. The accuracy is incredible, and the API is a dream to integrate.",
+    quote: "Qualifyr.AI cut our CV processing time by 90%. The accuracy is incredible, and the API is a dream to integrate.",
     author: "Sarah Chen",
     role: "CTO, TalentFlow",
   },
@@ -18,7 +18,7 @@ const testimonials = [
     role: "Head of Product, RecruitTech",
   },
   {
-    quote: "We evaluated five CV parsing APIs. ParseScore was the clear winner on accuracy, speed, and developer experience.",
+    quote: "We evaluated five CV parsing APIs. Qualifyr.AI was the clear winner on accuracy, speed, and developer experience.",
     author: "Emily Watson",
     role: "Engineering Lead, HireScale",
   },
@@ -40,7 +40,7 @@ const HomePage = () => {
               Trusted by Forward-Thinking Teams
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Join hundreds of companies building better hiring experiences with ParseScore.
+              Join hundreds of companies building better hiring experiences with Qualifyr.AI.
             </p>
           </div>
 
