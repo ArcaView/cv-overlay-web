@@ -3,20 +3,30 @@
  *
  * BACKEND REQUIREMENTS:
  *
- * POST /api/create-portal-session
- * - Creates a Stripe Customer Portal session
- * - Returns: { url: string } - The portal URL to redirect to
+ * 1. POST /api/create-portal-session
+ *    - Creates a Stripe Customer Portal session
+ *    - Returns: { url: string } - The portal URL to redirect to
+ *    - Example:
+ *      ```
+ *      const session = await stripe.billingPortal.sessions.create({
+ *        customer: customerId,
+ *        return_url: 'https://yourdomain.com/billing',
+ *      });
+ *      return { url: session.url };
+ *      ```
  *
- * Backend Implementation Example (Node.js):
- * ```
- * const session = await stripe.billingPortal.sessions.create({
- *   customer: customerId, // From authenticated user
- *   return_url: 'https://yourdomain.com/billing',
- * });
- * return { url: session.url };
- * ```
+ * 2. GET /api/invoices/:invoiceId/pdf
+ *    - Retrieves Stripe invoice PDF URL
+ *    - Returns: { pdfUrl: string } - Direct link to Stripe's invoice PDF
+ *    - Example:
+ *      ```
+ *      const invoice = await stripe.invoices.retrieve(invoiceId);
+ *      return { pdfUrl: invoice.invoice_pdf };
+ *      ```
  *
- * Stripe Docs: https://stripe.com/docs/billing/subscriptions/integrating-customer-portal
+ * Stripe Docs:
+ * - Customer Portal: https://stripe.com/docs/billing/subscriptions/integrating-customer-portal
+ * - Invoice PDFs: https://stripe.com/docs/invoicing/integration#invoice-pdf
  */
 
 import { DashboardLayout } from "@/components/DashboardLayout";
@@ -26,9 +36,11 @@ import { Badge } from "@/components/ui/badge";
 import { CreditCard, Download, Calendar, DollarSign } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { generateInvoicePDF } from "@/lib/invoicePDF";
 
 const Billing = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [downloadingInvoice, setDownloadingInvoice] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Redirect to Stripe Customer Portal
@@ -87,6 +99,58 @@ const Billing = () => {
       }
     }
   };
+
+  // Download invoice PDF from Stripe
+  const handleDownloadInvoice = async (invoiceId: string, invoiceData: any) => {
+    setDownloadingInvoice(invoiceId);
+    try {
+      // PRODUCTION: Fetch Stripe invoice PDF URL from backend
+      const response = await fetch(`/api/invoices/${invoiceId}/pdf`, {
+        method: 'GET',
+      });
+
+      if (response.ok) {
+        const { pdfUrl } = await response.json();
+        // Open Stripe's invoice PDF in a new tab
+        window.open(pdfUrl, '_blank');
+      } else {
+        throw new Error('Failed to fetch invoice');
+      }
+    } catch (error) {
+      console.error('Error downloading invoice:', error);
+
+      // DEVELOPMENT MODE: Generate demo PDF client-side
+      if (import.meta.env.DEV || import.meta.env.MODE === 'development') {
+        toast({
+          title: "Generating Demo Invoice",
+          description: "In production, this would download the official Stripe invoice PDF.",
+          duration: 3000,
+        });
+
+        // Generate demo PDF using client-side library
+        generateInvoicePDF({
+          id: invoiceData.id,
+          date: invoiceData.date,
+          amount: invoiceData.amount,
+          status: invoiceData.status,
+          customerName: "Demo Customer",
+          customerEmail: "demo@example.com",
+          plan: currentPlan.name,
+          billingPeriod: `${invoiceData.date} - Monthly`,
+        });
+      } else {
+        // Production error
+        toast({
+          title: "Error",
+          description: "Failed to download invoice. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setDownloadingInvoice(null);
+    }
+  };
+
   const currentPlan = {
     name: "Professional",
     price: "$99",
@@ -238,8 +302,13 @@ const Billing = () => {
                           {invoice.status}
                         </Badge>
                       </div>
-                      <Button variant="ghost" size="icon">
-                        <Download className="h-4 w-4" />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDownloadInvoice(invoice.id, invoice)}
+                        disabled={downloadingInvoice === invoice.id}
+                      >
+                        <Download className={`h-4 w-4 ${downloadingInvoice === invoice.id ? 'animate-bounce' : ''}`} />
                       </Button>
                     </div>
                   </div>
