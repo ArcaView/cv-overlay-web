@@ -57,12 +57,30 @@ const Billing = () => {
       window.location.href = url;
     } catch (error) {
       console.error('Error redirecting to Stripe:', error);
-      toast({
-        title: "Error",
-        description: "Failed to redirect to billing portal. Please try again.",
-        variant: "destructive",
-      });
-      setIsLoading(false);
+
+      // Development mode: Show helpful message instead of error
+      if (import.meta.env.DEV) {
+        const actionMessages: Record<string, string> = {
+          'update_subscription': 'change your plan',
+          'cancel_subscription': 'cancel your subscription',
+          'update_payment_method': 'update your payment method',
+        };
+
+        toast({
+          title: "Demo Mode - Backend Required",
+          description: `In production, this would redirect to Stripe Customer Portal to ${actionMessages[action || ''] || 'manage billing'}. Implement POST /api/create-portal-session to enable.`,
+          duration: 5000,
+        });
+        setIsLoading(false);
+      } else {
+        // Production mode: Show error
+        toast({
+          title: "Error",
+          description: "Failed to redirect to billing portal. Please try again.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+      }
     }
   };
   const currentPlan = {
