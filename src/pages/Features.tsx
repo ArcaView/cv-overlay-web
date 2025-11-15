@@ -18,8 +18,8 @@ import {
 const detailedFeatures = [
   {
     icon: FileText,
-    title: "Intelligent Resume Parsing",
-    description: "Extract every detail from candidate resumes automatically, regardless of format or layout.",
+    title: "Resume Parsing",
+    description: "Extract details from candidate resumes automatically, regardless of format or layout.",
     features: [
       "Support for PDF, Word (DOCX/DOC), and text files",
       "98.5% accuracy on contact information extraction",
@@ -31,21 +31,21 @@ const detailedFeatures = [
   },
   {
     icon: Brain,
-    title: "AI-Powered Candidate Scoring",
-    description: "Match candidates to your job requirements with transparent, explainable AI scoring.",
+    title: "Candidate Scoring",
+    description: "Match candidates to your job requirements with AI scoring.",
     features: [
       "Automatic scoring against job requirements",
       "Detailed breakdown by skills, experience, and education",
       "AI-generated fit rationale and recommendations",
       "Identify top candidates at a glance",
-      "Customizable scoring weights for your needs",
-      "Explainable AI for hiring transparency",
+      "Customizable scoring weights",
+      "Transparent scoring explanations",
     ],
   },
   {
     icon: Shield,
     title: "Compliance & Fair Hiring",
-    description: "Built for compliance with transparent rules, audit trails, and bias-free processes.",
+    description: "Transparent rules, audit trails, and bias-free processes.",
     features: [
       "Complete score breakdown and transparency",
       "Audit trails for every hiring decision",
@@ -57,21 +57,21 @@ const detailedFeatures = [
   },
   {
     icon: Zap,
-    title: "Lightning-Fast Processing",
-    description: "Screen hundreds of candidates in seconds with our optimized AI infrastructure.",
+    title: "Fast Processing",
+    description: "Screen hundreds of candidates in seconds.",
     features: [
-      "Instant resume parsing (under 3 seconds)",
-      "Real-time candidate scoring (under 2 seconds)",
+      "Resume parsing in under 3 seconds",
+      "Candidate scoring in under 2 seconds",
       "Bulk upload and process multiple candidates",
       "Smart caching for faster repeat analysis",
       "Handles high-volume recruitment drives",
-      "Always available with 99.9% uptime",
+      "99.9% uptime",
     ],
   },
   {
     icon: Users,
     title: "Team Collaboration",
-    description: "Work together seamlessly with your hiring team from anywhere.",
+    description: "Work with your hiring team from anywhere.",
     features: [
       "Share candidate profiles and shortlists",
       "Side-by-side candidate comparison",
@@ -84,14 +84,14 @@ const detailedFeatures = [
   {
     icon: BarChart3,
     title: "Recruitment Analytics",
-    description: "Data-driven insights to optimize your hiring process and improve outcomes.",
+    description: "Insights to improve your hiring process.",
     features: [
       "Track time-to-hire and pipeline metrics",
       "Monitor candidate quality and scoring trends",
       "Team performance and productivity stats",
       "Hiring funnel conversion analytics",
       "Export detailed reports for stakeholders",
-      "Historical data for strategic planning",
+      "Historical data for planning",
     ],
   },
 ];
@@ -134,10 +134,10 @@ const FeaturesPage = () => {
           <div className="container mx-auto px-4 text-center">
             <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">Features</Badge>
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Powerful Recruitment Tools for Modern Teams
+              Recruitment Tools for Hiring Teams
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Everything you need to transform your hiring process—from AI-powered screening to team collaboration and analytics. Built for recruiters, by recruitment technology experts.
+              AI-powered screening, team collaboration, and analytics to help you hire better candidates faster.
             </p>
           </div>
         </section>
@@ -179,10 +179,10 @@ const FeaturesPage = () => {
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-5xl font-bold mb-4">
-                Enterprise-Grade Security & Privacy
+                Security & Privacy
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Your candidate data is protected with bank-level security. GDPR-compliant, privacy-first, and audit-ready.
+                Your candidate data is protected with bank-level security. GDPR-compliant and audit-ready.
               </p>
             </div>
 
@@ -218,10 +218,10 @@ const FeaturesPage = () => {
         <section className="py-20">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Ready to Hire Smarter?
+              Ready to Get Started?
             </h2>
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Join hundreds of recruitment teams already using Qualifyr.AI to find better candidates faster.
+              Start screening candidates with AI today.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a

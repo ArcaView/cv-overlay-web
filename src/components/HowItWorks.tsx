@@ -7,10 +7,10 @@ export const HowItWorks = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-bold mb-4">
-            From Resume to Hire in Three Simple Steps
+            How It Works
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Streamline your recruitment process and focus on what matters—finding the right people for your team.
+            Upload resumes, let AI score candidates, and review the best matches for your role.
           </p>
         </div>
 
@@ -25,7 +25,7 @@ export const HowItWorks = () => {
                 <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">Step 1</Badge>
                 <h3 className="text-2xl font-bold mb-3">Upload Resumes</h3>
                 <p className="text-muted-foreground mb-4">
-                  Drag and drop or upload candidate resumes in any format—PDF, Word, or plain text. Bulk upload dozens of CVs at once.
+                  Drag and drop or upload candidate resumes in any format (PDF, Word, or plain text). Bulk upload dozens of CVs at once.
                 </p>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-start gap-2">

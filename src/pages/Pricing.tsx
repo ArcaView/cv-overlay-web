@@ -74,10 +74,10 @@ const PricingPage = () => {
           <div className="container mx-auto px-4 text-center">
             <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">Pricing</Badge>
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Simple, Transparent Pricing
+              Pricing
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Start for free. Scale as you grow. No hidden fees or surprises.
+              Start for free. Scale as you grow. No hidden fees.
             </p>
           </div>
         </section>

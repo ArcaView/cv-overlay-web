@@ -18,7 +18,7 @@ export const Hero = () => {
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl">
-            Transform your hiring process with AI-powered candidate screening. Automatically analyze resumes, score candidate fit, and identify top talent in seconds—not hours.
+            AI-powered candidate screening that analyzes resumes, scores candidate fit, and helps you find top talent in seconds.
           </p>
           
           <Button asChild size="lg" variant="hero" className="mb-12">

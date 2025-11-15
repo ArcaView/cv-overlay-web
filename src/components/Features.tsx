@@ -4,33 +4,33 @@ import { FileText, Brain, Shield, Zap, Users, BarChart3 } from "lucide-react";
 const features = [
   {
     icon: FileText,
-    title: "Smart Resume Parsing",
-    description: "Automatically extract key information from any resume format with 98.5% accuracy. Handles PDFs, Word documents, and varied layouts seamlessly.",
+    title: "Resume Parsing",
+    description: "Extract key information from any resume format with 98.5% accuracy. Works with PDFs, Word documents, and varied layouts.",
   },
   {
     icon: Brain,
-    title: "AI-Powered Candidate Scoring",
-    description: "Instantly score candidates against your job requirements with transparent AI. Get detailed breakdowns showing skills match, experience fit, and education alignment.",
+    title: "Candidate Scoring",
+    description: "Score candidates against your job requirements. Get detailed breakdowns showing skills match, experience fit, and education alignment.",
   },
   {
     icon: Shield,
-    title: "Fair & Compliant Hiring",
-    description: "Built-in bias prevention and transparent scoring ensures fair hiring practices. Fully GDPR-compliant with audit trails for every decision.",
+    title: "Fair & Compliant",
+    description: "Transparent scoring with bias prevention built in. GDPR-compliant with audit trails for every decision.",
   },
   {
     icon: Zap,
-    title: "Instant Results",
-    description: "Screen hundreds of candidates in seconds, not days. Our AI delivers accurate scoring in real-time, helping you identify top talent immediately.",
+    title: "Fast Processing",
+    description: "Screen hundreds of candidates in seconds. Get results in real-time to identify top talent quickly.",
   },
   {
     icon: Users,
-    title: "Collaborative Workflow",
-    description: "Share candidate profiles, compare shortlists, and collaborate with your hiring team. Everyone stays aligned with centralized candidate data.",
+    title: "Team Collaboration",
+    description: "Share candidate profiles, compare shortlists, and collaborate with your hiring team. Keep everyone aligned with centralized data.",
   },
   {
     icon: BarChart3,
-    title: "Recruitment Analytics",
-    description: "Track hiring pipeline metrics, time-to-hire, candidate quality, and team performance. Make data-driven decisions to improve your recruitment process.",
+    title: "Analytics",
+    description: "Track hiring pipeline metrics, time-to-hire, and candidate quality. Use data to improve your recruitment process.",
   },
 ];
 
@@ -40,10 +40,10 @@ export const Features = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-bold mb-4">
-            Everything You Need for Modern Recruitment
+            Key Features
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Powerful features that help you hire better, faster, and smarter—all in one platform.
+            Tools to help you screen candidates faster and make better hiring decisions.
           </p>
         </div>
 

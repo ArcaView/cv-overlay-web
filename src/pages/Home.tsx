@@ -31,37 +31,6 @@ const HomePage = () => {
       <Hero />
       <HowItWorks />
       <Features />
-      
-      {/* Testimonials */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4">
-              Trusted by Forward-Thinking Teams
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Join hundreds of companies building better hiring experiences with Qualifyr.AI.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="border-border">
-                <CardContent className="p-6">
-                  <Quote className="w-8 h-8 text-primary mb-4" />
-                  <p className="text-muted-foreground mb-6 italic">
-                    "{testimonial.quote}"
-                  </p>
-                  <div>
-                    <p className="font-semibold">{testimonial.author}</p>
-                    <p className="text-sm text-muted-foreground">{testimonial.role}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
 
       <Footer />
     </div>
