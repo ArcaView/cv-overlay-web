@@ -224,28 +224,91 @@ export const generateCandidateSummaryPDF = (data: RoleSummaryData) => {
   });
 
   // Recommendations Section
-  checkPageBreak(40);
+  checkPageBreak(60);
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
-  doc.text('Recommendations', margin, yPosition);
+  doc.text('Hiring Recommendations', margin, yPosition);
   yPosition += 8;
 
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
 
-  const recommendations = [
-    `Schedule interviews with the top ${Math.min(3, topCandidates.length)} candidates scoring above 85%`,
-    `${excellentFit.length} candidate${excellentFit.length !== 1 ? 's' : ''} show excellent fit and should be prioritized`,
-    `Focus on candidates with strong experience in: ${topSkills.slice(0, 3).map(([s]) => s).join(', ')}`
-  ];
+  // Build comprehensive recommendations
+  const recommendations: string[] = [];
 
-  recommendations.forEach(rec => {
-    checkPageBreak(10);
-    const lines = doc.splitTextToSize(`• ${rec}`, contentWidth - 10);
-    lines.forEach((line: string) => {
+  // Top candidates recommendation
+  if (topCandidates.length > 0) {
+    recommendations.push(
+      `IMMEDIATE ACTION: Schedule interviews with the top ${Math.min(3, topCandidates.length)} candidates scoring above 85%. These candidates (${topCandidates.slice(0, 3).map(c => c.name).join(', ')}) demonstrate exceptional qualifications and should be contacted within 24-48 hours.`
+    );
+  }
+
+  // Excellent fit recommendation
+  if (excellentFit.length > 0) {
+    recommendations.push(
+      `PRIORITY CANDIDATES: ${excellentFit.length} candidate${excellentFit.length !== 1 ? 's' : ''} show excellent cultural and skill fit (${excellentFit.slice(0, 3).map(c => c.name).join(', ')}${excellentFit.length > 3 ? ', and others' : ''}). These should be fast-tracked through your hiring pipeline.`
+    );
+  }
+
+  // Skill alignment
+  if (topSkills.length >= 3) {
+    recommendations.push(
+      `SKILL FOCUS: Prioritize candidates with proven expertise in ${topSkills.slice(0, 3).map(([s]) => s).join(', ')}. These skills are most common among your top-performing candidates and align well with role requirements.`
+    );
+  }
+
+  // Experience-based recommendation
+  const avgExperience = Math.round(
+    sortedCandidates.reduce((sum, c) => sum + c.experience_years, 0) / sortedCandidates.length
+  );
+  const experiencedCandidates = sortedCandidates.filter(c => c.experience_years >= avgExperience + 2);
+  if (experiencedCandidates.length > 0) {
+    recommendations.push(
+      `EXPERIENCE DEPTH: ${experiencedCandidates.length} candidate${experiencedCandidates.length !== 1 ? 's have' : ' has'} significantly more experience than average (${avgExperience} years). Consider ${experiencedCandidates.slice(0, 2).map(c => c.name).join(' and ')} for senior or leadership positions.`
+    );
+  }
+
+  // Diversity of skills
+  const totalUniqueSkills = Object.keys(skillCounts).length;
+  if (totalUniqueSkills > 15) {
+    recommendations.push(
+      `SKILL DIVERSITY: Candidates present ${totalUniqueSkills} unique skills across the pool. This diversity enables team composition flexibility - consider pairing complementary skill sets during team building.`
+    );
+  }
+
+  // Score distribution insights
+  const midRangeCandidates = sortedCandidates.filter(c => c.score && c.score >= 70 && c.score < 85);
+  if (midRangeCandidates.length > 0) {
+    recommendations.push(
+      `SECONDARY POOL: ${midRangeCandidates.length} candidate${midRangeCandidates.length !== 1 ? 's score' : ' scores'} between 70-84%. While not top-tier, these candidates may excel in roles with adjusted requirements or through targeted training programs.`
+    );
+  }
+
+  // Timeline recommendation
+  if (topCandidates.length >= 2) {
+    recommendations.push(
+      `HIRING VELOCITY: With ${topCandidates.length} strong candidates available, aim to complete initial interviews within the next 5-7 business days to maintain candidate engagement and prevent talent loss to competitors.`
+    );
+  }
+
+  // General best practice
+  recommendations.push(
+    `NEXT STEPS: (1) Send personalized outreach emails to top candidates within 24 hours, (2) Schedule phone screens for candidates scoring 85+, (3) Prepare role-specific technical assessments, (4) Establish a feedback loop with hiring managers to refine scoring criteria.`
+  );
+
+  recommendations.forEach((rec, idx) => {
+    checkPageBreak(15);
+    const lines = doc.splitTextToSize(`${idx + 1}. ${rec}`, contentWidth - 10);
+    lines.forEach((line: string, lineIdx: number) => {
+      if (lineIdx === 0) {
+        doc.setFont('helvetica', 'bold');
+      } else {
+        doc.setFont('helvetica', 'normal');
+      }
       doc.text(line, margin + 5, yPosition);
-      yPosition += 6;
+      yPosition += 5;
     });
+    yPosition += 3; // Extra spacing between recommendations
   });
 
   // Footer on last page

@@ -3,6 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   TrendingUp,
   Users,
   FileText,
@@ -10,9 +17,64 @@ import {
   Calendar,
   ArrowUpRight,
   Clock,
+  Sparkles,
 } from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useRoles } from "@/contexts/RolesContext";
+import { useToast } from "@/hooks/use-toast";
+import { generateAllCandidatesPDF } from "@/lib/allCandidatesPDF";
 
 const Overview = () => {
+  const navigate = useNavigate();
+  const { roles } = useRoles();
+  const { toast } = useToast();
+  const [scoreCandidateDialogOpen, setScoreCandidateDialogOpen] = useState(false);
+
+  // Get all candidates from all roles
+  const allCandidates = roles.flatMap(role =>
+    (role.candidatesList || []).map(candidate => ({
+      ...candidate,
+      roleTitle: role.title,
+      roleId: role.id
+    }))
+  );
+
+  const handleUploadNewCV = () => {
+    navigate('/dashboard/parse');
+  };
+
+  const handleViewAllCandidates = () => {
+    navigate('/dashboard/candidates');
+  };
+
+  const handleDownloadReport = async () => {
+    toast({
+      title: "Generating Report",
+      description: "Creating comprehensive overview of all candidates...",
+      duration: 3000,
+    });
+
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    generateAllCandidatesPDF({ roles });
+
+    toast({
+      title: "Report Ready",
+      description: `Downloaded complete overview with ${allCandidates.length} candidates across ${roles.length} roles`,
+    });
+  };
+
+  const handleScoreCandidateSelect = (candidate: any) => {
+    setScoreCandidateDialogOpen(false);
+    // Navigate to the role details page where the candidate is located
+    navigate(`/dashboard/roles/${candidate.roleId}`);
+    toast({
+      title: "Candidate Selected",
+      description: `Viewing ${candidate.name} in ${candidate.roleTitle}`,
+    });
+  };
+
   return (
     <DashboardLayout>
       <div className="p-6 space-y-6">
@@ -151,21 +213,39 @@ const Overview = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button className="w-full justify-between" variant="outline">
+                <Button
+                  className="w-full justify-between"
+                  variant="outline"
+                  onClick={handleUploadNewCV}
+                >
                   <span>Upload New CV</span>
                   <ArrowUpRight className="w-4 h-4" />
                 </Button>
-                <Button className="w-full justify-between" variant="outline">
+                <Button
+                  className="w-full justify-between"
+                  variant="outline"
+                  onClick={() => setScoreCandidateDialogOpen(true)}
+                  disabled={allCandidates.length === 0}
+                >
                   <span>Score Candidate</span>
                   <ArrowUpRight className="w-4 h-4" />
                 </Button>
-                <Button className="w-full justify-between" variant="outline">
+                <Button
+                  className="w-full justify-between"
+                  variant="outline"
+                  onClick={handleViewAllCandidates}
+                >
                   <span>View All Candidates</span>
                   <ArrowUpRight className="w-4 h-4" />
                 </Button>
-                <Button className="w-full justify-between" variant="outline">
+                <Button
+                  className="w-full justify-between"
+                  variant="outline"
+                  onClick={handleDownloadReport}
+                  disabled={allCandidates.length === 0}
+                >
                   <span>Download Report</span>
-                  <ArrowUpRight className="w-4 h-4" />
+                  <Sparkles className="w-4 h-4" />
                 </Button>
               </CardContent>
             </Card>
@@ -264,6 +344,86 @@ const Overview = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Score Candidate Dialog */}
+        <Dialog open={scoreCandidateDialogOpen} onOpenChange={setScoreCandidateDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh]">
+            <DialogHeader>
+              <DialogTitle>Select Candidate to Score</DialogTitle>
+              <DialogDescription>
+                Choose a candidate from the list below to view their AI-powered score and details
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-4 space-y-2 overflow-y-auto max-h-[60vh]">
+              {allCandidates.length === 0 ? (
+                <div className="py-8 text-center text-muted-foreground">
+                  <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <p>No candidates available yet</p>
+                  <p className="text-sm mt-2">Upload and parse CVs to see candidates here</p>
+                </div>
+              ) : (
+                allCandidates
+                  .sort((a, b) => (b.score || 0) - (a.score || 0))
+                  .map((candidate) => (
+                    <Card
+                      key={candidate.id}
+                      className="cursor-pointer hover:bg-accent/50 transition-colors"
+                      onClick={() => handleScoreCandidateSelect(candidate)}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h4 className="font-semibold">{candidate.name}</h4>
+                              {candidate.score && (
+                                <Badge
+                                  variant={candidate.score >= 85 ? "default" : "secondary"}
+                                  className={
+                                    candidate.score >= 85
+                                      ? "bg-success/10 text-success border-success/20"
+                                      : ""
+                                  }
+                                >
+                                  {candidate.score}%
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground mb-1">
+                              {candidate.roleTitle}
+                            </p>
+                            <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                              <span>{candidate.email}</span>
+                              <span>•</span>
+                              <span>{candidate.experience_years} years exp</span>
+                              {candidate.fit && (
+                                <>
+                                  <span>•</span>
+                                  <span className="capitalize">{candidate.fit}</span>
+                                </>
+                              )}
+                            </div>
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {candidate.skills.slice(0, 4).map((skill: string) => (
+                                <Badge key={skill} variant="outline" className="text-xs">
+                                  {skill}
+                                </Badge>
+                              ))}
+                              {candidate.skills.length > 4 && (
+                                <Badge variant="outline" className="text-xs">
+                                  +{candidate.skills.length - 4}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          <ArrowUpRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );
