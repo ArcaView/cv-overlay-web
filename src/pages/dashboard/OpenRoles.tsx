@@ -149,7 +149,7 @@ const OpenRoles = () => {
               <DialogHeader>
                 <DialogTitle>{editingRole ? 'Edit Role' : 'Create New Role'}</DialogTitle>
                 <DialogDescription>
-                  {editingRole ? 'Update the role details below.' : 'Add a new open position to your organization.'}
+                  {editingRole ? 'Update the role details below.' : 'Add a new open position to your organisation.'}
                 </DialogDescription>
               </DialogHeader>
 

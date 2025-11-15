@@ -56,12 +56,12 @@ const navItems = [
     icon: Code2,
     description: "API keys and documentation",
   },
-  // {
-  //   title: "Analytics",
-  //   href: "/dashboard/analytics",
-  //   icon: BarChart3,
-  //   description: "Detailed usage analytics",
-  // },
+  {
+    title: "Analytics",
+    href: "/dashboard/analytics",
+    icon: BarChart3,
+    description: "Recruitment and API analytics",
+  },
   {
     title: "Billing",
     href: "/dashboard/billing",

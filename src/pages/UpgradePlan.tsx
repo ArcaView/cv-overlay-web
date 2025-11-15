@@ -7,37 +7,38 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 
-// Exclude current plan (Starter/Free)
+// Exclude current plan (Starter)
 const upgradePlans = [
   {
-    name: "Pro",
-    price: "$99",
+    name: "Professional",
+    price: "£79.99",
     period: "/month",
-    description: "For growing teams and applications",
+    description: "For growing recruitment teams",
     features: [
-      "50,000 parses/month",
-      "25,000 scores/month",
-      "All file formats",
-      "Baseline + AI scoring",
+      "Up to 500 candidates/month",
+      "Advanced AI scoring & insights",
+      "Unlimited job roles",
+      "Team collaboration tools",
       "Priority support",
       "Advanced analytics",
     ],
-    cta: "Upgrade to Pro",
+    cta: "Upgrade to Professional",
     popular: true,
   },
   {
     name: "Enterprise",
-    price: "Custom",
-    description: "For large-scale deployments",
+    price: "£119.99",
+    period: "/month",
+    description: "For large organisations and agencies",
     features: [
-      "Unlimited parses & scores",
-      "All Pro features",
-      "Dedicated support",
+      "Unlimited candidates",
+      "All Professional features",
+      "Dedicated account manager",
       "Custom integrations",
-      "On-premise option",
+      "On-premise deployment",
       "SSO / SAML auth",
     ],
-    cta: "Contact Sales",
+    cta: "Upgrade to Enterprise",
     popular: false,
   },
 ];
@@ -95,7 +96,7 @@ const UpgradePlan = () => {
           <div className="text-center mb-6">
             <h1 className="text-3xl font-bold mb-2">Upgrade Your Plan</h1>
             <p className="text-muted-foreground">
-              Currently on <Badge variant="secondary" className="mx-1">Starter (Free)</Badge> • 1,000 parses/month
+              Currently on <Badge variant="secondary" className="mx-1">Starter</Badge> • Up to 100 candidates/month
             </p>
           </div>
         </div>

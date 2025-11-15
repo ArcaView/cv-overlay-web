@@ -7,6 +7,7 @@ export interface Candidate {
   phone: string;
   score?: number;
   fit?: string;
+  status?: string;
   experience_years: number;
   skills: string[];
   appliedDate: string;
@@ -156,6 +157,9 @@ export const generateCandidateSummaryPDF = (data: RoleSummaryData) => {
       doc.text(`Experience: ${candidate.experience_years} years`, margin + 5, yPosition);
       yPosition += 5;
       doc.text(`Fit: ${candidate.fit || 'N/A'}`, margin + 5, yPosition);
+      if (candidate.status) {
+        doc.text(`Status: ${candidate.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}`, pageWidth - margin - 60, yPosition);
+      }
       yPosition += 5;
 
       // Skills (wrapped)
@@ -207,6 +211,10 @@ export const generateCandidateSummaryPDF = (data: RoleSummaryData) => {
       doc.text(`Fit: ${candidate.fit}`, pageWidth - margin - 45, yPosition);
     }
     yPosition += 5;
+    if (candidate.status) {
+      doc.text(`Status: ${candidate.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}`, margin + 5, yPosition);
+      yPosition += 5;
+    }
 
     // Skills (limited to fit on one or two lines)
     const limitedSkills = candidate.skills.slice(0, 6).join(', ');

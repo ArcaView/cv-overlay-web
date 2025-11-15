@@ -7,6 +7,7 @@ export interface Candidate {
   phone: string;
   score?: number;
   fit?: string;
+  status?: string;
   experience_years: number;
   skills: string[];
   appliedDate: string;
@@ -174,6 +175,10 @@ export const generateAllCandidatesPDF = (data: AllCandidatesData) => {
       doc.text(`Experience: ${candidate.experience_years} years`, margin + 5, yPosition);
       doc.text(`Fit: ${candidate.fit || 'N/A'}`, pageWidth - margin - 60, yPosition);
       yPosition += 5;
+      if (candidate.status) {
+        doc.text(`Status: ${candidate.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}`, margin + 5, yPosition);
+        yPosition += 5;
+      }
 
       // Skills
       const skillsText = `Skills: ${candidate.skills.slice(0, 8).join(', ')}${candidate.skills.length > 8 ? '...' : ''}`;
@@ -246,7 +251,8 @@ export const generateAllCandidatesPDF = (data: AllCandidatesData) => {
 
       doc.setFontSize(8);
       doc.setFont('helvetica', 'normal');
-      doc.text(`${candidate.email} | ${candidate.experience_years} yrs exp | ${candidate.fit || 'N/A'}`, margin + 15, yPosition);
+      const statusText = candidate.status ? ` | Status: ${candidate.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}` : '';
+      doc.text(`${candidate.email} | ${candidate.experience_years} yrs exp | ${candidate.fit || 'N/A'}${statusText}`, margin + 15, yPosition);
       yPosition += 5;
 
       // Limited skills

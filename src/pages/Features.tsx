@@ -63,7 +63,7 @@ const detailedFeatures = [
       "Resume parsing in under 3 seconds",
       "Candidate scoring in under 2 seconds",
       "Bulk upload and process multiple candidates",
-      "Smart caching for faster repeat analysis",
+      "Smart caching for faster repeat analyses",
       "Handles high-volume recruitment drives",
       "99.9% uptime",
     ],

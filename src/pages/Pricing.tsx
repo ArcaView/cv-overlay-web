@@ -9,23 +9,24 @@ import { Link } from "react-router-dom";
 const plans = [
   {
     name: "Starter",
-    price: "Free",
+    price: "£39.99",
+    period: "/month",
     description: "Perfect for small teams getting started",
     features: [
-      "Up to 50 candidates/month",
-      "AI-powered resume parsing",
+      "Up to 100 candidates/month",
+      "AI-powered CV parsing",
       "Basic candidate scoring",
-      "5 active job roles",
+      "10 active job roles",
       "Email support",
       "Core collaboration features",
       "Mobile-friendly access",
     ],
-    cta: "Get Started Free",
+    cta: "Get Started",
     popular: false,
   },
   {
     name: "Professional",
-    price: "$99",
+    price: "£79.99",
     period: "/month",
     description: "For growing recruitment teams",
     features: [
@@ -39,13 +40,14 @@ const plans = [
       "Bulk candidate upload",
       "Email integrations",
     ],
-    cta: "Start Free Trial",
+    cta: "Get Started",
     popular: true,
   },
   {
     name: "Enterprise",
-    price: "Custom",
-    description: "For large organizations and agencies",
+    price: "£119.99",
+    period: "/month",
+    description: "For large organisations and agencies",
     features: [
       "Unlimited candidates",
       "All Professional features",
@@ -58,7 +60,7 @@ const plans = [
       "White-label options",
       "Training & onboarding",
     ],
-    cta: "Contact Sales",
+    cta: "Get Started",
     popular: false,
   },
 ];
@@ -77,7 +79,7 @@ const PricingPage = () => {
               Pricing
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Start for free. Scale as you grow. No hidden fees.
+              Choose your plan. Scale as you grow. No hidden fees.
             </p>
           </div>
         </section>
@@ -149,7 +151,7 @@ const PricingPage = () => {
                 <div>
                   <h3 className="text-xl font-semibold mb-2">How does the candidate limit work?</h3>
                   <p className="text-muted-foreground">
-                    Each plan includes a monthly limit of candidates you can process. A candidate is counted when you upload and analyze their resume. You can review and compare candidates unlimited times once they're in your system.
+                    Each plan includes a monthly limit of candidates you can process. A candidate is counted when you upload and analyse their CV. You can review and compare candidates unlimited times once they're in your system.
                   </p>
                 </div>
 

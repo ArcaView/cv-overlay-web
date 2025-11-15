@@ -54,9 +54,9 @@ export const HowItWorks = () => {
                   <Sparkles className="w-7 h-7 text-accent" />
                 </div>
                 <Badge className="mb-4 bg-accent/10 text-accent border-accent/20">Step 2</Badge>
-                <h3 className="text-2xl font-bold mb-3">AI Analyzes & Scores</h3>
+                <h3 className="text-2xl font-bold mb-3">AI Analyses & Scores</h3>
                 <p className="text-muted-foreground mb-4">
-                  Our AI instantly analyzes candidates against your job requirements, scoring skills, experience, and cultural fit.
+                  Our AI instantly analyses candidates against your job requirements, scoring skills, experience, and cultural fit.
                 </p>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-start gap-2">
