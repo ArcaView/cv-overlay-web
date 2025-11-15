@@ -57,6 +57,7 @@ const BulkParse = () => {
   const [selectedRole, setSelectedRole] = useState<string>("");
   const [newRoleDialogOpen, setNewRoleDialogOpen] = useState(false);
   const [newRoleTitle, setNewRoleTitle] = useState("");
+  const [showTips, setShowTips] = useState(true);
 
   const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -202,6 +203,33 @@ const BulkParse = () => {
   return (
     <DashboardLayout>
       <div className="p-6 space-y-6">
+        {/* Tips Banner */}
+        {showTips && (
+          <Card className="bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 border-primary/20">
+            <CardContent className="p-4">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <h3 className="font-semibold mb-2 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-primary" />
+                    Bulk Processing Tips
+                  </h3>
+                  <div className="text-sm text-muted-foreground">
+                    <span className="font-medium">Optimal batch:</span> 10-50 files • <span className="font-medium">File naming:</span> Use clear conventions for easy identification
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowTips(false)}
+                  className="flex-shrink-0 h-8 w-8 p-0"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
@@ -555,19 +583,6 @@ const BulkParse = () => {
             </CardContent>
           </Card>
         </div>
-
-        {/* Tips */}
-        <Card className="bg-primary/5 border-primary/20">
-          <CardHeader>
-            <CardTitle className="text-lg">Bulk Processing Tips</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            <p>• <strong>Optimal batch size:</strong> 10-50 files for best performance</p>
-            <p>• <strong>File naming:</strong> Use clear naming conventions for easy identification</p>
-            <p>• <strong>Results:</strong> Download results as JSON for further processing</p>
-            <p>• <strong>API limits:</strong> Bulk parsing counts toward your monthly quota</p>
-          </CardContent>
-        </Card>
       </div>
     </DashboardLayout>
   );
