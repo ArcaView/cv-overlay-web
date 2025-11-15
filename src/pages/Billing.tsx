@@ -35,10 +35,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CreditCard, Download, Calendar, DollarSign } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { generateInvoicePDF } from "@/lib/invoicePDF";
 
 const Billing = () => {
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [downloadingInvoice, setDownloadingInvoice] = useState<string | null>(null);
   const { toast } = useToast();
@@ -230,8 +232,7 @@ const Billing = () => {
                   <div className="flex gap-3 pt-4">
                     <Button
                       variant="outline"
-                      onClick={() => handleStripePortal('update_subscription')}
-                      disabled={isLoading}
+                      onClick={() => navigate('/upgrade')}
                     >
                       Change Plan
                     </Button>
