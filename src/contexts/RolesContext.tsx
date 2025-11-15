@@ -11,6 +11,7 @@ export interface Candidate {
   appliedDate: string;
   skills: string[];
   experience_years: number;
+  status: 'reviewing' | 'interviewing' | 'interviewed' | 'offer_outstanding' | 'hired' | 'rejected';
 }
 
 export interface Role {
@@ -34,6 +35,7 @@ interface RolesContextType {
   deleteRole: (id: string) => void;
   addCandidateToRole: (roleId: string, candidate: Candidate) => void;
   removeCandidateFromRole: (roleId: string, candidateId: string) => void;
+  updateCandidateStatus: (roleId: string, candidateId: string, status: Candidate['status']) => void;
   addRole: (role: Omit<Role, 'id' | 'candidatesList' | 'candidates' | 'createdAt' | 'status'>) => void;
 }
 
@@ -61,6 +63,7 @@ const initialRoles: Role[] = [
         appliedDate: '2024-01-20',
         skills: ['React', 'TypeScript', 'Node.js', 'AWS'],
         experience_years: 5,
+        status: 'interviewing',
       },
       {
         id: '2',
@@ -73,6 +76,7 @@ const initialRoles: Role[] = [
         appliedDate: '2024-01-19',
         skills: ['React', 'Vue.js', 'TypeScript', 'Docker'],
         experience_years: 7,
+        status: 'offer_outstanding',
       },
       {
         id: '3',
@@ -85,6 +89,7 @@ const initialRoles: Role[] = [
         appliedDate: '2024-01-18',
         skills: ['React', 'JavaScript', 'CSS', 'Git'],
         experience_years: 3,
+        status: 'reviewing',
       },
     ],
     createdAt: '2024-01-15',
@@ -146,6 +151,21 @@ export const RolesProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }));
   };
 
+  const updateCandidateStatus = (roleId: string, candidateId: string, status: Candidate['status']) => {
+    setRoles(prev => prev.map(role => {
+      if (role.id === roleId) {
+        const updatedCandidatesList = role.candidatesList.map(candidate =>
+          candidate.id === candidateId ? { ...candidate, status } : candidate
+        );
+        return {
+          ...role,
+          candidatesList: updatedCandidatesList,
+        };
+      }
+      return role;
+    }));
+  };
+
   const addRole = (roleData: Omit<Role, 'id' | 'candidatesList' | 'candidates' | 'createdAt' | 'status'>) => {
     const newRole: Role = {
       ...roleData,
@@ -166,6 +186,7 @@ export const RolesProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       deleteRole,
       addCandidateToRole,
       removeCandidateFromRole,
+      updateCandidateStatus,
       addRole
     }}>
       {children}

@@ -128,6 +128,7 @@ const ParseCV = () => {
         skills: parseResult.candidate.skills,
         experience_years: experienceYears,
         appliedDate: new Date().toISOString().split('T')[0],
+        status: 'reviewing' as const,
       };
 
       // Add candidate to selected role

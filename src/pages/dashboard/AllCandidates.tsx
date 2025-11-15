@@ -3,6 +3,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -14,103 +21,35 @@ import {
   Mail,
   Phone,
   Star,
+  Users as UsersIcon,
+  FileText,
 } from "lucide-react";
 import { useState } from "react";
-
-interface Candidate {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  roleId: string;
-  roleTitle: string;
-  score: number;
-  fit: 'excellent' | 'good' | 'fair';
-  appliedDate: string;
-  skills: string[];
-  experience_years: number;
-  fileName: string;
-}
+import { useRoles, type Candidate } from "@/contexts/RolesContext";
+import { useToast } from "@/hooks/use-toast";
 
 const AllCandidates = () => {
-  // Mock candidate data - in production this would come from an API
-  const allCandidates: Candidate[] = [
-    {
-      id: '1',
-      name: 'Sarah Johnson',
-      email: 'sarah.johnson@email.com',
-      phone: '+1-555-0123',
-      roleId: '1',
-      roleTitle: 'Senior Frontend Developer',
-      score: 87,
-      fit: 'excellent',
-      appliedDate: '2024-01-20',
-      skills: ['React', 'TypeScript', 'Node.js', 'AWS'],
-      experience_years: 5,
-      fileName: 'sarah_johnson_resume.pdf',
-    },
-    {
-      id: '2',
-      name: 'Michael Chen',
-      email: 'michael.chen@email.com',
-      phone: '+1-555-0124',
-      roleId: '1',
-      roleTitle: 'Senior Frontend Developer',
-      score: 92,
-      fit: 'excellent',
-      appliedDate: '2024-01-19',
-      skills: ['React', 'Vue.js', 'TypeScript', 'Docker'],
-      experience_years: 7,
-      fileName: 'michael_chen_cv.pdf',
-    },
-    {
-      id: '3',
-      name: 'Emily Rodriguez',
-      email: 'emily.r@email.com',
-      phone: '+1-555-0125',
-      roleId: '1',
-      roleTitle: 'Senior Frontend Developer',
-      score: 76,
-      fit: 'good',
-      appliedDate: '2024-01-18',
-      skills: ['React', 'JavaScript', 'CSS', 'Git'],
-      experience_years: 3,
-      fileName: 'emily_rodriguez_resume.pdf',
-    },
-    {
-      id: '4',
-      name: 'David Kim',
-      email: 'david.kim@email.com',
-      phone: '+1-555-0126',
-      roleId: '2',
-      roleTitle: 'Product Manager',
-      score: 88,
-      fit: 'excellent',
-      appliedDate: '2024-01-17',
-      skills: ['Product Strategy', 'Agile', 'User Research', 'Analytics'],
-      experience_years: 6,
-      fileName: 'david_kim_resume.pdf',
-    },
-    {
-      id: '5',
-      name: 'Jessica Taylor',
-      email: 'jessica.t@email.com',
-      phone: '+1-555-0127',
-      roleId: '2',
-      roleTitle: 'Product Manager',
-      score: 85,
-      fit: 'excellent',
-      appliedDate: '2024-01-16',
-      skills: ['Roadmapping', 'Stakeholder Management', 'Data Analysis', 'A/B Testing'],
-      experience_years: 4,
-      fileName: 'jessica_taylor_resume.pdf',
-    },
-  ];
+  const { roles, updateCandidateStatus } = useRoles();
+  const { toast } = useToast();
 
-  const [viewCandidate, setViewCandidate] = useState<Candidate | null>(null);
+  // Flatten all candidates from all roles
+  const allCandidates: (Candidate & { roleId: string; roleTitle: string })[] = [];
+  roles.forEach(role => {
+    if (role.candidatesList && role.candidatesList.length > 0) {
+      role.candidatesList.forEach(candidate => {
+        allCandidates.push({
+          ...candidate,
+          roleId: role.id,
+          roleTitle: role.title
+        });
+      });
+    }
+  });
+
+  const [viewCandidate, setViewCandidate] = useState<(Candidate & { roleId: string; roleTitle: string }) | null>(null);
   const [dialogPage, setDialogPage] = useState(0);
 
-  const handleViewCandidate = (candidate: Candidate) => {
+  const handleViewCandidate = (candidate: Candidate & { roleId: string; roleTitle: string }) => {
     setViewCandidate(candidate);
     setDialogPage(0);
   };
@@ -120,7 +59,15 @@ const AllCandidates = () => {
     setDialogPage(0);
   };
 
-  const getFitColor = (fit: string) => {
+  const handleStatusChange = (roleId: string, candidateId: string, status: Candidate['status'], candidateName: string) => {
+    updateCandidateStatus(roleId, candidateId, status);
+    toast({
+      title: "Status Updated",
+      description: `${candidateName}'s status changed to ${getStatusLabel(status)}`,
+    });
+  };
+
+  const getFitColor = (fit?: string) => {
     switch (fit) {
       case 'excellent': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
       case 'good': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
@@ -129,7 +76,31 @@ const AllCandidates = () => {
     }
   };
 
-  const sortedCandidates = [...allCandidates].sort((a, b) => b.score - a.score);
+  const getStatusColor = (status: Candidate['status']) => {
+    switch (status) {
+      case 'reviewing': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+      case 'interviewing': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
+      case 'interviewed': return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400';
+      case 'offer_outstanding': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400';
+      case 'hired': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+      case 'rejected': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
+    }
+  };
+
+  const getStatusLabel = (status: Candidate['status']) => {
+    switch (status) {
+      case 'reviewing': return 'Reviewing';
+      case 'interviewing': return 'Interviewing';
+      case 'interviewed': return 'Interviewed';
+      case 'offer_outstanding': return 'Offer Outstanding';
+      case 'hired': return 'Hired';
+      case 'rejected': return 'Rejected';
+      default: return status;
+    }
+  };
+
+  const sortedCandidates = [...allCandidates].sort((a, b) => (b.score || 0) - (a.score || 0));
 
   return (
     <DashboardLayout>
@@ -143,71 +114,121 @@ const AllCandidates = () => {
         </div>
 
         {/* Candidates List */}
-        <div className="space-y-3">
-          {sortedCandidates.map((candidate, index) => (
-            <Card
-              key={candidate.id}
-              className="cursor-pointer hover:bg-muted/50 transition-colors"
-              onClick={() => handleViewCandidate(candidate)}
-            >
-              <CardContent className="pt-6">
-                <div className="flex items-start gap-4">
-                  {/* Rank Badge */}
-                  {index === 0 && candidate.score >= 85 ? (
-                    <div className="flex-shrink-0">
-                      <div className="w-10 h-10 rounded-full bg-yellow-500 flex items-center justify-center">
-                        <Star className="w-5 h-5 text-white fill-white" />
+        {allCandidates.length === 0 ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <UsersIcon className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+              <h3 className="text-lg font-semibold mb-2">No candidates yet</h3>
+              <p className="text-muted-foreground">
+                Parse CVs and attach them to roles to see candidates here
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-3">
+            {sortedCandidates.map((candidate, index) => (
+              <Card key={`${candidate.roleId}-${candidate.id}`}>
+                <CardContent className="pt-6">
+                  <div className="flex items-start gap-4">
+                    {/* Rank Badge */}
+                    {index === 0 && candidate.score && candidate.score >= 85 ? (
+                      <div className="flex-shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-yellow-500 flex items-center justify-center">
+                          <Star className="w-5 h-5 text-white fill-white" />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex-shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-sm font-semibold">
+                          {index + 1}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Candidate Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3
+                          className="text-base font-semibold cursor-pointer hover:text-primary transition-colors"
+                          onClick={() => handleViewCandidate(candidate)}
+                        >
+                          {candidate.name}
+                        </h3>
+                        {candidate.fit && (
+                          <Badge className={getFitColor(candidate.fit)} variant="secondary">
+                            {candidate.fit}
+                          </Badge>
+                        )}
+                        <Badge className={getStatusColor(candidate.status)} variant="secondary">
+                          {getStatusLabel(candidate.status)}
+                        </Badge>
+                      </div>
+
+                      <div className="flex flex-wrap gap-3 text-sm text-muted-foreground mb-3">
+                        <span className="flex items-center gap-1">
+                          <Briefcase className="w-3 h-3" />
+                          {candidate.roleTitle}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Mail className="w-3 h-3" />
+                          {candidate.email}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Phone className="w-3 h-3" />
+                          {candidate.phone}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <FileText className="w-3 h-3" />
+                          {candidate.experience_years} years exp
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-4">
+                        <div className="text-xs text-muted-foreground">
+                          Applied {new Date(candidate.appliedDate).toLocaleDateString()}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Label className="text-xs text-muted-foreground">Status:</Label>
+                          <Select
+                            value={candidate.status}
+                            onValueChange={(value) => handleStatusChange(
+                              candidate.roleId,
+                              candidate.id,
+                              value as Candidate['status'],
+                              candidate.name
+                            )}
+                          >
+                            <SelectTrigger className="w-[180px] h-8 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="reviewing">Reviewing</SelectItem>
+                              <SelectItem value="interviewing">Interviewing</SelectItem>
+                              <SelectItem value="interviewed">Interviewed</SelectItem>
+                              <SelectItem value="offer_outstanding">Offer Outstanding</SelectItem>
+                              <SelectItem value="hired">Hired</SelectItem>
+                              <SelectItem value="rejected">Rejected</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
                     </div>
-                  ) : (
-                    <div className="flex-shrink-0">
-                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-sm font-semibold">
-                        {index + 1}
+
+                    {/* Score */}
+                    {candidate.score && (
+                      <div className="flex-shrink-0 text-right">
+                        <div className="text-2xl font-bold bg-gradient-to-br from-primary to-primary/60 bg-clip-text text-transparent">
+                          {candidate.score}%
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">Match</p>
                       </div>
-                    </div>
-                  )}
-
-                  {/* Candidate Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="text-base font-semibold">{candidate.name}</h3>
-                      <Badge className={getFitColor(candidate.fit)} variant="secondary">
-                        {candidate.fit}
-                      </Badge>
-                    </div>
-
-                    <div className="flex flex-wrap gap-3 text-sm text-muted-foreground mb-2">
-                      <span className="flex items-center gap-1">
-                        <Briefcase className="w-3 h-3" />
-                        {candidate.roleTitle}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Mail className="w-3 h-3" />
-                        {candidate.email}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Phone className="w-3 h-3" />
-                        {candidate.phone}
-                      </span>
-                    </div>
-
-                    <div className="text-xs text-muted-foreground">
-                      Applied {new Date(candidate.appliedDate).toLocaleDateString()}
-                    </div>
+                    )}
                   </div>
-
-                  {/* Score */}
-                  <div className="flex-shrink-0 text-right">
-                    <div className="text-2xl font-bold bg-gradient-to-br from-primary to-primary/60 bg-clip-text text-transparent">
-                      {candidate.score}%
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">Match</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
 
         {/* View Candidate Dialog */}
         <Dialog open={!!viewCandidate} onOpenChange={(open) => !open && handleCloseViewDialog()}>
@@ -256,11 +277,19 @@ const AllCandidates = () => {
                           </Badge>
                         </div>
                       </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs text-muted-foreground">Status</Label>
+                        <div>
+                          <Badge className={getStatusColor(viewCandidate.status)} variant="secondary">
+                            {getStatusLabel(viewCandidate.status)}
+                          </Badge>
+                        </div>
+                      </div>
                       <div>
                         <Label className="text-xs text-muted-foreground">Resume</Label>
                         <p className="text-sm font-medium">{viewCandidate.fileName}</p>
                       </div>
-                      <div className="col-span-2">
+                      <div>
                         <Label className="text-xs text-muted-foreground">Applied For</Label>
                         <p className="text-sm font-medium">{viewCandidate.roleTitle}</p>
                       </div>
@@ -284,15 +313,15 @@ const AllCandidates = () => {
                       <div className="space-y-3">
                         <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
                           <span className="text-sm">Skills Match</span>
-                          <span className="text-sm font-semibold">{Math.min(viewCandidate.score + 5, 100)}%</span>
+                          <span className="text-sm font-semibold">{viewCandidate.score ? Math.min(viewCandidate.score + 5, 100) : 85}%</span>
                         </div>
                         <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
                           <span className="text-sm">Experience Level</span>
-                          <span className="text-sm font-semibold">{Math.max(viewCandidate.score - 8, 70)}%</span>
+                          <span className="text-sm font-semibold">{viewCandidate.score ? Math.max(viewCandidate.score - 8, 70) : 82}%</span>
                         </div>
                         <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
                           <span className="text-sm">Cultural Fit</span>
-                          <span className="text-sm font-semibold">{Math.max(viewCandidate.score - 3, 75)}%</span>
+                          <span className="text-sm font-semibold">{viewCandidate.score ? Math.max(viewCandidate.score - 3, 75) : 88}%</span>
                         </div>
                         <div className="flex justify-between items-center p-3 bg-primary/10 rounded-lg border border-primary/20">
                           <span className="text-sm font-semibold">Overall Score</span>

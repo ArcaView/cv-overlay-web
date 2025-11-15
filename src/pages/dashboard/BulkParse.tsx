@@ -165,6 +165,7 @@ const BulkParse = () => {
           appliedDate: new Date().toISOString().split('T')[0],
           score: scoreResult?.overall_score,
           fit: scoreResult?.fit,
+          status: 'reviewing' as const,
         };
 
         addCandidateToRole(selectedRole, candidate);

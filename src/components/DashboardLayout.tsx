@@ -12,6 +12,7 @@ import {
   Briefcase,
   FileText,
   Upload,
+  Users,
 } from "lucide-react";
 
 interface DashboardLayoutProps {
@@ -42,6 +43,12 @@ const navItems = [
     href: "/dashboard/roles",
     icon: Briefcase,
     description: "Manage open positions",
+  },
+  {
+    title: "Candidates",
+    href: "/dashboard/candidates",
+    icon: Users,
+    description: "View all candidates",
   },
   {
     title: "Developer",
