@@ -42,6 +42,7 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useRoles } from "@/contexts/RolesContext";
 import { useToast } from "@/hooks/use-toast";
+import { generateCandidateSummaryPDF } from "@/lib/candidateSummaryPDF";
 
 const RoleDetails = () => {
   const { id } = useParams();
@@ -58,119 +59,28 @@ const RoleDetails = () => {
     }
   };
 
-  const downloadCandidatesCSV = () => {
-    // Generate CSV content
-    const headers = ['Name', 'Email', 'Phone', 'Score', 'Fit Level', 'Experience Years', 'Skills', 'Applied Date'];
-    const rows = sortedCandidates.map(c => [
-      c.name,
-      c.email,
-      c.phone,
-      `${c.score}%`,
-      c.fit,
-      c.experience_years,
-      c.skills.join('; '),
-      new Date(c.appliedDate).toLocaleDateString()
-    ]);
-
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
-    ].join('\n');
-
-    // Download CSV
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${role?.title.replace(/\s+/g, '-').toLowerCase()}-candidates-${Date.now()}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-
+  const downloadCandidateSummary = async () => {
     toast({
-      title: "Download Complete",
-      description: `Downloaded ${sortedCandidates.length} candidates as CSV`,
-    });
-  };
-
-  const downloadWithAISummary = async () => {
-    toast({
-      title: "Generating AI Summary",
-      description: "Creating intelligent summary of all candidates...",
+      title: "Generating Summary",
+      description: "Creating comprehensive candidate summary PDF...",
       duration: 3000,
     });
 
-    // Simulate AI summary generation
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Simulate processing time for AI analysis
+    await new Promise(resolve => setTimeout(resolve, 1500));
 
-    // Generate AI summary
-    const aiSummary = `
-AI-POWERED CANDIDATE ANALYSIS
-Role: ${role?.title}
-Total Candidates: ${sortedCandidates.length}
-Generated: ${new Date().toLocaleDateString()}
+    // Generate PDF with all candidate data and AI summary
+    if (role) {
+      generateCandidateSummaryPDF({
+        roleTitle: role.title,
+        candidates: sortedCandidates
+      });
 
-EXECUTIVE SUMMARY:
-This role has ${sortedCandidates.length} candidates with an average match score of ${Math.round(sortedCandidates.reduce((sum, c) => sum + (c.score || 0), 0) / sortedCandidates.length)}%.
-
-TOP CANDIDATES (${sortedCandidates.filter(c => c.score && c.score >= 85).length}):
-${sortedCandidates.filter(c => c.score && c.score >= 85).map((c, i) => `
-${i + 1}. ${c.name} - ${c.score}% Match
-   Email: ${c.email}
-   Experience: ${c.experience_years} years
-   Key Skills: ${c.skills.slice(0, 5).join(', ')}
-   Fit Assessment: ${c.fit}
-`).join('\n')}
-
-SKILL DISTRIBUTION:
-${(() => {
-  const skillCounts: Record<string, number> = {};
-  sortedCandidates.forEach(c => c.skills.forEach(skill => {
-    skillCounts[skill] = (skillCounts[skill] || 0) + 1;
-  }));
-  return Object.entries(skillCounts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10)
-    .map(([skill, count]) => `- ${skill}: ${count} candidates`)
-    .join('\n');
-})()}
-
-DETAILED CANDIDATE LIST:
-${sortedCandidates.map((c, i) => `
-${i + 1}. ${c.name}
-   Match Score: ${c.score}%
-   Email: ${c.email}
-   Phone: ${c.phone}
-   Experience: ${c.experience_years} years
-   Skills: ${c.skills.join(', ')}
-   Fit Level: ${c.fit}
-   Applied: ${new Date(c.appliedDate).toLocaleDateString()}
-`).join('\n')}
-
-RECOMMENDATIONS:
-- Schedule interviews with the top ${Math.min(3, sortedCandidates.filter(c => c.score && c.score >= 85).length)} candidates scoring above 85%
-- ${sortedCandidates.filter(c => c.fit === 'excellent').length} candidates show excellent fit and should be prioritized
-- Common skills across top candidates: ${(() => {
-  const topSkills: Record<string, number> = {};
-  sortedCandidates.filter(c => c.score && c.score >= 80).forEach(c =>
-    c.skills.forEach(skill => topSkills[skill] = (topSkills[skill] || 0) + 1)
-  );
-  return Object.entries(topSkills).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([s]) => s).join(', ');
-})()}
-`;
-
-    // Download as text file
-    const blob = new Blob([aiSummary], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${role?.title.replace(/\s+/g, '-').toLowerCase()}-ai-summary-${Date.now()}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-
-    toast({
-      title: "AI Summary Ready",
-      description: "Downloaded comprehensive AI-powered candidate analysis",
-    });
+      toast({
+        title: "Summary Ready",
+        description: `Downloaded comprehensive PDF summary with ${sortedCandidates.length} candidates`,
+      });
+    }
   };
 
   // Get candidates from role
@@ -318,25 +228,15 @@ RECOMMENDATIONS:
             <h2 className="text-xl font-semibold">Candidates</h2>
             <div className="flex items-center gap-2">
               {candidates.length > 0 && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={downloadCandidatesCSV}
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Download CSV
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={downloadWithAISummary}
-                    className="border-purple-200 dark:border-purple-800"
-                  >
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    AI Summary
-                  </Button>
-                </>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={downloadCandidateSummary}
+                  className="border-purple-200 dark:border-purple-800 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30"
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Download Summary PDF
+                </Button>
               )}
             </div>
           </div>
