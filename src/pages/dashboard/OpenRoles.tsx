@@ -35,9 +35,6 @@ import {
   Trash2,
   Calendar,
   AlertTriangle,
-  Mail,
-  Phone,
-  Star,
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -51,7 +48,6 @@ const OpenRoles = () => {
   const [editingRole, setEditingRole] = useState<Role | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [roleToDelete, setRoleToDelete] = useState<string | null>(null);
-  const [showAllCandidates, setShowAllCandidates] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     department: '',
@@ -60,74 +56,6 @@ const OpenRoles = () => {
     salary: '',
     description: '',
   });
-
-  // Mock candidate data - in production this would come from an API
-  const allCandidates = [
-    {
-      id: '1',
-      name: 'Sarah Johnson',
-      email: 'sarah.johnson@email.com',
-      phone: '+1-555-0123',
-      roleId: '1',
-      roleTitle: 'Senior Frontend Developer',
-      score: 87,
-      fit: 'excellent' as const,
-      appliedDate: '2024-01-20',
-    },
-    {
-      id: '2',
-      name: 'Michael Chen',
-      email: 'michael.chen@email.com',
-      phone: '+1-555-0124',
-      roleId: '1',
-      roleTitle: 'Senior Frontend Developer',
-      score: 92,
-      fit: 'excellent' as const,
-      appliedDate: '2024-01-19',
-    },
-    {
-      id: '3',
-      name: 'Emily Rodriguez',
-      email: 'emily.r@email.com',
-      phone: '+1-555-0125',
-      roleId: '1',
-      roleTitle: 'Senior Frontend Developer',
-      score: 76,
-      fit: 'good' as const,
-      appliedDate: '2024-01-18',
-    },
-    {
-      id: '4',
-      name: 'David Kim',
-      email: 'david.kim@email.com',
-      phone: '+1-555-0126',
-      roleId: '2',
-      roleTitle: 'Product Manager',
-      score: 88,
-      fit: 'excellent' as const,
-      appliedDate: '2024-01-17',
-    },
-    {
-      id: '5',
-      name: 'Jessica Taylor',
-      email: 'jessica.t@email.com',
-      phone: '+1-555-0127',
-      roleId: '2',
-      roleTitle: 'Product Manager',
-      score: 85,
-      fit: 'excellent' as const,
-      appliedDate: '2024-01-16',
-    },
-  ];
-
-  const getFitColor = (fit: string) => {
-    switch (fit) {
-      case 'excellent': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-      case 'good': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
-      case 'fair': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
-    }
-  };
 
   const handleCreateRole = () => {
     const newRole: Role = {
@@ -315,7 +243,7 @@ const OpenRoles = () => {
           </Card>
           <Card
             className="cursor-pointer hover:bg-muted/50 transition-colors"
-            onClick={() => setShowAllCandidates(true)}
+            onClick={() => navigate('/dashboard/candidates')}
           >
             <CardHeader className="pb-3">
               <CardDescription>Total Candidates</CardDescription>
@@ -464,81 +392,6 @@ const OpenRoles = () => {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-
-        {/* All Candidates Dialog */}
-        <Dialog open={showAllCandidates} onOpenChange={setShowAllCandidates}>
-          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>All Candidates</DialogTitle>
-              <DialogDescription>
-                Complete list of candidates across all roles ({allCandidates.length} total)
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-3">
-              {allCandidates
-                .sort((a, b) => (b.score || 0) - (a.score || 0))
-                .map((candidate, index) => (
-                  <Card key={candidate.id} className="hover:bg-muted/30 transition-colors">
-                    <CardContent className="pt-6">
-                      <div className="flex items-start gap-4">
-                        {/* Rank Badge */}
-                        {index === 0 && candidate.score >= 85 ? (
-                          <div className="flex-shrink-0">
-                            <div className="w-10 h-10 rounded-full bg-yellow-500 flex items-center justify-center">
-                              <Star className="w-5 h-5 text-white fill-white" />
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex-shrink-0">
-                            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-sm font-semibold">
-                              {index + 1}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Candidate Info */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h3 className="text-base font-semibold">{candidate.name}</h3>
-                            <Badge className={getFitColor(candidate.fit)} variant="secondary">
-                              {candidate.fit}
-                            </Badge>
-                          </div>
-
-                          <div className="flex flex-wrap gap-3 text-sm text-muted-foreground mb-2">
-                            <span className="flex items-center gap-1">
-                              <Briefcase className="w-3 h-3" />
-                              {candidate.roleTitle}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Mail className="w-3 h-3" />
-                              {candidate.email}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Phone className="w-3 h-3" />
-                              {candidate.phone}
-                            </span>
-                          </div>
-
-                          <div className="text-xs text-muted-foreground">
-                            Applied {new Date(candidate.appliedDate).toLocaleDateString()}
-                          </div>
-                        </div>
-
-                        {/* Score */}
-                        <div className="flex-shrink-0 text-right">
-                          <div className="text-2xl font-bold bg-gradient-to-br from-primary to-primary/60 bg-clip-text text-transparent">
-                            {candidate.score}%
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-1">Match</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
     </DashboardLayout>
   );
