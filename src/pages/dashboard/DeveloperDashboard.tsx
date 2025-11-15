@@ -20,9 +20,11 @@ import {
   Code2
 } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
 const DeveloperDashboard = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [showApiKey, setShowApiKey] = useState(false);
   const [showKeyDialog, setShowKeyDialog] = useState(false);
@@ -333,8 +335,11 @@ const DeveloperDashboard = () => {
         </Tabs>
 
         {/* Quick Links */}
-        <div className="grid md:grid-cols-3 gap-6">
-          <Card className="border-primary/20 hover:shadow-lg transition-shadow cursor-pointer">
+        <div className="grid md:grid-cols-2 gap-6">
+          <Card
+            className="border-primary/20 hover:shadow-lg transition-shadow cursor-pointer"
+            onClick={() => navigate('/docs')}
+          >
             <CardHeader>
               <FileText className="w-8 h-8 text-primary mb-2" />
               <CardTitle className="text-lg">Documentation</CardTitle>
@@ -344,22 +349,15 @@ const DeveloperDashboard = () => {
             </CardHeader>
           </Card>
 
-          <Card className="border-accent/20 hover:shadow-lg transition-shadow cursor-pointer">
+          <Card
+            className="border-accent/20 hover:shadow-lg transition-shadow cursor-pointer"
+            onClick={() => navigate('/upgrade')}
+          >
             <CardHeader>
               <BarChart3 className="w-8 h-8 text-accent mb-2" />
               <CardTitle className="text-lg">Upgrade Plan</CardTitle>
               <CardDescription>
                 Get more API calls and features
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="border-border hover:shadow-lg transition-shadow cursor-pointer">
-            <CardHeader>
-              <Activity className="w-8 h-8 text-muted-foreground mb-2" />
-              <CardTitle className="text-lg">View Analytics</CardTitle>
-              <CardDescription>
-                Detailed performance insights
               </CardDescription>
             </CardHeader>
           </Card>

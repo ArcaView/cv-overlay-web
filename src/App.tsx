@@ -20,6 +20,7 @@ import AllCandidates from "./pages/dashboard/AllCandidates";
 // import Analytics from "./pages/Analytics";
 import Billing from "./pages/Billing";
 import Settings from "./pages/Settings";
+import UpgradePlan from "./pages/UpgradePlan";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ const App = () => (
           {/* <Route path="/dashboard/analytics" element={<Analytics />} /> */}
           <Route path="/dashboard/billing" element={<Billing />} />
           <Route path="/dashboard/settings" element={<Settings />} />
+          <Route path="/upgrade" element={<UpgradePlan />} />
           {/* <Route path="/analytics" element={<Analytics />} /> */}
           <Route path="/billing" element={<Billing />} />
           <Route path="/settings" element={<Settings />} />
