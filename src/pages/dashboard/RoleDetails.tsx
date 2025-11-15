@@ -5,6 +5,23 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Briefcase,
   MapPin,
   DollarSign,
@@ -17,9 +34,11 @@ import {
   Phone,
   Trash2,
   Eye,
+  AlertTriangle,
 } from "lucide-react";
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useRoles } from "@/contexts/RolesContext";
 
 interface Candidate {
   id: string;
@@ -37,28 +56,18 @@ interface Candidate {
 const RoleDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { roles, updateRole } = useRoles();
 
-  // Mock data - replace with actual data fetching
-  const [role, setRole] = useState({
-    id: id,
-    title: 'Senior Frontend Developer',
-    department: 'Engineering',
-    location: 'Remote',
-    type: 'Full-time',
-    salary: '$120k - $160k',
-    description: 'We are looking for an experienced frontend developer with React expertise to join our growing team. The ideal candidate will have strong experience with modern web technologies and a passion for creating exceptional user experiences.',
-    status: 'active' as 'active' | 'inactive',
-    createdAt: '2024-01-15',
-  });
+  // Find the role from context
+  const role = roles.find(r => r.id === id);
 
   const handleToggleStatus = (checked: boolean) => {
-    setRole(prev => ({
-      ...prev,
-      status: checked ? 'active' : 'inactive'
-    }));
+    if (id) {
+      updateRole(id, { status: checked ? 'active' : 'inactive' });
+    }
   };
 
-  const [candidates] = useState<Candidate[]>([
+  const [candidates, setCandidates] = useState<Candidate[]>([
     {
       id: '1',
       name: 'Sarah Johnson',
@@ -97,6 +106,27 @@ const RoleDetails = () => {
     },
   ]);
 
+  const [viewCandidate, setViewCandidate] = useState<Candidate | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [candidateToDelete, setCandidateToDelete] = useState<string | null>(null);
+
+  const handleViewCandidate = (candidate: Candidate) => {
+    setViewCandidate(candidate);
+  };
+
+  const handleDeleteCandidate = (candidateId: string) => {
+    setCandidateToDelete(candidateId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteCandidate = () => {
+    if (candidateToDelete) {
+      setCandidates(prev => prev.filter(c => c.id !== candidateToDelete));
+      setDeleteDialogOpen(false);
+      setCandidateToDelete(null);
+    }
+  };
+
   const sortedCandidates = [...candidates].sort((a, b) => (b.score || 0) - (a.score || 0));
 
   const getFitColor = (fit?: string) => {
@@ -107,6 +137,29 @@ const RoleDetails = () => {
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
     }
   };
+
+  if (!role) {
+    return (
+      <DashboardLayout>
+        <div className="p-6">
+          <div className="flex items-center gap-4 mb-4">
+            <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard/roles')}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Roles
+            </Button>
+          </div>
+          <Card>
+            <CardContent className="py-12 text-center">
+              <h3 className="text-lg font-semibold mb-2">Role not found</h3>
+              <p className="text-muted-foreground">
+                The role you're looking for doesn't exist.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -286,10 +339,18 @@ const RoleDetails = () => {
 
                     {/* Actions */}
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewCandidate(candidate)}
+                      >
                         <Eye className="w-4 h-4" />
                       </Button>
-                      <Button variant="outline" size="sm">
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDeleteCandidate(candidate.id)}
+                      >
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
@@ -299,6 +360,96 @@ const RoleDetails = () => {
             ))
           )}
         </div>
+
+        {/* View Candidate Dialog */}
+        <Dialog open={!!viewCandidate} onOpenChange={(open) => !open && setViewCandidate(null)}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Candidate Details</DialogTitle>
+              <DialogDescription>
+                Full information for {viewCandidate?.name}
+              </DialogDescription>
+            </DialogHeader>
+            {viewCandidate && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Name</Label>
+                    <p className="text-sm font-medium">{viewCandidate.name}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Match Score</Label>
+                    <p className="text-sm font-medium">{viewCandidate.score}%</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Email</Label>
+                    <p className="text-sm font-medium">{viewCandidate.email}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Phone</Label>
+                    <p className="text-sm font-medium">{viewCandidate.phone}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Experience</Label>
+                    <p className="text-sm font-medium">{viewCandidate.experience_years} years</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Applied Date</Label>
+                    <p className="text-sm font-medium">{new Date(viewCandidate.appliedDate).toLocaleDateString()}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Fit Level</Label>
+                    <Badge className={getFitColor(viewCandidate.fit)} variant="secondary">
+                      {viewCandidate.fit}
+                    </Badge>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Resume</Label>
+                    <p className="text-sm font-medium">{viewCandidate.fileName}</p>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Skills</Label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {viewCandidate.skills.map((skill) => (
+                      <Badge key={skill} variant="outline">
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Candidate Dialog */}
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 bg-destructive/10 rounded-full">
+                  <AlertTriangle className="w-5 h-5 text-destructive" />
+                </div>
+                <AlertDialogTitle>Delete Candidate</AlertDialogTitle>
+              </div>
+              <AlertDialogDescription className="text-base">
+                Are you sure you want to remove this candidate from this role? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setCandidateToDelete(null)}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmDeleteCandidate}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Delete Candidate
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </DashboardLayout>
   );

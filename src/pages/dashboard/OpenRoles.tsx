@@ -38,48 +38,11 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-interface Role {
-  id: string;
-  title: string;
-  department: string;
-  location: string;
-  type: string;
-  salary: string;
-  description: string;
-  candidates: number;
-  createdAt: string;
-  status: 'active' | 'paused' | 'closed';
-}
+import { useRoles, type Role } from "@/contexts/RolesContext";
 
 const OpenRoles = () => {
   const navigate = useNavigate();
-  const [roles, setRoles] = useState<Role[]>([
-    {
-      id: '1',
-      title: 'Senior Frontend Developer',
-      department: 'Engineering',
-      location: 'Remote',
-      type: 'Full-time',
-      salary: '$120k - $160k',
-      description: 'We are looking for an experienced frontend developer with React expertise...',
-      candidates: 12,
-      createdAt: '2024-01-15',
-      status: 'active',
-    },
-    {
-      id: '2',
-      title: 'Product Manager',
-      department: 'Product',
-      location: 'New York, NY',
-      type: 'Full-time',
-      salary: '$130k - $180k',
-      description: 'Seeking a strategic product manager to lead our core product initiatives...',
-      candidates: 8,
-      createdAt: '2024-01-10',
-      status: 'active',
-    },
-  ]);
+  const { roles, setRoles, deleteRole: deleteRoleFromContext } = useRoles();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
@@ -135,7 +98,7 @@ const OpenRoles = () => {
 
   const confirmDeleteRole = () => {
     if (roleToDelete) {
-      setRoles(roles.filter(r => r.id !== roleToDelete));
+      deleteRoleFromContext(roleToDelete);
       setDeleteDialogOpen(false);
       setRoleToDelete(null);
     }
