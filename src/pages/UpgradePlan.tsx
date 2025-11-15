@@ -154,7 +154,7 @@ const UpgradePlan = () => {
         {/* Footer */}
         <div className="text-center">
           <p className="text-sm text-muted-foreground">
-            Questions? <a href="mailto:sales@parsescore.com" className="text-primary hover:underline">Contact sales</a>
+            Questions? <a href="mailto:sales@qualifyr.ai" className="text-primary hover:underline">Contact sales</a>
           </p>
         </div>
       </div>

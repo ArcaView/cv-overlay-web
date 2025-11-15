@@ -331,7 +331,7 @@ export const generateAllCandidatesPDF = (data: AllCandidatesData) => {
   yPosition = pageHeight - margin;
   doc.setFontSize(9);
   doc.setTextColor(128, 128, 128);
-  doc.text('ParseScore - Automated CV Parsing & Scoring', margin, yPosition);
+  doc.text('Qualifyr.AI - Automated CV Parsing & Scoring', margin, yPosition);
   doc.text(`Page ${doc.getNumberOfPages()}`, pageWidth - margin - 20, yPosition);
 
   // Add page numbers to all pages

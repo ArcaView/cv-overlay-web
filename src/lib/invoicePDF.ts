@@ -17,7 +17,7 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
   // Company/Brand Header
   doc.setFontSize(24);
   doc.setFont('helvetica', 'bold');
-  doc.text('ParseScore', 20, 20);
+  doc.text('Qualifyr.AI', 20, 20);
 
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
@@ -100,8 +100,8 @@ export const generateInvoicePDF = (invoice: InvoiceData) => {
   doc.setFontSize(9);
   doc.setTextColor(128, 128, 128);
   doc.text('Thank you for your business!', 20, 260);
-  doc.text('ParseScore - Automated CV Parsing & Scoring', 20, 267);
-  doc.text('For questions, contact: support@parsescore.com', 20, 274);
+  doc.text('Qualifyr.AI - Automated CV Parsing & Scoring', 20, 267);
+  doc.text('For questions, contact: support@qualifyr.ai', 20, 274);
 
   // Generate filename
   const filename = `invoice-${invoice.id}.pdf`;
