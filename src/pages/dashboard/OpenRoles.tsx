@@ -312,7 +312,11 @@ const OpenRoles = () => {
             </Card>
           ) : (
             roles.map((role) => (
-              <Card key={role.id}>
+              <Card
+                key={role.id}
+                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => navigate(`/dashboard/roles/${role.id}`)}
+              >
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -347,24 +351,27 @@ const OpenRoles = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleEditRole(role)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditRole(role);
+                        }}
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleDeleteRole(role.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteRole(role.id);
+                        }}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent
-                  className="cursor-pointer hover:bg-muted/50 transition-colors"
-                  onClick={() => navigate(`/dashboard/roles/${role.id}`)}
-                >
+                <CardContent>
                   <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
                     {role.description}
                   </p>

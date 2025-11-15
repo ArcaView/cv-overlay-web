@@ -2,6 +2,8 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   Briefcase,
   MapPin,
@@ -37,7 +39,7 @@ const RoleDetails = () => {
   const navigate = useNavigate();
 
   // Mock data - replace with actual data fetching
-  const [role] = useState({
+  const [role, setRole] = useState({
     id: id,
     title: 'Senior Frontend Developer',
     department: 'Engineering',
@@ -45,9 +47,16 @@ const RoleDetails = () => {
     type: 'Full-time',
     salary: '$120k - $160k',
     description: 'We are looking for an experienced frontend developer with React expertise to join our growing team. The ideal candidate will have strong experience with modern web technologies and a passion for creating exceptional user experiences.',
-    status: 'active' as const,
+    status: 'active' as 'active' | 'inactive',
     createdAt: '2024-01-15',
   });
+
+  const handleToggleStatus = (checked: boolean) => {
+    setRole(prev => ({
+      ...prev,
+      status: checked ? 'active' : 'inactive'
+    }));
+  };
 
   const [candidates] = useState<Candidate[]>([
     {
@@ -141,6 +150,16 @@ const RoleDetails = () => {
                     </span>
                   )}
                 </CardDescription>
+              </div>
+              <div className="flex items-center gap-2 ml-4">
+                <Switch
+                  id="role-status"
+                  checked={role.status === 'active'}
+                  onCheckedChange={handleToggleStatus}
+                />
+                <Label htmlFor="role-status" className="cursor-pointer text-sm font-medium">
+                  {role.status === 'active' ? 'Active' : 'Inactive'}
+                </Label>
               </div>
             </div>
           </CardHeader>
