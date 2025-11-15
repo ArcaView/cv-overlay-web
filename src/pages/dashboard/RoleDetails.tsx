@@ -35,28 +35,19 @@ import {
   Trash2,
   Eye,
   AlertTriangle,
+  Download,
+  Sparkles,
 } from "lucide-react";
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useRoles } from "@/contexts/RolesContext";
-
-interface Candidate {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  fileName: string;
-  score?: number;
-  fit?: 'excellent' | 'good' | 'fair';
-  appliedDate: string;
-  skills: string[];
-  experience_years: number;
-}
+import { useToast } from "@/hooks/use-toast";
 
 const RoleDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { roles, updateRole } = useRoles();
+  const { toast } = useToast();
+  const { roles, updateRole, removeCandidateFromRole } = useRoles();
 
   // Find the role from context
   const role = roles.find(r => r.id === id);
@@ -67,46 +58,125 @@ const RoleDetails = () => {
     }
   };
 
-  const [candidates, setCandidates] = useState<Candidate[]>([
-    {
-      id: '1',
-      name: 'Sarah Johnson',
-      email: 'sarah.johnson@email.com',
-      phone: '+1-555-0123',
-      fileName: 'sarah_johnson_resume.pdf',
-      score: 87,
-      fit: 'excellent',
-      appliedDate: '2024-01-20',
-      skills: ['React', 'TypeScript', 'Node.js', 'AWS'],
-      experience_years: 5,
-    },
-    {
-      id: '2',
-      name: 'Michael Chen',
-      email: 'michael.chen@email.com',
-      phone: '+1-555-0124',
-      fileName: 'michael_chen_cv.pdf',
-      score: 92,
-      fit: 'excellent',
-      appliedDate: '2024-01-19',
-      skills: ['React', 'Vue.js', 'TypeScript', 'Docker'],
-      experience_years: 7,
-    },
-    {
-      id: '3',
-      name: 'Emily Rodriguez',
-      email: 'emily.r@email.com',
-      phone: '+1-555-0125',
-      fileName: 'emily_rodriguez_resume.pdf',
-      score: 76,
-      fit: 'good',
-      appliedDate: '2024-01-18',
-      skills: ['React', 'JavaScript', 'CSS', 'Git'],
-      experience_years: 3,
-    },
-  ]);
+  const downloadCandidatesCSV = () => {
+    // Generate CSV content
+    const headers = ['Name', 'Email', 'Phone', 'Score', 'Fit Level', 'Experience Years', 'Skills', 'Applied Date'];
+    const rows = sortedCandidates.map(c => [
+      c.name,
+      c.email,
+      c.phone,
+      `${c.score}%`,
+      c.fit,
+      c.experience_years,
+      c.skills.join('; '),
+      new Date(c.appliedDate).toLocaleDateString()
+    ]);
 
-  const [viewCandidate, setViewCandidate] = useState<Candidate | null>(null);
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    // Download CSV
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${role?.title.replace(/\s+/g, '-').toLowerCase()}-candidates-${Date.now()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Download Complete",
+      description: `Downloaded ${sortedCandidates.length} candidates as CSV`,
+    });
+  };
+
+  const downloadWithAISummary = async () => {
+    toast({
+      title: "Generating AI Summary",
+      description: "Creating intelligent summary of all candidates...",
+      duration: 3000,
+    });
+
+    // Simulate AI summary generation
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // Generate AI summary
+    const aiSummary = `
+AI-POWERED CANDIDATE ANALYSIS
+Role: ${role?.title}
+Total Candidates: ${sortedCandidates.length}
+Generated: ${new Date().toLocaleDateString()}
+
+EXECUTIVE SUMMARY:
+This role has ${sortedCandidates.length} candidates with an average match score of ${Math.round(sortedCandidates.reduce((sum, c) => sum + (c.score || 0), 0) / sortedCandidates.length)}%.
+
+TOP CANDIDATES (${sortedCandidates.filter(c => c.score && c.score >= 85).length}):
+${sortedCandidates.filter(c => c.score && c.score >= 85).map((c, i) => `
+${i + 1}. ${c.name} - ${c.score}% Match
+   Email: ${c.email}
+   Experience: ${c.experience_years} years
+   Key Skills: ${c.skills.slice(0, 5).join(', ')}
+   Fit Assessment: ${c.fit}
+`).join('\n')}
+
+SKILL DISTRIBUTION:
+${(() => {
+  const skillCounts: Record<string, number> = {};
+  sortedCandidates.forEach(c => c.skills.forEach(skill => {
+    skillCounts[skill] = (skillCounts[skill] || 0) + 1;
+  }));
+  return Object.entries(skillCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([skill, count]) => `- ${skill}: ${count} candidates`)
+    .join('\n');
+})()}
+
+DETAILED CANDIDATE LIST:
+${sortedCandidates.map((c, i) => `
+${i + 1}. ${c.name}
+   Match Score: ${c.score}%
+   Email: ${c.email}
+   Phone: ${c.phone}
+   Experience: ${c.experience_years} years
+   Skills: ${c.skills.join(', ')}
+   Fit Level: ${c.fit}
+   Applied: ${new Date(c.appliedDate).toLocaleDateString()}
+`).join('\n')}
+
+RECOMMENDATIONS:
+- Schedule interviews with the top ${Math.min(3, sortedCandidates.filter(c => c.score && c.score >= 85).length)} candidates scoring above 85%
+- ${sortedCandidates.filter(c => c.fit === 'excellent').length} candidates show excellent fit and should be prioritized
+- Common skills across top candidates: ${(() => {
+  const topSkills: Record<string, number> = {};
+  sortedCandidates.filter(c => c.score && c.score >= 80).forEach(c =>
+    c.skills.forEach(skill => topSkills[skill] = (topSkills[skill] || 0) + 1)
+  );
+  return Object.entries(topSkills).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([s]) => s).join(', ');
+})()}
+`;
+
+    // Download as text file
+    const blob = new Blob([aiSummary], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${role?.title.replace(/\s+/g, '-').toLowerCase()}-ai-summary-${Date.now()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "AI Summary Ready",
+      description: "Downloaded comprehensive AI-powered candidate analysis",
+    });
+  };
+
+  // Get candidates from role
+  const candidates = role?.candidatesList || [];
+
+  const [viewCandidate, setViewCandidate] = useState<any>(null);
   const [dialogPage, setDialogPage] = useState(0);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [candidateToDelete, setCandidateToDelete] = useState<string | null>(null);
@@ -127,10 +197,14 @@ const RoleDetails = () => {
   };
 
   const confirmDeleteCandidate = () => {
-    if (candidateToDelete) {
-      setCandidates(prev => prev.filter(c => c.id !== candidateToDelete));
+    if (candidateToDelete && id) {
+      removeCandidateFromRole(id, candidateToDelete);
       setDeleteDialogOpen(false);
       setCandidateToDelete(null);
+      toast({
+        title: "Candidate Removed",
+        description: "The candidate has been removed from this role.",
+      });
     }
   };
 
@@ -242,9 +316,29 @@ const RoleDetails = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">Candidates</h2>
-            <span className="text-sm text-muted-foreground">
-              Sorted by match score
-            </span>
+            <div className="flex items-center gap-2">
+              {candidates.length > 0 && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={downloadCandidatesCSV}
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download CSV
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={downloadWithAISummary}
+                    className="border-purple-200 dark:border-purple-800"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    AI Summary
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
 
           {candidates.length === 0 ? (

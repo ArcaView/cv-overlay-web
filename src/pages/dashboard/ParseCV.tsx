@@ -35,8 +35,13 @@ import {
   Briefcase,
 } from "lucide-react";
 import { useState } from "react";
+import { useRoles } from "@/contexts/RolesContext";
+import { useToast } from "@/hooks/use-toast";
 
 const ParseCV = () => {
+  const { roles, addCandidateToRole, addRole } = useRoles();
+  const { toast } = useToast();
+
   const [file, setFile] = useState<File | null>(null);
   const [parsing, setParsing] = useState(false);
   const [result, setResult] = useState<any>(null);
@@ -44,10 +49,6 @@ const ParseCV = () => {
   const [scoring, setScoring] = useState(false);
   const [scoreResult, setScoreResult] = useState<any>(null);
   const [selectedRole, setSelectedRole] = useState<string>("");
-  const [roles, setRoles] = useState([
-    { id: "1", title: "Senior Frontend Developer", department: "Engineering" },
-    { id: "2", title: "Product Manager", department: "Product" },
-  ]);
   const [newRoleDialogOpen, setNewRoleDialogOpen] = useState(false);
   const [newRoleTitle, setNewRoleTitle] = useState("");
 
@@ -59,13 +60,13 @@ const ParseCV = () => {
   };
 
   const handleParse = async () => {
-    if (!file) return;
+    if (!file || !selectedRole) return;
 
     setParsing(true);
 
     // Simulate API call - replace with actual API call
     setTimeout(() => {
-      setResult({
+      const parseResult = {
         id: "parse_abc123",
         candidate: {
           name: "Sarah Johnson",
@@ -108,7 +109,35 @@ const ParseCV = () => {
           education: 0.96,
           skills: 0.91
         }
+      };
+
+      setResult(parseResult);
+
+      // Create candidate object and add to role
+      const totalExperienceMonths = parseResult.candidate.experience.reduce(
+        (sum, exp) => sum + exp.duration_months, 0
+      );
+      const experienceYears = Math.floor(totalExperienceMonths / 12);
+
+      const candidate = {
+        id: `candidate_${Math.random().toString(36).substr(2, 9)}`,
+        name: parseResult.candidate.name,
+        email: parseResult.candidate.email,
+        phone: parseResult.candidate.phone,
+        fileName: file.name,
+        skills: parseResult.candidate.skills,
+        experience_years: experienceYears,
+        appliedDate: new Date().toISOString().split('T')[0],
+      };
+
+      // Add candidate to selected role
+      addCandidateToRole(selectedRole, candidate);
+
+      toast({
+        title: "CV Parsed Successfully",
+        description: `${parseResult.candidate.name} has been added to the role.`,
       });
+
       setParsing(false);
     }, 2000);
   };
@@ -119,15 +148,33 @@ const ParseCV = () => {
 
   const handleCreateRole = () => {
     if (!newRoleTitle.trim()) return;
-    const newRole = {
-      id: Math.random().toString(36).substr(2, 9),
+
+    const newRoleData = {
       title: newRoleTitle,
       department: "New",
+      location: "TBD",
+      type: "Full-time",
+      salary: "TBD",
+      description: "Role description to be added",
     };
-    setRoles([...roles, newRole]);
-    setSelectedRole(newRole.id);
+
+    addRole(newRoleData);
+
+    // Find the newly added role (it will be the last one)
+    setTimeout(() => {
+      const latestRole = roles[roles.length - 1];
+      if (latestRole) {
+        setSelectedRole(latestRole.id);
+      }
+    }, 100);
+
     setNewRoleTitle("");
     setNewRoleDialogOpen(false);
+
+    toast({
+      title: "Role Created",
+      description: `${newRoleTitle} has been created successfully.`,
+    });
   };
 
   const handleScore = async () => {

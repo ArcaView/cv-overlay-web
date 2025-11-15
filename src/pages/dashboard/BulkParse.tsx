@@ -27,7 +27,6 @@ import {
   FileText,
   CheckCircle2,
   AlertCircle,
-  Download,
   Loader2,
   X,
   Star,
@@ -36,6 +35,8 @@ import {
   Briefcase,
 } from "lucide-react";
 import { useState } from "react";
+import { useRoles } from "@/contexts/RolesContext";
+import { useToast } from "@/hooks/use-toast";
 
 interface FileWithStatus {
   file: File;
@@ -46,15 +47,14 @@ interface FileWithStatus {
 }
 
 const BulkParse = () => {
+  const { roles, addCandidateToRole, addRole } = useRoles();
+  const { toast } = useToast();
+
   const [files, setFiles] = useState<FileWithStatus[]>([]);
   const [processing, setProcessing] = useState(false);
   const [jobDescription, setJobDescription] = useState("");
   const [useLLMScoring, setUseLLMScoring] = useState(false);
   const [selectedRole, setSelectedRole] = useState<string>("");
-  const [roles, setRoles] = useState([
-    { id: "1", title: "Senior Frontend Developer", department: "Engineering" },
-    { id: "2", title: "Product Manager", department: "Product" },
-  ]);
   const [newRoleDialogOpen, setNewRoleDialogOpen] = useState(false);
   const [newRoleTitle, setNewRoleTitle] = useState("");
 
@@ -74,19 +74,41 @@ const BulkParse = () => {
 
   const handleCreateRole = () => {
     if (!newRoleTitle.trim()) return;
-    const newRole = {
-      id: Math.random().toString(36).substr(2, 9),
+
+    const newRoleData = {
       title: newRoleTitle,
       department: "New",
+      location: "TBD",
+      type: "Full-time",
+      salary: "TBD",
+      description: "Role description to be added",
     };
-    setRoles([...roles, newRole]);
-    setSelectedRole(newRole.id);
+
+    addRole(newRoleData);
+
+    // Find the newly added role (it will be the last one)
+    setTimeout(() => {
+      const latestRole = roles[roles.length - 1];
+      if (latestRole) {
+        setSelectedRole(latestRole.id);
+      }
+    }, 100);
+
     setNewRoleTitle("");
     setNewRoleDialogOpen(false);
+
+    toast({
+      title: "Role Created",
+      description: `${newRoleTitle} has been created successfully.`,
+    });
   };
 
   const handleBulkParse = async () => {
+    if (!selectedRole) return;
+
     setProcessing(true);
+
+    let successCount = 0;
 
     // Simulate bulk processing - replace with actual API calls
     for (let i = 0; i < files.length; i++) {
@@ -107,6 +129,9 @@ const BulkParse = () => {
         id: `parse_${Math.random().toString(36).substr(2, 9)}`,
         name: files[i].file.name,
         candidate_name: `Candidate ${i + 1}`,
+        candidate_email: `candidate${i + 1}@email.com`,
+        candidate_phone: `+1-555-${String(i).padStart(4, '0')}`,
+        skills: ['JavaScript', 'React', 'Node.js', 'TypeScript'].slice(0, Math.floor(Math.random() * 4) + 1),
         skills_count: Math.floor(Math.random() * 15) + 5,
         experience_years: Math.floor(Math.random() * 10) + 1,
       } : undefined;
@@ -114,7 +139,7 @@ const BulkParse = () => {
       // Generate score if job description is provided
       const scoreResult = success && jobDescription.trim() ? {
         overall_score: Math.floor(Math.random() * 30) + 70, // 70-100
-        fit: Math.random() > 0.5 ? 'excellent' : Math.random() > 0.3 ? 'good' : 'fair',
+        fit: Math.random() > 0.5 ? 'excellent' as const : Math.random() > 0.3 ? 'good' as const : 'fair' as const,
       } : undefined;
 
       setFiles(prev => prev.map((f, idx) =>
@@ -126,9 +151,33 @@ const BulkParse = () => {
           error: success ? undefined : 'Failed to parse document'
         } : f
       ));
+
+      // Add candidate to selected role if successful
+      if (success && parseResult) {
+        const candidate = {
+          id: `candidate_${Math.random().toString(36).substr(2, 9)}`,
+          name: parseResult.candidate_name,
+          email: parseResult.candidate_email,
+          phone: parseResult.candidate_phone,
+          fileName: files[i].file.name,
+          skills: parseResult.skills,
+          experience_years: parseResult.experience_years,
+          appliedDate: new Date().toISOString().split('T')[0],
+          score: scoreResult?.overall_score,
+          fit: scoreResult?.fit,
+        };
+
+        addCandidateToRole(selectedRole, candidate);
+        successCount++;
+      }
     }
 
     setProcessing(false);
+
+    toast({
+      title: "Bulk Parse Complete",
+      description: `Successfully parsed ${successCount} CVs and added them to the role.`,
+    });
   };
 
   const completedCount = files.filter(f => f.status === 'completed').length;
@@ -139,22 +188,6 @@ const BulkParse = () => {
   const topCandidate = files
     .filter(f => f.status === 'completed' && f.score)
     .sort((a, b) => (b.score?.overall_score || 0) - (a.score?.overall_score || 0))[0];
-
-  const downloadResults = () => {
-    const results = files
-      .filter(f => f.status === 'completed')
-      .map(f => ({
-        ...f.result,
-        score: f.score
-      }));
-
-    const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `bulk-parse-results-${Date.now()}.json`;
-    a.click();
-  };
 
   return (
     <DashboardLayout>
@@ -168,21 +201,13 @@ const BulkParse = () => {
             </p>
           </div>
           {files.length > 0 && (
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setFiles([])}
-                disabled={processing}
-              >
-                Clear All
-              </Button>
-              {completedCount > 0 && (
-                <Button variant="outline" onClick={downloadResults}>
-                  <Download className="w-4 h-4 mr-2" />
-                  Download Results
-                </Button>
-              )}
-            </div>
+            <Button
+              variant="outline"
+              onClick={() => setFiles([])}
+              disabled={processing}
+            >
+              Clear All
+            </Button>
           )}
         </div>
 
