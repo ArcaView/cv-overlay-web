@@ -1,36 +1,36 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Brain, Shield, Zap, GitBranch, BarChart3 } from "lucide-react";
+import { FileText, Brain, Shield, Zap, Users, BarChart3 } from "lucide-react";
 
 const features = [
   {
     icon: FileText,
-    title: "Multi-Format Parsing",
-    description: "Extract structured data from PDF, DOCX, DOC, and TXT files with 98.5% accuracy. Handles varied layouts, multi-page resumes, and noisy formatting.",
+    title: "Smart Resume Parsing",
+    description: "Automatically extract key information from any resume format with 98.5% accuracy. Handles PDFs, Word documents, and varied layouts seamlessly.",
   },
   {
     icon: Brain,
-    title: "AI-Powered Scoring",
-    description: "Score candidates against job profiles using deterministic baseline algorithms or optional LLM-enhanced scoring with explainable rationale.",
+    title: "AI-Powered Candidate Scoring",
+    description: "Instantly score candidates against your job requirements with transparent AI. Get detailed breakdowns showing skills match, experience fit, and education alignment.",
   },
   {
     icon: Shield,
-    title: "Audit-Ready & Fair",
-    description: "Full transparency with score breakdowns, versioned rules, and reproducible results. Built for compliance with GDPR and bias-free hiring practices.",
+    title: "Fair & Compliant Hiring",
+    description: "Built-in bias prevention and transparent scoring ensures fair hiring practices. Fully GDPR-compliant with audit trails for every decision.",
   },
   {
     icon: Zap,
-    title: "Lightning Fast",
-    description: "P95 parse time under 2.5s, P95 score under 1.5s. Built-in caching and optimized infrastructure for production workloads.",
+    title: "Instant Results",
+    description: "Screen hundreds of candidates in seconds, not days. Our AI delivers accurate scoring in real-time, helping you identify top talent immediately.",
   },
   {
-    icon: GitBranch,
-    title: "Developer Experience",
-    description: "OpenAPI spec, interactive docs, code examples in Python/TypeScript/cURL. Integrate in under an hour with clear error handling.",
+    icon: Users,
+    title: "Collaborative Workflow",
+    description: "Share candidate profiles, compare shortlists, and collaborate with your hiring team. Everyone stays aligned with centralized candidate data.",
   },
   {
     icon: BarChart3,
-    title: "Analytics & Insights",
-    description: "Track API usage, latency metrics, success rates, and parse quality. Built-in observability with request tracing and detailed logs.",
+    title: "Recruitment Analytics",
+    description: "Track hiring pipeline metrics, time-to-hire, candidate quality, and team performance. Make data-driven decisions to improve your recruitment process.",
   },
 ];
 
@@ -40,10 +40,10 @@ export const Features = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-bold mb-4">
-            Everything You Need to Build Smarter Hiring Tools
+            Everything You Need for Modern Recruitment
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Production-grade infrastructure with enterprise features. From MVP to millions of CVs.
+            Powerful features that help you hire better, faster, and smarter—all in one platform.
           </p>
         </div>
 

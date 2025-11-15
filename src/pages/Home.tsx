@@ -8,19 +8,19 @@ import { Quote } from "lucide-react";
 
 const testimonials = [
   {
-    quote: "Qualifyr.AI cut our CV processing time by 90%. The accuracy is incredible, and the API is a dream to integrate.",
+    quote: "Qualifyr.AI transformed our hiring process. We're now screening candidates 10x faster and finding better matches than ever before.",
     author: "Sarah Chen",
-    role: "CTO, TalentFlow",
+    role: "Head of Talent, TechFlow Inc.",
   },
   {
-    quote: "Finally, an AI scoring system we can actually trust and explain to our clients. The transparency is game-changing.",
+    quote: "The AI scoring is incredibly accurate and saves our team hours every week. We've cut our time-to-hire in half since implementing Qualifyr.AI.",
     author: "Michael Rodriguez",
-    role: "Head of Product, RecruitTech",
+    role: "VP of HR, GrowthCorp",
   },
   {
-    quote: "We evaluated five CV parsing APIs. Qualifyr.AI was the clear winner on accuracy, speed, and developer experience.",
+    quote: "As a recruiter, Qualifyr.AI gives me superpowers. I can handle 3x more roles while actually improving the quality of candidates I present.",
     author: "Emily Watson",
-    role: "Engineering Lead, HireScale",
+    role: "Senior Recruiter, HireScale",
   },
 ];
 

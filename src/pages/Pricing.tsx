@@ -10,52 +10,52 @@ const plans = [
   {
     name: "Starter",
     price: "Free",
-    description: "Perfect for testing and small projects",
+    description: "Perfect for small teams getting started",
     features: [
-      "1,000 parses/month",
-      "500 scores/month",
-      "PDF & DOCX support",
-      "Baseline scoring",
+      "Up to 50 candidates/month",
+      "AI-powered resume parsing",
+      "Basic candidate scoring",
+      "5 active job roles",
       "Email support",
-      "99.5% uptime SLA",
-      "Community access",
+      "Core collaboration features",
+      "Mobile-friendly access",
     ],
-    cta: "Get Started",
+    cta: "Get Started Free",
     popular: false,
   },
   {
-    name: "Pro",
+    name: "Professional",
     price: "$99",
     period: "/month",
-    description: "For growing teams and applications",
+    description: "For growing recruitment teams",
     features: [
-      "50,000 parses/month",
-      "25,000 scores/month",
-      "All file formats (PDF, DOCX, DOC, TXT)",
-      "Baseline + AI scoring",
-      "Priority email support",
-      "99.9% uptime SLA",
-      "Advanced analytics",
-      "Custom skill taxonomies",
-      "Webhook support",
+      "Up to 500 candidates/month",
+      "Advanced AI scoring & insights",
+      "Unlimited job roles",
+      "Team collaboration tools",
+      "Priority support",
+      "Advanced analytics dashboard",
+      "Custom branding on reports",
+      "Bulk candidate upload",
+      "Email integrations",
     ],
-    cta: "Start Pro Trial",
+    cta: "Start Free Trial",
     popular: true,
   },
   {
     name: "Enterprise",
     price: "Custom",
-    description: "For large-scale deployments",
+    description: "For large organizations and agencies",
     features: [
-      "Unlimited parses & scores",
-      "All Pro features",
-      "Dedicated support",
-      "99.95% uptime SLA",
-      "Custom integrations",
-      "On-premise deployment option",
+      "Unlimited candidates",
+      "All Professional features",
+      "Dedicated account manager",
+      "Custom integrations & API access",
       "SSO / SAML authentication",
-      "Volume discounts",
-      "Custom SLAs",
+      "On-premise deployment option",
+      "Advanced security controls",
+      "Custom SLAs & support",
+      "White-label options",
       "Training & onboarding",
     ],
     cta: "Contact Sales",
@@ -147,37 +147,37 @@ const PricingPage = () => {
               
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-xl font-semibold mb-2">What counts as a "parse" or "score"?</h3>
+                  <h3 className="text-xl font-semibold mb-2">How does the candidate limit work?</h3>
                   <p className="text-muted-foreground">
-                    A parse is one CV file processed through our parsing API. A score is one candidate-job comparison through our scoring API. Cached results don't count toward your limit.
+                    Each plan includes a monthly limit of candidates you can process. A candidate is counted when you upload and analyze their resume. You can review and compare candidates unlimited times once they're in your system.
                   </p>
                 </div>
 
                 <div>
                   <h3 className="text-xl font-semibold mb-2">Can I upgrade or downgrade anytime?</h3>
                   <p className="text-muted-foreground">
-                    Yes! You can change plans at any time. Upgrades take effect immediately, downgrades at the end of your billing period.
+                    Yes! You can change plans at any time. Upgrades take effect immediately with prorated billing, and downgrades apply at the end of your current billing period.
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="text-xl font-semibold mb-2">What's the difference between baseline and AI scoring?</h3>
+                  <h3 className="text-xl font-semibold mb-2">What happens if I exceed my candidate limit?</h3>
                   <p className="text-muted-foreground">
-                    Baseline scoring uses deterministic rules and weights (fast, reproducible). AI scoring adds LLM-powered rationale and contextual adjustments (±10 points) for deeper insights.
+                    We'll notify you when you're approaching your limit. You can either upgrade to a higher plan or purchase additional candidates as a one-time add-on. Your existing candidate data remains accessible regardless.
                   </p>
                 </div>
 
                 <div>
                   <h3 className="text-xl font-semibold mb-2">Do you offer volume discounts?</h3>
                   <p className="text-muted-foreground">
-                    Yes! Enterprise plans include custom pricing based on volume. Contact our sales team for a quote tailored to your needs.
+                    Yes! Enterprise plans include custom pricing based on your hiring volume and needs. Contact our sales team for a personalized quote and to discuss volume discounts.
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="text-xl font-semibold mb-2">Is my data secure and private?</h3>
+                  <h3 className="text-xl font-semibold mb-2">Is my candidate data secure and private?</h3>
                   <p className="text-muted-foreground">
-                    Absolutely. We use TLS encryption, secure key hashing, and don't persist CVs by default. We're GDPR-compliant with regional storage options and PII minimization built-in.
+                    Absolutely. We use bank-level encryption, secure authentication, and are fully GDPR-compliant. Your candidate data is stored securely with regional storage options and can be deleted at any time.
                   </p>
                 </div>
               </div>

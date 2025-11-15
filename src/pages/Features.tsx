@@ -2,96 +2,96 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  FileText, 
-  Brain, 
-  Shield, 
-  Zap, 
-  GitBranch, 
+import {
+  FileText,
+  Brain,
+  Shield,
+  Zap,
+  Users,
   BarChart3,
   CheckCircle2,
   Globe,
   Lock,
-  Code2
+  TrendingUp
 } from "lucide-react";
 
 const detailedFeatures = [
   {
     icon: FileText,
-    title: "Advanced CV Parsing",
-    description: "Extract structured data from any resume format with industry-leading accuracy.",
+    title: "Intelligent Resume Parsing",
+    description: "Extract every detail from candidate resumes automatically, regardless of format or layout.",
     features: [
-      "Multi-format support: PDF, DOCX, DOC, TXT",
-      "98.5% accuracy on contact information",
-      "85%+ accuracy on work experience and education",
-      "Handles multi-page documents and varied layouts",
-      "Date parsing with ISO normalization",
-      "Skill taxonomy mapping with synonyms",
+      "Support for PDF, Word (DOCX/DOC), and text files",
+      "98.5% accuracy on contact information extraction",
+      "Automatic identification of skills and competencies",
+      "Work history with dates, roles, and companies",
+      "Education details including degrees and institutions",
+      "Handles multi-page resumes and varied layouts",
     ],
   },
   {
     icon: Brain,
-    title: "AI-Powered Scoring",
-    description: "Score candidates against job profiles using transparent, explainable algorithms.",
+    title: "AI-Powered Candidate Scoring",
+    description: "Match candidates to your job requirements with transparent, explainable AI scoring.",
     features: [
-      "Deterministic baseline scoring (reproducible)",
-      "Optional LLM-enhanced rationale",
-      "Component scores: Skills, Experience, Education, Certs",
-      "Risk flag generation (gaps, tenure volatility)",
-      "Custom weighting support",
-      "Bounded AI adjustments with guardrails",
+      "Automatic scoring against job requirements",
+      "Detailed breakdown by skills, experience, and education",
+      "AI-generated fit rationale and recommendations",
+      "Identify top candidates at a glance",
+      "Customizable scoring weights for your needs",
+      "Explainable AI for hiring transparency",
     ],
   },
   {
     icon: Shield,
-    title: "Audit & Compliance",
-    description: "Built for compliance with transparent, versioned rules and GDPR-ready privacy.",
+    title: "Compliance & Fair Hiring",
+    description: "Built for compliance with transparent rules, audit trails, and bias-free processes.",
     features: [
-      "Score breakdown with weights",
-      "Versioned rules and models",
-      "Deterministic job profile hashing",
-      "PII minimization by default",
-      "Regional storage (UK/EU)",
-      "No protected characteristic inference",
+      "Complete score breakdown and transparency",
+      "Audit trails for every hiring decision",
+      "GDPR-compliant data handling",
+      "Privacy-first design with data minimization",
+      "Regional data storage options (UK/EU)",
+      "Bias-free candidate evaluation",
     ],
   },
   {
     icon: Zap,
-    title: "Performance",
-    description: "Lightning-fast processing with built-in caching and optimized infrastructure.",
+    title: "Lightning-Fast Processing",
+    description: "Screen hundreds of candidates in seconds with our optimized AI infrastructure.",
     features: [
-      "P95 parse time < 2.5s (no LLM)",
-      "P95 score time < 1.5s baseline",
-      "SHA-256 file-hash caching",
-      "Job profile normalization cache",
-      "Graceful LLM degradation",
-      "Stateless, horizontally scalable",
+      "Instant resume parsing (under 3 seconds)",
+      "Real-time candidate scoring (under 2 seconds)",
+      "Bulk upload and process multiple candidates",
+      "Smart caching for faster repeat analysis",
+      "Handles high-volume recruitment drives",
+      "Always available with 99.9% uptime",
     ],
   },
   {
-    icon: Code2,
-    title: "Developer Experience",
-    description: "First-class developer tools with clear documentation and easy integration.",
+    icon: Users,
+    title: "Team Collaboration",
+    description: "Work together seamlessly with your hiring team from anywhere.",
     features: [
-      "OpenAPI specification",
-      "Interactive Redoc UI",
-      "Code examples (cURL, Python, TypeScript)",
-      "Postman collection",
-      "Consistent error envelopes",
-      "Sandbox mode for testing",
+      "Share candidate profiles and shortlists",
+      "Side-by-side candidate comparison",
+      "Comment and rate candidates collaboratively",
+      "Track candidate status through hiring stages",
+      "Email notifications for team updates",
+      "Role-based access control for security",
     ],
   },
   {
     icon: BarChart3,
-    title: "Analytics & Observability",
-    description: "Complete visibility into API usage, performance, and quality metrics.",
+    title: "Recruitment Analytics",
+    description: "Data-driven insights to optimize your hiring process and improve outcomes.",
     features: [
-      "Request counts and latency tracking",
-      "Success/error rate monitoring",
-      "Parse quality metrics",
-      "LLM cost and time tracking",
-      "Distributed tracing with spans",
-      "Structured logging with request IDs",
+      "Track time-to-hire and pipeline metrics",
+      "Monitor candidate quality and scoring trends",
+      "Team performance and productivity stats",
+      "Hiring funnel conversion analytics",
+      "Export detailed reports for stakeholders",
+      "Historical data for strategic planning",
     ],
   },
 ];
@@ -99,26 +99,26 @@ const detailedFeatures = [
 const securityFeatures = [
   {
     icon: Lock,
-    title: "Security-First Architecture",
+    title: "Enterprise Security",
     items: [
-      "TLS everywhere with centralized gateway",
-      "Bearer API key authentication",
-      "Argon2id/bcrypt key hashing",
-      "Rate limiting per key and endpoint",
-      "File size and page caps",
-      "Input validation and anti-abuse checks",
+      "Bank-level encryption for all data",
+      "Secure API key authentication",
+      "Regular security audits and updates",
+      "Rate limiting and abuse prevention",
+      "File size validation and safety checks",
+      "Industry-standard security protocols",
     ],
   },
   {
     icon: Globe,
     title: "Privacy & Data Protection",
     items: [
-      "persist=false by default",
-      "PII redaction in logs",
-      "S3-compatible encryption at rest",
-      "Row-level encryption in Postgres",
-      "Regional storage compliance",
-      "Deletion endpoints for GDPR",
+      "GDPR and privacy law compliance",
+      "Data anonymization options available",
+      "Encrypted storage for sensitive information",
+      "Automatic data retention policies",
+      "Regional data storage compliance",
+      "Easy data deletion and export tools",
     ],
   },
 ];
@@ -127,17 +127,17 @@ const FeaturesPage = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      
+
       <main className="flex-1">
         {/* Hero Section */}
         <section className="py-20 bg-gradient-to-b from-primary/5 to-background">
           <div className="container mx-auto px-4 text-center">
             <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">Features</Badge>
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Production-Grade CV Parsing & Scoring
+              Powerful Recruitment Tools for Modern Teams
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Enterprise features designed for scale. From prototype to production, Qualifyr.AI provides everything you need to build intelligent hiring tools.
+              Everything you need to transform your hiring process—from AI-powered screening to team collaboration and analytics. Built for recruiters, by recruitment technology experts.
             </p>
           </div>
         </section>
@@ -179,10 +179,10 @@ const FeaturesPage = () => {
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-5xl font-bold mb-4">
-                Enterprise-Grade Security
+                Enterprise-Grade Security & Privacy
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Built with security and privacy at the core. GDPR-compliant, audit-ready, and production-hardened.
+                Your candidate data is protected with bank-level security. GDPR-compliant, privacy-first, and audit-ready.
               </p>
             </div>
 
@@ -218,17 +218,17 @@ const FeaturesPage = () => {
         <section className="py-20">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Ready to Transform Your Hiring Pipeline?
+              Ready to Hire Smarter?
             </h2>
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Start with our generous free tier or contact sales for enterprise plans.
+              Join hundreds of recruitment teams already using Qualifyr.AI to find better candidates faster.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
-                href="/pricing"
+                href="/auth"
                 className="inline-flex items-center justify-center h-11 px-8 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 font-medium transition-colors"
               >
-                Get Started Free
+                Start Free Trial
               </a>
               <a
                 href="/pricing"
