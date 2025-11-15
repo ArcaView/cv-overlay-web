@@ -4,7 +4,7 @@ export const Footer = () => {
   return (
     <footer className="bg-muted/30 border-t border-border">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-8 mb-8">
           <div>
             <h3 className="font-semibold mb-4">Product</h3>
             <ul className="space-y-2">
@@ -34,25 +34,9 @@ export const Footer = () => {
                   About
                 </Link>
               </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-semibold mb-4">Resources</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link to="/docs" className="text-muted-foreground hover:text-primary transition-colors">
-                  API Reference
-                </Link>
-              </li>
               <li>
                 <a href="mailto:info@qualifyr.ai" className="text-muted-foreground hover:text-primary transition-colors">
-                  Support
-                </a>
-              </li>
-              <li>
-                <a href="https://status.qualifyr.ai" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                  Status
+                  Contact
                 </a>
               </li>
             </ul>
