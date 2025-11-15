@@ -90,7 +90,7 @@ export const generateCandidateSummaryPDF = (data: RoleSummaryData) => {
   doc.setFont('helvetica', 'normal');
   doc.text(`Average Match Score: ${avgScore}%`, margin, yPosition);
   yPosition += 6;
-  doc.text(`Top Candidates (≥85%): ${topCandidates.length}`, margin, yPosition);
+  doc.text(`Top Candidates (>=85%): ${topCandidates.length}`, margin, yPosition);
   yPosition += 6;
   doc.text(`Excellent Fit: ${excellentFit.length}`, margin, yPosition);
   yPosition += 12;
