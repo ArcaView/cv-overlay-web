@@ -25,10 +25,12 @@ import {
   FileText,
 } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useRoles, type Candidate } from "@/contexts/RolesContext";
 import { useToast } from "@/hooks/use-toast";
 
 const AllCandidates = () => {
+  const navigate = useNavigate();
   const { roles, updateCandidateStatus } = useRoles();
   const { toast } = useToast();
 
@@ -50,8 +52,7 @@ const AllCandidates = () => {
   const [dialogPage, setDialogPage] = useState(0);
 
   const handleViewCandidate = (candidate: Candidate & { roleId: string; roleTitle: string }) => {
-    setViewCandidate(candidate);
-    setDialogPage(0);
+    navigate(`/dashboard/candidates/${candidate.id}/${candidate.roleId}`);
   };
 
   const handleCloseViewDialog = () => {

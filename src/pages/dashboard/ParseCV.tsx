@@ -129,6 +129,15 @@ const ParseCV = () => {
         experience_years: experienceYears,
         appliedDate: new Date().toISOString().split('T')[0],
         status: 'reviewing' as const,
+        statusHistory: [
+          {
+            status: 'reviewing' as const,
+            changedAt: new Date().toISOString(),
+            note: 'Candidate added to role'
+          }
+        ],
+        interviews: [],
+        summary: '',
       };
 
       // Add candidate to selected role

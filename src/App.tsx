@@ -17,6 +17,7 @@ import DeveloperDashboard from "./pages/dashboard/DeveloperDashboard";
 import OpenRoles from "./pages/dashboard/OpenRoles";
 import RoleDetails from "./pages/dashboard/RoleDetails";
 import AllCandidates from "./pages/dashboard/AllCandidates";
+import CandidateDetail from "./pages/dashboard/CandidateDetail";
 // import Analytics from "./pages/Analytics";
 import Billing from "./pages/Billing";
 import Settings from "./pages/Settings";
@@ -46,6 +47,7 @@ const App = () => (
           <Route path="/dashboard/roles" element={<OpenRoles />} />
           <Route path="/dashboard/roles/:id" element={<RoleDetails />} />
           <Route path="/dashboard/candidates" element={<AllCandidates />} />
+          <Route path="/dashboard/candidates/:candidateId/:roleId" element={<CandidateDetail />} />
           {/* <Route path="/dashboard/analytics" element={<Analytics />} /> */}
           <Route path="/dashboard/billing" element={<Billing />} />
           <Route path="/dashboard/settings" element={<Settings />} />

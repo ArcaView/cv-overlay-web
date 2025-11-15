@@ -166,6 +166,15 @@ const BulkParse = () => {
           score: scoreResult?.overall_score,
           fit: scoreResult?.fit,
           status: 'reviewing' as const,
+          statusHistory: [
+            {
+              status: 'reviewing' as const,
+              changedAt: new Date().toISOString(),
+              note: 'Candidate added to role'
+            }
+          ],
+          interviews: [],
+          summary: '',
         };
 
         addCandidateToRole(selectedRole, candidate);
