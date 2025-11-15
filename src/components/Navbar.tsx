@@ -12,9 +12,9 @@ export const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center space-x-2">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">P</span>
+              <span className="text-primary-foreground font-bold text-lg">Q</span>
             </div>
-            <span className="font-bold text-xl">ParseScore</span>
+            <span className="font-bold text-xl">Qualifyr.AI</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -32,7 +32,7 @@ export const Navbar = () => {
               Docs
             </Link>
             <Button asChild variant="default" size="sm">
-              <a href="#get-started">Get Started</a>
+              <Link to="/auth">Get Started</Link>
             </Button>
           </div>
 
@@ -78,7 +78,7 @@ export const Navbar = () => {
               Docs
             </Link>
             <Button asChild variant="default" size="sm" className="w-full">
-              <a href="#get-started">Get Started</a>
+              <Link to="/auth">Get Started</Link>
             </Button>
           </div>
         )}

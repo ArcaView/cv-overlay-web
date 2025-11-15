@@ -19,7 +19,7 @@ const DocsPage = () => {
               Get Started in Minutes
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Comprehensive guides and API reference to help you integrate ParseScore into your application.
+              Comprehensive guides and API reference to help you integrate Qualifyr.AI into your application.
             </p>
           </div>
         </section>
@@ -38,7 +38,7 @@ const DocsPage = () => {
                 <Card className="bg-code">
                   <CardContent className="p-4">
                     <pre className="text-sm font-mono text-code-foreground">
-{`export PARSESCORE_API_KEY="ps_live_your_api_key_here"`}
+{`export QUALIFYR_API_KEY="qai_live_your_api_key_here"`}
                     </pre>
                   </CardContent>
                 </Card>
@@ -61,8 +61,8 @@ const DocsPage = () => {
                     <Card className="bg-code">
                       <CardContent className="p-4">
                         <pre className="text-sm font-mono text-code-foreground overflow-x-auto">
-{`curl -X POST https://api.parsescore.com/v1/parse \\
-  -H "Authorization: Bearer $PARSESCORE_API_KEY" \\
+{`curl -X POST https://api.qualifyr.ai/v1/parse \\
+  -H "Authorization: Bearer $QUALIFYR_API_KEY" \\
   -H "Content-Type: multipart/form-data" \\
   -F "file=@resume.pdf"
 
@@ -112,7 +112,7 @@ const DocsPage = () => {
 {`import requests
 
 api_key = "ps_live_your_api_key_here"
-url = "https://api.parsescore.com/v1/parse"
+url = "https://api.qualifyr.ai/v1/parse"
 
 headers = {
     "Authorization": f"Bearer {api_key}"
@@ -135,7 +135,7 @@ print(f"Skills: {', '.join(data['candidate']['skills'])}")`}
                       <CardContent className="p-4">
                         <pre className="text-sm font-mono text-code-foreground overflow-x-auto">
 {`const API_KEY = "ps_live_your_api_key_here";
-const url = "https://api.parsescore.com/v1/parse";
+const url = "https://api.qualifyr.ai/v1/parse";
 
 const formData = new FormData();
 formData.append("file", fileInput.files[0]);
@@ -175,8 +175,8 @@ console.log("Skills:", data.candidate.skills.join(", "));`}
                     <Card className="bg-code">
                       <CardContent className="p-4">
                         <pre className="text-sm font-mono text-code-foreground overflow-x-auto">
-{`curl -X POST https://api.parsescore.com/v1/score \\
-  -H "Authorization: Bearer $PARSESCORE_API_KEY" \\
+{`curl -X POST https://api.qualifyr.ai/v1/score \\
+  -H "Authorization: Bearer $QUALIFYR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
     "candidate_id": "parse_abc123",
@@ -224,7 +224,7 @@ console.log("Skills:", data.candidate.skills.join(", "));`}
 }
 
 response = requests.post(
-    "https://api.parsescore.com/v1/score",
+    "https://api.qualifyr.ai/v1/score",
     headers=headers,
     json=payload
 )
@@ -253,7 +253,7 @@ print(f"Fit: {score_data['fit']}")`}
 };
 
 const response = await fetch(
-  "https://api.parsescore.com/v1/score",
+  "https://api.qualifyr.ai/v1/score",
   {
     method: "POST",
     headers: {

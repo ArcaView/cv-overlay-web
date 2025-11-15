@@ -94,12 +94,12 @@ export const Footer = () => {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center space-x-2">
               <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">P</span>
+                <span className="text-primary-foreground font-bold text-sm">Q</span>
               </div>
-              <span className="font-semibold">ParseScore</span>
+              <span className="font-semibold">Qualifyr.AI</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              © 2025 ParseScore. All rights reserved.
+              © 2025 Qualifyr.AI. All rights reserved.
             </p>
           </div>
         </div>
