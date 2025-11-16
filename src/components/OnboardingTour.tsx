@@ -116,6 +116,10 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
       showProgress
       showSkipButton
       callback={handleJoyrideCallback}
+      disableScrolling={false}
+      spotlightClicks={false}
+      disableOverlayClose
+      hideCloseButton={false}
       styles={{
         options: {
           primaryColor: "hsl(var(--primary))",
