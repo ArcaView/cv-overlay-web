@@ -32,7 +32,7 @@ const ADMIN_EMAILS = ["admin@qualifyr.ai", "your@email.com"];
 
 const FeatureRequests = () => {
   const navigate = useNavigate();
-  const { user } = useUser();
+  const { user, isAuthenticated, isLoading: authLoading } = useUser();
   const [features, setFeatures] = useState<FeatureRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,6 +41,18 @@ const FeatureRequests = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const { toast } = useToast();
+
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to access feature requests",
+        variant: "destructive",
+      });
+      navigate("/auth?tab=login");
+    }
+  }, [authLoading, isAuthenticated, navigate, toast]);
 
   const [newFeature, setNewFeature] = useState({
     title: "",
@@ -397,6 +409,23 @@ const FeatureRequests = () => {
   };
 
   const roadmapStats = getRoadmapStats();
+
+  // Show loading while checking authentication
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated (will redirect)
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background">
