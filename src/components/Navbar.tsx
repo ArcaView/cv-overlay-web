@@ -32,7 +32,9 @@ export const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center">
-            <span className="font-bold text-2xl">Qualifyr.AI</span>
+            <span className="font-bold text-3xl bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+              Qualifyr.AI
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
