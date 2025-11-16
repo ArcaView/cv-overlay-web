@@ -83,7 +83,7 @@ const FeatureRequests = () => {
     try {
       const fingerprint = getBrowserFingerprint();
 
-      // Fetch feature requests
+      // Fetch feature requests (exclude declined from public view)
       let query = supabase
         .from("feature_requests")
         .select("*");
@@ -91,6 +91,9 @@ const FeatureRequests = () => {
       // Apply status filter
       if (filterStatus !== "all") {
         query = query.eq("status", filterStatus);
+      } else {
+        // Exclude declined requests from public view
+        query = query.neq("status", "declined");
       }
 
       const { data: featuresData, error: featuresError } = await query;
@@ -583,7 +586,6 @@ const FeatureRequests = () => {
                   <SelectItem value="planned">Planned</SelectItem>
                   <SelectItem value="in_progress">In Progress</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="declined">Declined</SelectItem>
                 </SelectContent>
               </Select>
             </div>
