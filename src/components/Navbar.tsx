@@ -7,10 +7,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, X, User, LogOut, Shield } from "lucide-react";
+import { Menu, X, User, LogOut, Shield, Play } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
+import { resetOnboardingTour } from "@/components/OnboardingTour";
 
 // Admin emails - should match FeatureRequests.tsx and AdminDashboard.tsx
 const ADMIN_EMAILS = ["admin@qualifyr.ai", "btjtownsend@outlook.com"];
@@ -72,6 +73,17 @@ export const Navbar = () => {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
                     <Link to="/dashboard">Dashboard</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      resetOnboardingTour();
+                      navigate("/dashboard");
+                      // Small delay to ensure page loads before tour starts
+                      setTimeout(() => window.location.reload(), 100);
+                    }}
+                  >
+                    <Play className="w-4 h-4 mr-2" />
+                    Start Tour
                   </DropdownMenuItem>
                   {isAdmin && (
                     <DropdownMenuItem asChild>
@@ -159,6 +171,20 @@ export const Navbar = () => {
                     <Link to="/dashboard" onClick={() => setIsMenuOpen(false)}>
                       Dashboard
                     </Link>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full mb-2"
+                    onClick={() => {
+                      resetOnboardingTour();
+                      setIsMenuOpen(false);
+                      navigate("/dashboard");
+                      setTimeout(() => window.location.reload(), 100);
+                    }}
+                  >
+                    <Play className="w-4 h-4 mr-2" />
+                    Start Tour
                   </Button>
                   {isAdmin && (
                     <Button asChild variant="outline" size="sm" className="w-full mb-2 text-primary border-primary">
