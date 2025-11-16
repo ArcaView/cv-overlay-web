@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
-import { ChevronUp, ChevronDown, Plus, MessageSquare } from "lucide-react";
+import { ChevronUp, ChevronDown, Plus, MessageSquare, ArrowLeft, MessageCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface FeatureRequest {
@@ -25,17 +26,24 @@ type SortBy = "newest" | "popular" | "controversial";
 type FilterStatus = "all" | "pending" | "under_review" | "planned" | "in_progress" | "completed" | "declined";
 
 const FeatureRequests = () => {
+  const navigate = useNavigate();
   const [features, setFeatures] = useState<FeatureRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sortBy, setSortBy] = useState<SortBy>("popular");
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const { toast } = useToast();
 
   const [newFeature, setNewFeature] = useState({
     title: "",
     description: "",
+  });
+
+  const [feedback, setFeedback] = useState({
+    message: "",
+    email: "",
   });
 
   // Get or create browser fingerprint for anonymous voting
@@ -294,11 +302,61 @@ const FeatureRequests = () => {
     });
   };
 
+  // Handle feedback submission
+  const handleFeedbackSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!feedback.message.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter your feedback",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // You could store feedback in a separate table or send via email
+      const { error } = await supabase.from("feature_requests").insert({
+        title: "Feedback: " + feedback.message.substring(0, 50),
+        description: `${feedback.message}\n\n${feedback.email ? `Contact: ${feedback.email}` : ""}`,
+        status: "pending",
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Thank you!",
+        description: "Your feedback has been submitted",
+      });
+
+      setFeedback({ message: "", email: "" });
+      setIsFeedbackOpen(false);
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+      toast({
+        title: "Error",
+        description: "Failed to submit feedback",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
         <div className="mb-8">
+          {/* Back Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/")}
+            className="mb-4 gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Home
+          </Button>
+
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-3xl font-bold mb-2">Feature Requests</h1>
@@ -306,13 +364,66 @@ const FeatureRequests = () => {
                 Vote on ideas and share your own suggestions
               </p>
             </div>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="gap-2">
-                  <Plus className="w-4 h-4" />
-                  New Request
-                </Button>
-              </DialogTrigger>
+            <div className="flex gap-2">
+              <Dialog open={isFeedbackOpen} onOpenChange={setIsFeedbackOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="gap-2">
+                    <MessageCircle className="w-4 h-4" />
+                    Feedback
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Send Feedback</DialogTitle>
+                    <DialogDescription>
+                      Have thoughts about this feature? Let us know!
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleFeedbackSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="feedback-message">Your Feedback</Label>
+                      <Textarea
+                        id="feedback-message"
+                        placeholder="Tell us what you think..."
+                        value={feedback.message}
+                        onChange={(e) => setFeedback({ ...feedback, message: e.target.value })}
+                        rows={5}
+                        maxLength={1000}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="feedback-email">Email (optional)</Label>
+                      <Input
+                        id="feedback-email"
+                        type="email"
+                        placeholder="your@email.com"
+                        value={feedback.email}
+                        onChange={(e) => setFeedback({ ...feedback, email: e.target.value })}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Leave your email if you'd like us to follow up
+                      </p>
+                    </div>
+                    <div className="flex gap-2 justify-end">
+                      <Button type="button" variant="outline" onClick={() => setIsFeedbackOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button type="submit">
+                        Send Feedback
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
+
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="gap-2">
+                    <Plus className="w-4 h-4" />
+                    New Request
+                  </Button>
+                </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Submit a Feature Request</DialogTitle>
