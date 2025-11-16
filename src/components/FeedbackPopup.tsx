@@ -36,8 +36,8 @@ export const FeedbackPopup = () => {
       return stored ? parseInt(stored, 10) : 0;
     };
 
-    // Update usage time periodically
-    const updateInterval = setInterval(() => {
+    // Check if we should show popup
+    const checkAndShowPopup = () => {
       const currentTime = Date.now();
       const sessionTime = currentTime - sessionStart;
       const totalUsage = getUsageTime() + sessionTime;
@@ -54,7 +54,13 @@ export const FeedbackPopup = () => {
         localStorage.setItem(USAGE_TRACKER_KEY, "0");
         localStorage.setItem(LAST_FEEDBACK_KEY, currentTime.toString());
       }
-    }, 60000); // Check every minute
+    };
+
+    // Check immediately on mount
+    checkAndShowPopup();
+
+    // Then check periodically
+    const updateInterval = setInterval(checkAndShowPopup, 60000); // Check every minute
 
     // Cleanup on unmount
     return () => {
