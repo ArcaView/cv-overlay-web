@@ -1,5 +1,5 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { OnboardingTour, resetOnboardingTour } from "@/components/OnboardingTour";
+import { OnboardingTour } from "@/components/OnboardingTour";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,20 +17,31 @@ import {
   EyeOff,
   Play
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const Dashboard = () => {
   const [showApiKey, setShowApiKey] = useState(false);
-  const [runTour, setRunTour] = useState(true);
+  const [runTour, setRunTour] = useState(false);
   const apiKey = "ps_live_1234567890abcdef1234567890abcdef";
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
   };
 
-  const handleRestartTour = () => {
-    console.log("Restarting tour...");
-    resetOnboardingTour();
+  // Check if tour should auto-start from sidebar button click
+  useEffect(() => {
+    const shouldStartTour = localStorage.getItem("start_onboarding_tour");
+    if (shouldStartTour === "true") {
+      console.log("Auto-starting tour from localStorage flag");
+      localStorage.removeItem("start_onboarding_tour");
+      setTimeout(() => {
+        setRunTour(true);
+      }, 500);
+    }
+  }, []);
+
+  const handleStartTour = () => {
+    console.log("Starting tour...");
     setRunTour(false);
     // Small delay to ensure state updates
     setTimeout(() => {
@@ -57,11 +68,11 @@ const Dashboard = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={handleRestartTour}
+                  onClick={handleStartTour}
                   className="flex items-center gap-2"
                 >
                   <Play className="w-4 h-4" />
-                  Restart Tour
+                  Start Tour
                 </Button>
                 <Badge className="bg-success/10 text-success border-success/20">
                   Starter Plan • Active

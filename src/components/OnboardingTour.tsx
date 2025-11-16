@@ -10,21 +10,16 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
   const [runTour, setRunTour] = useState(false);
 
   useEffect(() => {
-    // Check if user has completed the tour before
-    const hasCompletedTour = localStorage.getItem("onboarding_tour_completed");
-    console.log("Onboarding tour check:", { hasCompletedTour, run, runTour });
-    if (!hasCompletedTour && run) {
+    // Only start tour if explicitly requested via run prop
+    if (run) {
+      console.log("Starting onboarding tour - run prop is true");
       // Small delay to ensure DOM is ready
       setTimeout(() => {
-        console.log("Starting onboarding tour - setting runTour to true");
         setRunTour(true);
       }, 500);
     } else {
-      console.log("NOT starting tour because:", {
-        hasCompletedTour: !!hasCompletedTour,
-        run,
-        reason: hasCompletedTour ? "already completed" : "run is false"
-      });
+      console.log("NOT starting tour - run prop is false");
+      setRunTour(false);
     }
   }, [run]);
 
@@ -152,7 +147,8 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
   );
 };
 
-// Helper function to reset tour (for testing or re-showing)
+// Helper function to reset tour and request it to start
 export const resetOnboardingTour = () => {
   localStorage.removeItem("onboarding_tour_completed");
+  localStorage.setItem("start_onboarding_tour", "true");
 };
