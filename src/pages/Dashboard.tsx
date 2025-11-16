@@ -48,6 +48,23 @@ const Dashboard = () => {
     } else {
       console.log("DASHBOARD: NOT auto-starting tour, shouldStartTour =", shouldStartTour);
     }
+
+    // Listen for custom event from sidebar button
+    const handleStartTourEvent = () => {
+      console.log("DASHBOARD: Received 'startTour' event from sidebar!");
+      setTimeout(() => {
+        console.log("DASHBOARD: Setting runTour to TRUE from event");
+        setRunTour(true);
+      }, 100);
+    };
+
+    window.addEventListener('startTour', handleStartTourEvent);
+    console.log("DASHBOARD: Event listener added for 'startTour'");
+
+    return () => {
+      window.removeEventListener('startTour', handleStartTourEvent);
+      console.log("DASHBOARD: Event listener removed");
+    };
   }, []);
 
   const handleStartTour = () => {

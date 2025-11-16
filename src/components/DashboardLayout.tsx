@@ -104,8 +104,9 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               onClick={() => {
                 console.log("SIDEBAR: Start Tour button clicked!");
                 resetOnboardingTour();
-                console.log("SIDEBAR: resetOnboardingTour called, reloading page...");
-                window.location.reload();
+                console.log("SIDEBAR: Flag set, NOT reloading - relying on Dashboard to pick it up");
+                // Dispatch custom event to notify Dashboard
+                window.dispatchEvent(new CustomEvent('startTour'));
               }}
             >
               <Play className="w-4 h-4 mr-2" />
@@ -150,8 +151,9 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 onClick={() => {
                   console.log("MOBILE: Start Tour button clicked!");
                   resetOnboardingTour();
-                  console.log("MOBILE: resetOnboardingTour called, reloading page...");
-                  window.location.reload();
+                  console.log("MOBILE: Flag set, NOT reloading - relying on Dashboard to pick it up");
+                  // Dispatch custom event to notify Dashboard
+                  window.dispatchEvent(new CustomEvent('startTour'));
                 }}
               >
                 <Play className="w-4 h-4 mr-2" />
