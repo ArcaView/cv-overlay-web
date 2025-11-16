@@ -7,15 +7,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, X, User, LogOut } from "lucide-react";
+import { Menu, X, User, LogOut, Shield } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
+
+// Admin emails - should match FeatureRequests.tsx and AdminDashboard.tsx
+const ADMIN_EMAILS = ["admin@qualifyr.ai", "your@email.com"];
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, isAuthenticated, logout } = useUser();
   const navigate = useNavigate();
+
+  const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
 
   const handleLogout = async () => {
     await logout();
@@ -69,6 +74,14 @@ export const Navbar = () => {
                   <DropdownMenuItem asChild>
                     <Link to="/dashboard">Dashboard</Link>
                   </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin" className="text-primary">
+                        <Shield className="w-4 h-4 mr-2" />
+                        Admin Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout} className="text-destructive">
                     <LogOut className="w-4 h-4 mr-2" />
@@ -148,6 +161,14 @@ export const Navbar = () => {
                       Dashboard
                     </Link>
                   </Button>
+                  {isAdmin && (
+                    <Button asChild variant="outline" size="sm" className="w-full mb-2 text-primary border-primary">
+                      <Link to="/admin" onClick={() => setIsMenuOpen(false)}>
+                        <Shield className="w-4 h-4 mr-2" />
+                        Admin Dashboard
+                      </Link>
+                    </Button>
+                  )}
                   <Button
                     variant="destructive"
                     size="sm"
