@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { OnboardingTour } from "@/components/OnboardingTour";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +29,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <OnboardingTour />
       <Navbar />
 
       <main className="flex-1 bg-muted/30">
@@ -51,7 +53,7 @@ const Dashboard = () => {
         {/* Stats Overview */}
         <section className="py-8">
           <div className="container mx-auto px-4">
-            <div className="grid md:grid-cols-4 gap-6 mb-8">
+            <div className="grid md:grid-cols-4 gap-6 mb-8" data-tour="stats-overview">
               <Card>
                 <CardHeader className="pb-3">
                   <CardDescription>API Calls This Month</CardDescription>
@@ -105,8 +107,8 @@ const Dashboard = () => {
             {/* Main Content Tabs */}
             <Tabs defaultValue="api-keys" className="w-full">
               <TabsList className="grid w-full grid-cols-3 max-w-md">
-                <TabsTrigger value="api-keys">API Keys</TabsTrigger>
-                <TabsTrigger value="usage">Usage</TabsTrigger>
+                <TabsTrigger value="api-keys" data-tour="api-keys-tab">API Keys</TabsTrigger>
+                <TabsTrigger value="usage" data-tour="usage-tab">Usage</TabsTrigger>
                 <TabsTrigger value="activity">Activity</TabsTrigger>
               </TabsList>
 
@@ -132,7 +134,7 @@ const Dashboard = () => {
                   <CardContent>
                     <div className="space-y-4">
                       {/* Production Key */}
-                      <div className="border rounded-lg p-4">
+                      <div className="border rounded-lg p-4" data-tour="api-key-section">
                         <div className="flex items-start justify-between mb-3">
                           <div>
                             <h3 className="font-semibold mb-1">Production Key</h3>
@@ -291,7 +293,7 @@ const Dashboard = () => {
 
             {/* Quick Links */}
             <div className="grid md:grid-cols-3 gap-6 mt-8">
-              <Card className="border-primary/20 hover:shadow-lg transition-shadow cursor-pointer">
+              <Card className="border-primary/20 hover:shadow-lg transition-shadow cursor-pointer" data-tour="documentation-link">
                 <CardHeader>
                   <FileText className="w-8 h-8 text-primary mb-2" />
                   <CardTitle className="text-lg">Documentation</CardTitle>
