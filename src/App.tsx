@@ -7,6 +7,8 @@ import { UserProvider } from "@/contexts/UserContext";
 import { RolesProvider } from "@/contexts/RolesContext";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { FeedbackPopup } from "@/components/FeedbackPopup";
+import { DevAccountSwitcher } from "@/components/DevAccountSwitcher";
+import { useUser } from "@/contexts/UserContext";
 import Index from "./pages/Index";
 import Features from "./pages/Features";
 import Pricing from "./pages/Pricing";
@@ -32,15 +34,30 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <UserProvider>
-      <RolesProvider>
-        <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <FeedbackPopup />
-        <BrowserRouter>
+const AppContent = () => {
+  const { setDevUser, user } = useUser();
+
+  return (
+    <>
+      <Toaster />
+      <Sonner />
+      <FeedbackPopup />
+      <DevAccountSwitcher
+        onUserChange={(mockUser) => {
+          if (mockUser) {
+            setDevUser({
+              firstName: mockUser.firstName,
+              lastName: mockUser.lastName,
+              email: mockUser.email,
+              company: mockUser.company,
+            });
+          } else {
+            setDevUser(null);
+          }
+        }}
+        currentUserId={user?.email || null}
+      />
+      <BrowserRouter>
           <ScrollToTop />
           <Routes>
           <Route path="/" element={<Index />} />
@@ -71,7 +88,17 @@ const App = () => (
           <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
-      </TooltipProvider>
+    </>
+  );
+};
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <UserProvider>
+      <RolesProvider>
+        <TooltipProvider>
+          <AppContent />
+        </TooltipProvider>
       </RolesProvider>
     </UserProvider>
   </QueryClientProvider>

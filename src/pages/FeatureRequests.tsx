@@ -28,7 +28,7 @@ type SortBy = "newest" | "popular" | "controversial";
 type FilterStatus = "all" | "pending" | "under_review" | "planned" | "in_progress" | "completed" | "declined";
 
 // Admin emails - add your admin email here
-const ADMIN_EMAILS = ["info@qualifyr.ai", "btjtownsend@outlook.com"];
+const ADMIN_EMAILS = ["admin@qualifyr.ai", "btjtownsend@outlook.com"];
 
 const FeatureRequests = () => {
   const navigate = useNavigate();
