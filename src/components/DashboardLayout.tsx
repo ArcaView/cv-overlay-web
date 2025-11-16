@@ -3,6 +3,8 @@ import { Link, useLocation } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { resetOnboardingTour } from "@/components/OnboardingTour";
 import {
   LayoutDashboard,
   Code2,
@@ -13,6 +15,7 @@ import {
   FileText,
   Upload,
   Users,
+  Play,
 } from "lucide-react";
 
 interface DashboardLayoutProps {
@@ -87,12 +90,25 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         {/* Sidebar */}
         <aside className="w-64 border-r border-border bg-muted/30 hidden md:block">
           <div className="sticky top-16 p-6 space-y-1">
-            <div className="mb-6">
+            <div className="mb-4">
               <h2 className="text-lg font-semibold mb-1">Dashboard</h2>
               <p className="text-sm text-muted-foreground">
                 Manage your account
               </p>
             </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full mb-6 justify-start"
+              onClick={() => {
+                resetOnboardingTour();
+                window.location.reload();
+              }}
+            >
+              <Play className="w-4 h-4 mr-2" />
+              Start Tour
+            </Button>
 
             <nav className="space-y-1">
               {navItems.map((item) => {
@@ -124,7 +140,21 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         {/* Mobile Navigation */}
         <div className="md:hidden w-full border-b border-border bg-background">
           <div className="overflow-x-auto">
-            <nav className="flex gap-1 p-4">
+            <div className="px-4 pt-4 pb-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full justify-start"
+                onClick={() => {
+                  resetOnboardingTour();
+                  window.location.reload();
+                }}
+              >
+                <Play className="w-4 h-4 mr-2" />
+                Start Tour
+              </Button>
+            </div>
+            <nav className="flex gap-1 p-4 pt-2">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.href;
