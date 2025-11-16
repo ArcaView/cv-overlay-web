@@ -470,6 +470,7 @@ const FeatureRequests = () => {
               </DialogContent>
             </Dialog>
           </div>
+          </div>
 
           {/* Filters and Sorting */}
           <div className="flex flex-col sm:flex-row gap-3">
