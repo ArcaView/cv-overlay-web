@@ -5,10 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
-import { ChevronUp, ChevronDown, Plus, MessageSquare, ArrowLeft, MessageCircle } from "lucide-react";
+import { useUser } from "@/contexts/UserContext";
+import { ChevronUp, ChevronDown, Plus, ArrowLeft, MessageCircle, Sparkles, TrendingUp, Clock, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface FeatureRequest {
@@ -25,8 +27,12 @@ interface FeatureRequest {
 type SortBy = "newest" | "popular" | "controversial";
 type FilterStatus = "all" | "pending" | "under_review" | "planned" | "in_progress" | "completed" | "declined";
 
+// Admin emails - add your admin email here
+const ADMIN_EMAILS = ["admin@qualifyr.ai", "your@email.com"];
+
 const FeatureRequests = () => {
   const navigate = useNavigate();
+  const { user } = useUser();
   const [features, setFeatures] = useState<FeatureRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -45,6 +51,9 @@ const FeatureRequests = () => {
     message: "",
     email: "",
   });
+
+  // Check if user is admin
+  const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
 
   // Get or create browser fingerprint for anonymous voting
   const getBrowserFingerprint = (): string => {
@@ -165,7 +174,6 @@ const FeatureRequests = () => {
       setNewFeature({ title: "", description: "" });
       setIsDialogOpen(false);
 
-      // Wait a moment then refresh
       setTimeout(() => {
         fetchFeatures();
       }, 500);
@@ -198,21 +206,17 @@ const FeatureRequests = () => {
         let newDownvotes = f.downvotes;
         let newUserVote: "upvote" | "downvote" | null = null;
 
-        // Calculate new vote counts
         if (currentVote === voteType) {
-          // Removing vote
           if (voteType === "upvote") newUpvotes--;
           else newDownvotes--;
           newUserVote = null;
         } else if (currentVote) {
-          // Changing vote
           if (currentVote === "upvote") newUpvotes--;
           else newDownvotes--;
           if (voteType === "upvote") newUpvotes++;
           else newDownvotes++;
           newUserVote = voteType;
         } else {
-          // Adding new vote
           if (voteType === "upvote") newUpvotes++;
           else newDownvotes++;
           newUserVote = voteType;
@@ -227,24 +231,20 @@ const FeatureRequests = () => {
       })
     );
 
-    // Update database in background
     try {
       if (currentVote === voteType) {
-        // Remove vote
         await supabase
           .from("feature_votes")
           .delete()
           .eq("feature_id", featureId)
           .eq("user_fingerprint", fingerprint);
       } else if (currentVote) {
-        // Update existing vote
         await supabase
           .from("feature_votes")
           .update({ vote_type: voteType })
           .eq("feature_id", featureId)
           .eq("user_fingerprint", fingerprint);
       } else {
-        // Create new vote
         await supabase.from("feature_votes").insert({
           feature_id: featureId,
           user_fingerprint: fingerprint,
@@ -253,13 +253,94 @@ const FeatureRequests = () => {
       }
     } catch (error) {
       console.error("Error voting:", error);
-      // Revert on error
       fetchFeatures();
       toast({
         title: "Error",
         description: "Failed to register vote",
         variant: "destructive",
       });
+    }
+  };
+
+  // Admin: Change status
+  const handleStatusChange = async (featureId: string, newStatus: string) => {
+    if (!isAdmin) return;
+
+    try {
+      const { error } = await supabase
+        .from("feature_requests")
+        .update({ status: newStatus })
+        .eq("id", featureId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Status Updated",
+        description: `Feature request marked as ${newStatus.replace("_", " ")}`,
+      });
+
+      fetchFeatures();
+    } catch (error) {
+      console.error("Error updating status:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleFeedbackSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!feedback.message.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter your feedback",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase.from("feature_requests").insert({
+        title: "Feedback: " + feedback.message.substring(0, 50),
+        description: `${feedback.message}\n\n${feedback.email ? `Contact: ${feedback.email}` : ""}`,
+        status: "pending",
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Thank you!",
+        description: "Your feedback has been submitted",
+      });
+
+      setFeedback({ message: "", email: "" });
+      setIsFeedbackOpen(false);
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+      toast({
+        title: "Error",
+        description: "Failed to submit feedback",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "completed":
+        return <CheckCircle2 className="w-4 h-4" />;
+      case "in_progress":
+        return <Loader2 className="w-4 h-4" />;
+      case "planned":
+        return <Sparkles className="w-4 h-4" />;
+      case "under_review":
+        return <Clock className="w-4 h-4" />;
+      case "declined":
+        return <XCircle className="w-4 h-4" />;
+      default:
+        return <TrendingUp className="w-4 h-4" />;
     }
   };
 
@@ -302,51 +383,26 @@ const FeatureRequests = () => {
     });
   };
 
-  // Handle feedback submission
-  const handleFeedbackSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!feedback.message.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter your feedback",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      // You could store feedback in a separate table or send via email
-      const { error } = await supabase.from("feature_requests").insert({
-        title: "Feedback: " + feedback.message.substring(0, 50),
-        description: `${feedback.message}\n\n${feedback.email ? `Contact: ${feedback.email}` : ""}`,
-        status: "pending",
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Thank you!",
-        description: "Your feedback has been submitted",
-      });
-
-      setFeedback({ message: "", email: "" });
-      setIsFeedbackOpen(false);
-    } catch (error) {
-      console.error("Error submitting feedback:", error);
-      toast({
-        title: "Error",
-        description: "Failed to submit feedback",
-        variant: "destructive",
-      });
-    }
+  // Roadmap stats
+  const getRoadmapStats = () => {
+    const stats = {
+      pending: features.filter((f) => f.status === "pending").length,
+      under_review: features.filter((f) => f.status === "under_review").length,
+      planned: features.filter((f) => f.status === "planned").length,
+      in_progress: features.filter((f) => f.status === "in_progress").length,
+      completed: features.filter((f) => f.status === "completed").length,
+      declined: features.filter((f) => f.status === "declined").length,
+    };
+    return stats;
   };
+
+  const roadmapStats = getRoadmapStats();
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          {/* Back Button */}
           <Button
             variant="ghost"
             size="sm"
@@ -357,12 +413,20 @@ const FeatureRequests = () => {
             Back to Home
           </Button>
 
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold mb-2">Feature Requests</h1>
-              <p className="text-muted-foreground">
-                Vote on ideas and share your own suggestions
+              <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+                Feature Requests
+              </h1>
+              <p className="text-muted-foreground text-lg">
+                Vote on ideas and shape the future of Qualifyr.AI
               </p>
+              {isAdmin && (
+                <Badge variant="outline" className="mt-2">
+                  <Sparkles className="w-3 h-3 mr-1" />
+                  Admin Mode
+                </Badge>
+              )}
             </div>
             <div className="flex gap-2">
               <Dialog open={isFeedbackOpen} onOpenChange={setIsFeedbackOpen}>
@@ -401,17 +465,12 @@ const FeatureRequests = () => {
                         value={feedback.email}
                         onChange={(e) => setFeedback({ ...feedback, email: e.target.value })}
                       />
-                      <p className="text-xs text-muted-foreground">
-                        Leave your email if you'd like us to follow up
-                      </p>
                     </div>
                     <div className="flex gap-2 justify-end">
                       <Button type="button" variant="outline" onClick={() => setIsFeedbackOpen(false)}>
                         Cancel
                       </Button>
-                      <Button type="submit">
-                        Send Feedback
-                      </Button>
+                      <Button type="submit">Send Feedback</Button>
                     </div>
                   </form>
                 </DialogContent>
@@ -424,55 +483,52 @@ const FeatureRequests = () => {
                     New Request
                   </Button>
                 </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Submit a Feature Request</DialogTitle>
-                  <DialogDescription>
-                    Share your idea for a new feature or improvement
-                  </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Title</Label>
-                    <Input
-                      id="title"
-                      placeholder="Brief, descriptive title"
-                      value={newFeature.title}
-                      onChange={(e) => setNewFeature({ ...newFeature, title: e.target.value })}
-                      maxLength={100}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea
-                      id="description"
-                      placeholder="Describe your feature request in detail..."
-                      value={newFeature.description}
-                      onChange={(e) => setNewFeature({ ...newFeature, description: e.target.value })}
-                      rows={5}
-                      maxLength={1000}
-                      required
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      {newFeature.description.length}/1000
-                    </p>
-                  </div>
-                  <div className="flex gap-2 justify-end">
-                    <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                      Cancel
-                    </Button>
-                    <Button type="submit" disabled={isSubmitting}>
-                      {isSubmitting ? "Submitting..." : "Submit"}
-                    </Button>
-                  </div>
-                </form>
-              </DialogContent>
-            </Dialog>
-          </div>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Submit a Feature Request</DialogTitle>
+                    <DialogDescription>
+                      Share your idea for a new feature or improvement
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="title">Title</Label>
+                      <Input
+                        id="title"
+                        placeholder="Brief, descriptive title"
+                        value={newFeature.title}
+                        onChange={(e) => setNewFeature({ ...newFeature, title: e.target.value })}
+                        maxLength={100}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="description">Description</Label>
+                      <Textarea
+                        id="description"
+                        placeholder="Describe your feature request in detail..."
+                        value={newFeature.description}
+                        onChange={(e) => setNewFeature({ ...newFeature, description: e.target.value })}
+                        rows={5}
+                        maxLength={1000}
+                        required
+                      />
+                    </div>
+                    <div className="flex gap-2 justify-end">
+                      <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? "Submitting..." : "Submit"}
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
 
-          {/* Filters and Sorting */}
+          {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex-1">
               <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortBy)}>
@@ -505,91 +561,198 @@ const FeatureRequests = () => {
           </div>
         </div>
 
-        {/* Feature Requests List */}
-        {isLoading ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">Loading...</p>
-          </div>
-        ) : features.length === 0 ? (
-          <div className="text-center py-12 border border-dashed rounded-lg">
-            <MessageSquare className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <p className="text-muted-foreground">
-              No feature requests yet. Be the first!
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {features.map((feature) => {
-              const netVotes = feature.upvotes - feature.downvotes;
-              return (
-                <div
-                  key={feature.id}
-                  className="flex gap-3 p-4 bg-card border border-border rounded-lg hover:bg-accent/5 transition-colors"
-                >
-                  {/* Voting Column */}
-                  <div className="flex flex-col items-center gap-1 min-w-[48px]">
-                    <button
-                      onClick={() => handleVote(feature.id, "upvote")}
-                      className={`p-1 rounded hover:bg-accent transition-colors ${
-                        feature.userVote === "upvote"
-                          ? "text-primary"
-                          : "text-muted-foreground hover:text-foreground"
-                      }`}
-                      aria-label="Upvote"
-                    >
-                      <ChevronUp className="w-6 h-6" strokeWidth={feature.userVote === "upvote" ? 3 : 2} />
-                    </button>
-                    <span
-                      className={`text-sm font-semibold tabular-nums ${
-                        netVotes > 0
-                          ? "text-primary"
-                          : netVotes < 0
-                          ? "text-destructive"
-                          : "text-muted-foreground"
-                      }`}
-                    >
-                      {netVotes > 0 ? "+" : ""}
-                      {netVotes}
-                    </span>
-                    <button
-                      onClick={() => handleVote(feature.id, "downvote")}
-                      className={`p-1 rounded hover:bg-accent transition-colors ${
-                        feature.userVote === "downvote"
-                          ? "text-destructive"
-                          : "text-muted-foreground hover:text-foreground"
-                      }`}
-                      aria-label="Downvote"
-                    >
-                      <ChevronDown className="w-6 h-6" strokeWidth={feature.userVote === "downvote" ? 3 : 2} />
-                    </button>
-                  </div>
+        {/* Main Content with Sidebar */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Feature Requests List */}
+          <div className="lg:col-span-2">
+            {isLoading ? (
+              <div className="text-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
+                <p className="text-muted-foreground">Loading...</p>
+              </div>
+            ) : features.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <TrendingUp className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <p className="text-muted-foreground">
+                    No feature requests yet. Be the first!
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {features.map((feature) => {
+                  const netVotes = feature.upvotes - feature.downvotes;
+                  return (
+                    <Card key={feature.id} className="hover:shadow-md transition-all border-l-4" style={{
+                      borderLeftColor: `hsl(var(--${feature.status === 'completed' ? 'success' : feature.status === 'in_progress' ? 'warning' : 'primary'}))`
+                    }}>
+                      <CardContent className="p-4">
+                        <div className="flex gap-4">
+                          {/* Voting Column */}
+                          <div className="flex flex-col items-center gap-1 min-w-[56px]">
+                            <button
+                              onClick={() => handleVote(feature.id, "upvote")}
+                              className={`p-1.5 rounded-lg hover:bg-accent transition-colors ${
+                                feature.userVote === "upvote"
+                                  ? "text-primary bg-primary/10"
+                                  : "text-muted-foreground hover:text-foreground"
+                              }`}
+                            >
+                              <ChevronUp className="w-5 h-5" strokeWidth={feature.userVote === "upvote" ? 3 : 2} />
+                            </button>
+                            <span
+                              className={`text-base font-bold tabular-nums px-2 py-1 rounded ${
+                                netVotes > 0
+                                  ? "text-primary bg-primary/10"
+                                  : netVotes < 0
+                                  ? "text-destructive bg-destructive/10"
+                                  : "text-muted-foreground"
+                              }`}
+                            >
+                              {netVotes > 0 ? "+" : ""}
+                              {netVotes}
+                            </span>
+                            <button
+                              onClick={() => handleVote(feature.id, "downvote")}
+                              className={`p-1.5 rounded-lg hover:bg-accent transition-colors ${
+                                feature.userVote === "downvote"
+                                  ? "text-destructive bg-destructive/10"
+                                  : "text-muted-foreground hover:text-foreground"
+                              }`}
+                            >
+                              <ChevronDown className="w-5 h-5" strokeWidth={feature.userVote === "downvote" ? 3 : 2} />
+                            </button>
+                          </div>
 
-                  {/* Content Column */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start gap-2 mb-2">
-                      <h3 className="text-lg font-semibold leading-tight">
-                        {feature.title}
-                      </h3>
-                      <Badge className={`${getStatusColor(feature.status)} shrink-0 text-xs`}>
-                        {getStatusLabel(feature.status)}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-2 whitespace-pre-wrap line-clamp-3">
-                      {feature.description}
-                    </p>
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                      <span>{formatDate(feature.created_at)}</span>
-                      <span>•</span>
-                      <span>{feature.upvotes} up</span>
-                      <span>•</span>
-                      <span>{feature.downvotes} down</span>
-                    </div>
+                          {/* Content Column */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2 mb-2">
+                              <h3 className="text-lg font-semibold leading-tight">
+                                {feature.title}
+                              </h3>
+                              <Badge className={`${getStatusColor(feature.status)} shrink-0 text-xs flex items-center gap-1`}>
+                                {getStatusIcon(feature.status)}
+                                {getStatusLabel(feature.status)}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                              {feature.description}
+                            </p>
+                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                              <span>{formatDate(feature.created_at)}</span>
+                              <span>•</span>
+                              <span>{feature.upvotes} up</span>
+                              <span>•</span>
+                              <span>{feature.downvotes} down</span>
+                              {isAdmin && (
+                                <>
+                                  <span>•</span>
+                                  <Select
+                                    value={feature.status}
+                                    onValueChange={(value) => handleStatusChange(feature.id, value)}
+                                  >
+                                    <SelectTrigger className="h-7 w-32 text-xs">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="pending">Pending</SelectItem>
+                                      <SelectItem value="under_review">Under Review</SelectItem>
+                                      <SelectItem value="planned">Planned</SelectItem>
+                                      <SelectItem value="in_progress">In Progress</SelectItem>
+                                      <SelectItem value="completed">Completed</SelectItem>
+                                      <SelectItem value="declined">Declined</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Roadmap Sidebar */}
+          <div className="lg:col-span-1">
+            <Card className="sticky top-4">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                  Roadmap
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-blue-500" />
+                      Under Review
+                    </span>
+                    <span className="text-sm font-bold">{roadmapStats.under_review}</span>
+                  </div>
+                  <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                    <div className="h-full bg-blue-500" style={{ width: `${(roadmapStats.under_review / features.length) * 100}%` }} />
                   </div>
                 </div>
-              );
-            })}
+
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-purple-500" />
+                      Planned
+                    </span>
+                    <span className="text-sm font-bold">{roadmapStats.planned}</span>
+                  </div>
+                  <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                    <div className="h-full bg-purple-500" style={{ width: `${(roadmapStats.planned / features.length) * 100}%` }} />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 text-yellow-500" />
+                      In Progress
+                    </span>
+                    <span className="text-sm font-bold">{roadmapStats.in_progress}</span>
+                  </div>
+                  <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                    <div className="h-full bg-yellow-500" style={{ width: `${(roadmapStats.in_progress / features.length) * 100}%` }} />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-green-500" />
+                      Completed
+                    </span>
+                    <span className="text-sm font-bold">{roadmapStats.completed}</span>
+                  </div>
+                  <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                    <div className="h-full bg-green-500" style={{ width: `${(roadmapStats.completed / features.length) * 100}%` }} />
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>Total Requests</span>
+                    <span className="font-bold text-foreground">{features.length}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground mt-1">
+                    <span>Pending Review</span>
+                    <span className="font-bold text-foreground">{roadmapStats.pending}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
