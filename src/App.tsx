@@ -5,10 +5,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { UserProvider } from "@/contexts/UserContext";
 import { RolesProvider } from "@/contexts/RolesContext";
+import { ImpersonationProvider } from "@/contexts/ImpersonationContext";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { FeedbackPopup } from "@/components/FeedbackPopup";
-import { DevAccountSwitcher } from "@/components/DevAccountSwitcher";
-import { useUser } from "@/contexts/UserContext";
+import { ImpersonationBanner } from "@/components/ImpersonationBanner";
+import { ImpersonationApprovalPopup } from "@/components/ImpersonationApprovalPopup";
 import Index from "./pages/Index";
 import Features from "./pages/Features";
 import Pricing from "./pages/Pricing";
@@ -35,28 +36,13 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const AppContent = () => {
-  const { setDevUser, user } = useUser();
-
   return (
     <>
       <Toaster />
       <Sonner />
       <FeedbackPopup />
-      <DevAccountSwitcher
-        onUserChange={(mockUser) => {
-          if (mockUser) {
-            setDevUser({
-              firstName: mockUser.firstName,
-              lastName: mockUser.lastName,
-              email: mockUser.email,
-              company: mockUser.company,
-            });
-          } else {
-            setDevUser(null);
-          }
-        }}
-        currentUserId={user?.email || null}
-      />
+      <ImpersonationBanner />
+      <ImpersonationApprovalPopup />
       <BrowserRouter>
           <ScrollToTop />
           <Routes>
@@ -95,11 +81,13 @@ const AppContent = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <UserProvider>
-      <RolesProvider>
-        <TooltipProvider>
-          <AppContent />
-        </TooltipProvider>
-      </RolesProvider>
+      <ImpersonationProvider>
+        <RolesProvider>
+          <TooltipProvider>
+            <AppContent />
+          </TooltipProvider>
+        </RolesProvider>
+      </ImpersonationProvider>
     </UserProvider>
   </QueryClientProvider>
 );

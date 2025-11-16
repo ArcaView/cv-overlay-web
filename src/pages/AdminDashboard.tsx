@@ -3,9 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { useUser } from "@/contexts/UserContext";
+import { useImpersonation } from "@/contexts/ImpersonationContext";
 import {
   ArrowLeft,
   TrendingUp,
@@ -25,6 +29,7 @@ import {
   Code,
   ArrowRight,
   ChevronRight,
+  UserCog,
 } from "lucide-react";
 
 interface FeatureRequest {
@@ -43,8 +48,12 @@ const ADMIN_EMAILS = ["admin@qualifyr.ai", "btjtownsend@outlook.com"];
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, isLoading: authLoading } = useUser();
+  const { startImpersonation, isImpersonating, currentSession } = useImpersonation();
   const [features, setFeatures] = useState<FeatureRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [impersonationEmail, setImpersonationEmail] = useState("");
+  const [impersonationReason, setImpersonationReason] = useState("");
+  const [isRequestingImpersonation, setIsRequestingImpersonation] = useState(false);
   const { toast } = useToast();
 
   const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
@@ -84,6 +93,28 @@ const AdminDashboard = () => {
       fetchFeatures();
     }
   }, [isAdmin]);
+
+  // Handle impersonation request
+  const handleImpersonationRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!impersonationEmail.trim()) {
+      toast({
+        title: "Email Required",
+        description: "Please enter a user email address",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsRequestingImpersonation(true);
+    const success = await startImpersonation(impersonationEmail, impersonationReason || undefined);
+    setIsRequestingImpersonation(false);
+
+    if (success) {
+      setImpersonationEmail("");
+      setImpersonationReason("");
+    }
+  };
 
   // Calculate statistics
   const stats = {
@@ -330,6 +361,76 @@ const AdminDashboard = () => {
                 </button>
               ))}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* User Impersonation */}
+        <Card className="mb-8 border-purple-200 dark:border-purple-800">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <UserCog className="w-5 h-5 text-purple-500" />
+              User Impersonation
+            </CardTitle>
+            <CardDescription>
+              Request to view the application as another user for support purposes
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isImpersonating ? (
+              <div className="bg-purple-50 dark:bg-purple-950 border border-purple-200 dark:border-purple-800 rounded-lg p-6 text-center">
+                <UserCog className="w-12 h-12 text-purple-500 mx-auto mb-4" />
+                <p className="font-semibold text-lg mb-2">Currently Impersonating</p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  You are viewing as: <span className="font-mono font-medium">{currentSession?.target_email}</span>
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  The purple banner at the top allows you to end the session at any time
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleImpersonationRequest} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="impersonate-email">User Email Address</Label>
+                  <Input
+                    id="impersonate-email"
+                    type="email"
+                    placeholder="user@example.com"
+                    value={impersonationEmail}
+                    onChange={(e) => setImpersonationEmail(e.target.value)}
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    The user will receive a popup requesting their approval
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="impersonate-reason">Reason (Optional)</Label>
+                  <Textarea
+                    id="impersonate-reason"
+                    placeholder="e.g., Help with billing issue, debug feature request bug, etc."
+                    value={impersonationReason}
+                    onChange={(e) => setImpersonationReason(e.target.value)}
+                    rows={3}
+                    maxLength={200}
+                  />
+                </div>
+                <div className="flex items-start gap-2 bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
+                  <Shield className="w-4 h-4 text-yellow-600 dark:text-yellow-400 mt-0.5 shrink-0" />
+                  <div className="text-xs text-yellow-800 dark:text-yellow-200 space-y-1">
+                    <p className="font-semibold">Important:</p>
+                    <ul className="list-disc list-inside space-y-0.5">
+                      <li>User must approve within 5 minutes</li>
+                      <li>Session lasts 30 minutes maximum</li>
+                      <li>All actions are logged for audit</li>
+                      <li>Both you and the user will see a banner</li>
+                    </ul>
+                  </div>
+                </div>
+                <Button type="submit" disabled={isRequestingImpersonation} className="w-full">
+                  {isRequestingImpersonation ? "Sending Request..." : "Request Impersonation"}
+                </Button>
+              </form>
+            )}
           </CardContent>
         </Card>
 
