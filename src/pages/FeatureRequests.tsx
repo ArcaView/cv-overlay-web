@@ -177,61 +177,79 @@ const FeatureRequests = () => {
   const handleVote = async (featureId: string, voteType: "upvote" | "downvote") => {
     const fingerprint = getBrowserFingerprint();
     const feature = features.find((f) => f.id === featureId);
-    const currentVote = feature?.userVote;
+    if (!feature) return;
 
-    console.log("Voting:", { featureId, voteType, currentVote, fingerprint });
+    const currentVote = feature.userVote;
 
+    // Optimistically update UI immediately
+    setFeatures((prev) =>
+      prev.map((f) => {
+        if (f.id !== featureId) return f;
+
+        let newUpvotes = f.upvotes;
+        let newDownvotes = f.downvotes;
+        let newUserVote: "upvote" | "downvote" | null = null;
+
+        // Calculate new vote counts
+        if (currentVote === voteType) {
+          // Removing vote
+          if (voteType === "upvote") newUpvotes--;
+          else newDownvotes--;
+          newUserVote = null;
+        } else if (currentVote) {
+          // Changing vote
+          if (currentVote === "upvote") newUpvotes--;
+          else newDownvotes--;
+          if (voteType === "upvote") newUpvotes++;
+          else newDownvotes++;
+          newUserVote = voteType;
+        } else {
+          // Adding new vote
+          if (voteType === "upvote") newUpvotes++;
+          else newDownvotes++;
+          newUserVote = voteType;
+        }
+
+        return {
+          ...f,
+          upvotes: Math.max(0, newUpvotes),
+          downvotes: Math.max(0, newDownvotes),
+          userVote: newUserVote,
+        };
+      })
+    );
+
+    // Update database in background
     try {
       if (currentVote === voteType) {
-        // Remove vote if clicking the same button
-        console.log("Removing vote");
-        const { error } = await supabase
+        // Remove vote
+        await supabase
           .from("feature_votes")
           .delete()
           .eq("feature_id", featureId)
           .eq("user_fingerprint", fingerprint);
-
-        if (error) {
-          console.error("Delete vote error:", error);
-          throw error;
-        }
       } else if (currentVote) {
         // Update existing vote
-        console.log("Updating vote");
-        const { error } = await supabase
+        await supabase
           .from("feature_votes")
           .update({ vote_type: voteType })
           .eq("feature_id", featureId)
           .eq("user_fingerprint", fingerprint);
-
-        if (error) {
-          console.error("Update vote error:", error);
-          throw error;
-        }
       } else {
         // Create new vote
-        console.log("Creating new vote");
-        const { error } = await supabase.from("feature_votes").insert({
+        await supabase.from("feature_votes").insert({
           feature_id: featureId,
           user_fingerprint: fingerprint,
           vote_type: voteType,
         });
-
-        if (error) {
-          console.error("Insert vote error:", error);
-          throw error;
-        }
       }
-
-      // Wait a moment for the trigger to update counts, then refresh
-      setTimeout(() => {
-        fetchFeatures();
-      }, 300);
     } catch (error) {
       console.error("Error voting:", error);
+      // Revert on error
+      fetchFeatures();
       toast({
         title: "Error",
-        description: "Failed to register vote. Check console for details.",
+        description: "Failed to register vote",
         variant: "destructive",
       });
     }
