@@ -149,6 +149,12 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
 
 // Helper function to reset tour and request it to start
 export const resetOnboardingTour = () => {
+  console.log("resetOnboardingTour: Removing onboarding_tour_completed from localStorage");
   localStorage.removeItem("onboarding_tour_completed");
+  console.log("resetOnboardingTour: Setting start_onboarding_tour=true in localStorage");
   localStorage.setItem("start_onboarding_tour", "true");
+  console.log("resetOnboardingTour: localStorage now has:", {
+    completed: localStorage.getItem("onboarding_tour_completed"),
+    start: localStorage.getItem("start_onboarding_tour")
+  });
 };
