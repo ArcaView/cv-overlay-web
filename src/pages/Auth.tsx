@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,11 +7,15 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabase";
+import { AuthError } from "@supabase/supabase-js";
 
 const Auth = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { login } = useUser();
   const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState<string>("signup");
 
   // Sign Up state
   const [signUpData, setSignUpData] = useState({
@@ -30,6 +34,13 @@ const Auth = () => {
   });
 
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab === "login" || tab === "signup") {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   const handleSignUpChange = (field: string, value: string) => {
     setSignUpData(prev => ({ ...prev, [field]: value }));
@@ -55,27 +66,44 @@ const Auth = () => {
     }
 
     try {
-      // TODO: Replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Create user profile
-      login({
-        firstName: signUpData.firstName,
-        lastName: signUpData.lastName,
+      const { data, error } = await supabase.auth.signUp({
         email: signUpData.email,
-        company: signUpData.company,
+        password: signUpData.password,
+        options: {
+          data: {
+            firstName: signUpData.firstName,
+            lastName: signUpData.lastName,
+            company: signUpData.company,
+          },
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+        },
       });
 
-      toast({
-        title: "Welcome to Qualifyr.AI!",
-        description: "Your account has been created successfully.",
-      });
+      if (error) {
+        throw error;
+      }
 
-      navigate("/dashboard");
+      if (data.user) {
+        toast({
+          title: "Verification Email Sent!",
+          description: "Please check your email to verify your account before logging in.",
+        });
+
+        // Clear the form
+        setSignUpData({
+          firstName: "",
+          lastName: "",
+          email: "",
+          company: "",
+          password: "",
+          confirmPassword: "",
+        });
+      }
     } catch (error) {
+      const authError = error as AuthError;
       toast({
         title: "Error",
-        description: "Failed to create account. Please try again.",
+        description: authError.message || "Failed to create account. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -88,34 +116,40 @@ const Auth = () => {
     setIsLoading(true);
 
     try {
-      // TODO: Replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // For demo purposes, use stored user or create a default one
-      const storedUser = localStorage.getItem("qualifyr_user_profile");
-      if (storedUser) {
-        const user = JSON.parse(storedUser);
-        login(user);
-      } else {
-        // Create demo user if no stored user found
-        login({
-          firstName: "John",
-          lastName: "Doe",
-          email: loginData.email,
-          company: "Acme Inc.",
-        });
-      }
-
-      toast({
-        title: "Welcome back!",
-        description: "You've been logged in successfully.",
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: loginData.email,
+        password: loginData.password,
       });
 
-      navigate("/dashboard");
+      if (error) {
+        throw error;
+      }
+
+      if (data.user) {
+        // Check if email is confirmed
+        if (!data.user.email_confirmed_at) {
+          toast({
+            title: "Email Not Verified",
+            description: "Please verify your email before logging in. Check your inbox for the verification link.",
+            variant: "destructive",
+          });
+          await supabase.auth.signOut();
+          setIsLoading(false);
+          return;
+        }
+
+        toast({
+          title: "Welcome back!",
+          description: "You've been logged in successfully.",
+        });
+
+        navigate("/dashboard");
+      }
     } catch (error) {
+      const authError = error as AuthError;
       toast({
         title: "Error",
-        description: "Invalid credentials. Please try again.",
+        description: authError.message || "Invalid credentials. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -138,7 +172,7 @@ const Auth = () => {
           </p>
         </div>
 
-        <Tabs defaultValue="signup" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
             <TabsTrigger value="login">Log In</TabsTrigger>

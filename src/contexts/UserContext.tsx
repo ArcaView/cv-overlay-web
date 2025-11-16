@@ -1,4 +1,6 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+import type { User } from "@supabase/supabase-js";
 
 export interface UserProfile {
   firstName: string;
@@ -10,46 +12,78 @@ export interface UserProfile {
 interface UserContextType {
   user: UserProfile | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   login: (profile: UserProfile) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   updateProfile: (profile: Partial<UserProfile>) => void;
+  supabaseUser: User | null;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-const USER_STORAGE_KEY = "qualifyr_user_profile";
-
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<UserProfile | null>(() => {
-    // Load user from localStorage on initial load
-    const stored = localStorage.getItem(USER_STORAGE_KEY);
-    if (stored) {
-      try {
-        return JSON.parse(stored);
-      } catch {
-        return null;
-      }
-    }
-    return null;
-  });
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [supabaseUser, setSupabaseUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const isAuthenticated = user !== null;
+  const isAuthenticated = user !== null && supabaseUser !== null;
 
   useEffect(() => {
-    // Save user to localStorage whenever it changes
-    if (user) {
-      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
-    } else {
-      localStorage.removeItem(USER_STORAGE_KEY);
-    }
-  }, [user]);
+    // Check for active session on mount
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (session?.user) {
+          setSupabaseUser(session.user);
+          const metadata = session.user.user_metadata;
+          setUser({
+            firstName: metadata.firstName || "",
+            lastName: metadata.lastName || "",
+            email: session.user.email || "",
+            company: metadata.company || "",
+          });
+        }
+      } catch (error) {
+        console.error("Error initializing auth:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeAuth();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        setSupabaseUser(session.user);
+        const metadata = session.user.user_metadata;
+        setUser({
+          firstName: metadata.firstName || "",
+          lastName: metadata.lastName || "",
+          email: session.user.email || "",
+          company: metadata.company || "",
+        });
+      } else {
+        setSupabaseUser(null);
+        setUser(null);
+      }
+      setIsLoading(false);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const login = (profile: UserProfile) => {
     setUser(profile);
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
+    setSupabaseUser(null);
   };
 
   const updateProfile = (updates: Partial<UserProfile>) => {
@@ -59,7 +93,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <UserContext.Provider value={{ user, isAuthenticated, login, logout, updateProfile }}>
+    <UserContext.Provider value={{ user, isAuthenticated, isLoading, login, logout, updateProfile, supabaseUser }}>
       {children}
     </UserContext.Provider>
   );
