@@ -12,15 +12,23 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
   useEffect(() => {
     // Check if user has completed the tour before
     const hasCompletedTour = localStorage.getItem("onboarding_tour_completed");
-    console.log("Onboarding tour check:", { hasCompletedTour, run });
+    console.log("Onboarding tour check:", { hasCompletedTour, run, runTour });
     if (!hasCompletedTour && run) {
       // Small delay to ensure DOM is ready
       setTimeout(() => {
-        console.log("Starting onboarding tour");
+        console.log("Starting onboarding tour - setting runTour to true");
         setRunTour(true);
       }, 500);
+    } else {
+      console.log("NOT starting tour because:", {
+        hasCompletedTour: !!hasCompletedTour,
+        run,
+        reason: hasCompletedTour ? "already completed" : "run is false"
+      });
     }
   }, [run]);
+
+  console.log("OnboardingTour render:", { runTour });
 
   const steps: Step[] = [
     {
@@ -92,10 +100,12 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
   ];
 
   const handleJoyrideCallback = (data: CallBackProps) => {
-    const { status } = data;
+    const { status, type } = data;
+    console.log("Joyride callback:", { status, type, data });
 
     if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
       // Mark tour as completed
+      console.log("Tour completed or skipped, saving to localStorage");
       localStorage.setItem("onboarding_tour_completed", "true");
       setRunTour(false);
       onComplete?.();
