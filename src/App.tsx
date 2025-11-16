@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { UserProvider } from "@/contexts/UserContext";
 import { RolesProvider } from "@/contexts/RolesContext";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { FeedbackPopup } from "@/components/FeedbackPopup";
 import Index from "./pages/Index";
 import Features from "./pages/Features";
 import Pricing from "./pages/Pricing";
@@ -37,6 +38,7 @@ const App = () => (
         <TooltipProvider>
         <Toaster />
         <Sonner />
+        <FeedbackPopup />
         <BrowserRouter>
           <ScrollToTop />
           <Routes>
