@@ -47,6 +47,9 @@ export const Navbar = () => {
             <Link to="/docs" className="text-foreground hover:text-primary transition-colors">
               Docs
             </Link>
+            <Link to="/feature-requests" className="text-foreground hover:text-primary transition-colors">
+              Feature Requests
+            </Link>
             {isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -125,6 +128,13 @@ export const Navbar = () => {
               onClick={() => setIsMenuOpen(false)}
             >
               Docs
+            </Link>
+            <Link
+              to="/feature-requests"
+              className="block py-2 text-foreground hover:text-primary transition-colors"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Feature Requests
             </Link>
             {isAuthenticated ? (
               <>
