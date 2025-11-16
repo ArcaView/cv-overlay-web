@@ -1,5 +1,4 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { OnboardingTour } from "@/components/OnboardingTour";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,59 +13,20 @@ import {
   CheckCircle2,
   Copy,
   Eye,
-  EyeOff,
-  Play
+  EyeOff
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 const Dashboard = () => {
   const [showApiKey, setShowApiKey] = useState(false);
-  const [runTour, setRunTour] = useState(false);
   const apiKey = "ps_live_1234567890abcdef1234567890abcdef";
-
-  // Log when runTour changes
-  useEffect(() => {
-    console.log("DASHBOARD: runTour state changed to:", runTour);
-  }, [runTour]);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
   };
 
-  // Check if tour should auto-start from sidebar button click - check every 500ms
-  useEffect(() => {
-    console.log("DASHBOARD: useEffect running, setting up interval to check localStorage...");
-
-    const checkInterval = setInterval(() => {
-      const shouldStartTour = localStorage.getItem("start_onboarding_tour");
-      if (shouldStartTour === "true") {
-        console.log("DASHBOARD: Found start_onboarding_tour=true in localStorage!");
-        localStorage.removeItem("start_onboarding_tour");
-        console.log("DASHBOARD: Setting runTour to TRUE");
-        setRunTour(true);
-        clearInterval(checkInterval);
-      }
-    }, 500);
-
-    return () => {
-      console.log("DASHBOARD: Cleaning up interval");
-      clearInterval(checkInterval);
-    };
-  }, []);
-
-  const handleStartTour = () => {
-    console.log("Starting tour...");
-    setRunTour(false);
-    // Small delay to ensure state updates
-    setTimeout(() => {
-      console.log("Setting runTour to true");
-      setRunTour(true);
-    }, 100);
-  };
-
   return (
     <DashboardLayout>
-      <OnboardingTour run={runTour} />
       <div className="bg-muted/30 min-h-full">
         {/* Header */}
         <section className="py-12 bg-gradient-to-b from-primary/5 to-background">
@@ -78,20 +38,9 @@ const Dashboard = () => {
                   Welcome back! Here's your API overview.
                 </p>
               </div>
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleStartTour}
-                  className="flex items-center gap-2"
-                >
-                  <Play className="w-4 h-4" />
-                  Start Tour
-                </Button>
-                <Badge className="bg-success/10 text-success border-success/20">
-                  Starter Plan • Active
-                </Badge>
-              </div>
+              <Badge className="bg-success/10 text-success border-success/20">
+                Starter Plan • Active
+              </Badge>
             </div>
           </div>
         </section>

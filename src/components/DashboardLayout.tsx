@@ -1,10 +1,10 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { resetOnboardingTour } from "@/components/OnboardingTour";
+import { resetOnboardingTour, OnboardingTour } from "@/components/OnboardingTour";
 import {
   LayoutDashboard,
   Code2,
@@ -81,9 +81,37 @@ const navItems = [
 
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const location = useLocation();
+  const [runTour, setRunTour] = useState(false);
+
+  // Check if tour should auto-start from sidebar button click - check every 500ms
+  useEffect(() => {
+    console.log("LAYOUT: useEffect running, setting up interval to check localStorage...");
+
+    const checkInterval = setInterval(() => {
+      const shouldStartTour = localStorage.getItem("start_onboarding_tour");
+      if (shouldStartTour === "true") {
+        console.log("LAYOUT: Found start_onboarding_tour=true in localStorage!");
+        localStorage.removeItem("start_onboarding_tour");
+        console.log("LAYOUT: Setting runTour to TRUE");
+        setRunTour(true);
+        clearInterval(checkInterval);
+      }
+    }, 500);
+
+    return () => {
+      console.log("LAYOUT: Cleaning up interval");
+      clearInterval(checkInterval);
+    };
+  }, []);
+
+  // Log when runTour changes
+  useEffect(() => {
+    console.log("LAYOUT: runTour state changed to:", runTour);
+  }, [runTour]);
 
   return (
     <div className="min-h-screen flex flex-col">
+      <OnboardingTour run={runTour} />
       <Navbar />
 
       <div className="flex-1 flex">
