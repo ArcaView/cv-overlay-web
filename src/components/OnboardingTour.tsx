@@ -12,9 +12,13 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
   useEffect(() => {
     // Check if user has completed the tour before
     const hasCompletedTour = localStorage.getItem("onboarding_tour_completed");
+    console.log("Onboarding tour check:", { hasCompletedTour, run });
     if (!hasCompletedTour && run) {
       // Small delay to ensure DOM is ready
-      setTimeout(() => setRunTour(true), 500);
+      setTimeout(() => {
+        console.log("Starting onboarding tour");
+        setRunTour(true);
+      }, 500);
     }
   }, [run]);
 

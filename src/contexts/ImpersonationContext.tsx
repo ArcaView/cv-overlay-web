@@ -51,42 +51,47 @@ export const ImpersonationProvider = ({ children }: { children: ReactNode }) => 
     if (!supabaseUser) return;
 
     const checkActiveSessions = async () => {
-      // Check if user is admin with active impersonation
-      const { data: adminSessions } = await supabase
-        .from("impersonation_sessions")
-        .select("*")
-        .eq("admin_user_id", supabaseUser.id)
-        .eq("status", "active")
-        .single();
+      try {
+        // Check if user is admin with active impersonation
+        const { data: adminSessions, error: adminError } = await supabase
+          .from("impersonation_sessions")
+          .select("*")
+          .eq("admin_user_id", supabaseUser.id)
+          .eq("status", "active")
+          .maybeSingle();
 
-      if (adminSessions) {
-        setCurrentSession(adminSessions);
-      }
+        if (!adminError && adminSessions) {
+          setCurrentSession(adminSessions);
+        }
 
-      // Check if user is being impersonated
-      const { data: targetSessions } = await supabase
-        .from("impersonation_sessions")
-        .select("*")
-        .eq("target_user_id", supabaseUser.id)
-        .eq("status", "active")
-        .single();
+        // Check if user is being impersonated
+        const { data: targetSessions, error: targetError } = await supabase
+          .from("impersonation_sessions")
+          .select("*")
+          .eq("target_user_id", supabaseUser.id)
+          .eq("status", "active")
+          .maybeSingle();
 
-      if (targetSessions) {
-        setCurrentSession(targetSessions);
-      }
+        if (!targetError && targetSessions) {
+          setCurrentSession(targetSessions);
+        }
 
-      // Check for pending requests (for target users)
-      const { data: pending } = await supabase
-        .from("impersonation_sessions")
-        .select("*")
-        .eq("target_user_id", supabaseUser.id)
-        .eq("status", "pending")
-        .order("requested_at", { ascending: false })
-        .limit(1)
-        .single();
+        // Check for pending requests (for target users)
+        const { data: pending, error: pendingError } = await supabase
+          .from("impersonation_sessions")
+          .select("*")
+          .eq("target_user_id", supabaseUser.id)
+          .eq("status", "pending")
+          .order("requested_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
 
-      if (pending) {
-        setPendingRequest(pending);
+        if (!pendingError && pending) {
+          setPendingRequest(pending);
+        }
+      } catch (error) {
+        // Silently fail if impersonation tables don't exist
+        console.log("Impersonation system not configured:", error);
       }
     };
 

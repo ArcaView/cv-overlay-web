@@ -30,10 +30,14 @@ const Dashboard = () => {
   };
 
   const handleRestartTour = () => {
+    console.log("Restarting tour...");
     resetOnboardingTour();
     setRunTour(false);
     // Small delay to ensure state updates
-    setTimeout(() => setRunTour(true), 100);
+    setTimeout(() => {
+      console.log("Setting runTour to true");
+      setRunTour(true);
+    }, 100);
   };
 
   return (
