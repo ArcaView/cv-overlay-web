@@ -1,6 +1,6 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { OnboardingTour } from "@/components/OnboardingTour";
+import { OnboardingTour, resetOnboardingTour } from "@/components/OnboardingTour";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,21 +15,30 @@ import {
   CheckCircle2,
   Copy,
   Eye,
-  EyeOff
+  EyeOff,
+  Play
 } from "lucide-react";
 import { useState } from "react";
 
 const Dashboard = () => {
   const [showApiKey, setShowApiKey] = useState(false);
+  const [runTour, setRunTour] = useState(true);
   const apiKey = "ps_live_1234567890abcdef1234567890abcdef";
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
   };
 
+  const handleRestartTour = () => {
+    resetOnboardingTour();
+    setRunTour(false);
+    // Small delay to ensure state updates
+    setTimeout(() => setRunTour(true), 100);
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
-      <OnboardingTour />
+      <OnboardingTour run={runTour} />
       <Navbar />
 
       <main className="flex-1 bg-muted/30">
@@ -43,9 +52,20 @@ const Dashboard = () => {
                   Welcome back! Here's your API overview.
                 </p>
               </div>
-              <Badge className="bg-success/10 text-success border-success/20">
-                Starter Plan • Active
-              </Badge>
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRestartTour}
+                  className="flex items-center gap-2"
+                >
+                  <Play className="w-4 h-4" />
+                  Restart Tour
+                </Button>
+                <Badge className="bg-success/10 text-success border-success/20">
+                  Starter Plan • Active
+                </Badge>
+              </div>
             </div>
           </div>
         </section>
