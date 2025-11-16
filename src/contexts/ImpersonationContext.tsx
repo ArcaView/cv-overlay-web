@@ -175,35 +175,11 @@ export const ImpersonationProvider = ({ children }: { children: ReactNode }) => 
     }
 
     try {
-      // Get target user ID
-      const { data: targetUser, error: userError } = await supabase
-        .from("auth.users")
-        .select("id")
-        .eq("email", targetEmail)
-        .single();
-
-      if (userError || !targetUser) {
-        toast({
-          title: "User Not Found",
-          description: `No user found with email: ${targetEmail}`,
-          variant: "destructive",
-        });
-        return false;
-      }
-
-      // Create impersonation request
-      const { data: session, error } = await supabase
-        .from("impersonation_sessions")
-        .insert({
-          admin_user_id: supabaseUser.id,
-          admin_email: user.email,
-          target_user_id: targetUser.id,
-          target_email: targetEmail,
-          status: "pending",
-          reason: reason || "Support request",
-        })
-        .select()
-        .single();
+      // Use RPC function to create impersonation request (handles user lookup server-side)
+      const { data: session, error } = await supabase.rpc("create_impersonation_request", {
+        p_target_email: targetEmail,
+        p_reason: reason || "Support request",
+      });
 
       if (error) {
         console.error("Impersonation request error:", error);

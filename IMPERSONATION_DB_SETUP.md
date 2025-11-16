@@ -121,6 +121,46 @@ CREATE POLICY "System can insert audit logs"
 ## Step 3: Create helper functions
 
 ```sql
+-- Function to create impersonation request (handles user lookup)
+CREATE OR REPLACE FUNCTION public.create_impersonation_request(
+  p_target_email TEXT,
+  p_reason TEXT DEFAULT 'Support request'
+)
+RETURNS UUID AS $$
+DECLARE
+  v_target_user_id UUID;
+  v_session_id UUID;
+BEGIN
+  -- Find target user by email
+  SELECT id INTO v_target_user_id
+  FROM auth.users
+  WHERE email = p_target_email;
+
+  IF v_target_user_id IS NULL THEN
+    RAISE EXCEPTION 'User not found with email: %', p_target_email;
+  END IF;
+
+  -- Create impersonation session
+  INSERT INTO public.impersonation_sessions (
+    admin_user_id,
+    admin_email,
+    target_user_id,
+    target_email,
+    status,
+    reason
+  ) VALUES (
+    auth.uid(),
+    (SELECT email FROM auth.users WHERE id = auth.uid()),
+    v_target_user_id,
+    p_target_email,
+    'pending',
+    p_reason
+  ) RETURNING id INTO v_session_id;
+
+  RETURN v_session_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- Function to automatically expire old pending requests (older than 5 minutes)
 CREATE OR REPLACE FUNCTION public.expire_old_impersonation_requests()
 RETURNS void AS $$
