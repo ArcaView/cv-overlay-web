@@ -13,7 +13,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
 
 // Admin emails - should match FeatureRequests.tsx and AdminDashboard.tsx
-const ADMIN_EMAILS = ["admin@qualifyr.ai", "your@email.com"];
+const ADMIN_EMAILS = ["admin@qualifyr.ai", "btjtownsend@outlook.com"];
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

@@ -38,7 +38,7 @@ interface FeatureRequest {
 }
 
 // Admin emails - should match FeatureRequests.tsx and Navbar.tsx
-const ADMIN_EMAILS = ["admin@qualifyr.ai", "your@email.com"];
+const ADMIN_EMAILS = ["admin@qualifyr.ai", "btjtownsend@outlook.com"];
 
 const AdminDashboard = () => {
   const navigate = useNavigate();

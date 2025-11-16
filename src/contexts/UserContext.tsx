@@ -17,6 +17,8 @@ interface UserContextType {
   logout: () => Promise<void>;
   updateProfile: (profile: Partial<UserProfile>) => void;
   supabaseUser: User | null;
+  setDevUser: (profile: UserProfile | null) => void;
+  isDevMode: boolean;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -25,8 +27,11 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [supabaseUser, setSupabaseUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [devUser, setDevUser] = useState<UserProfile | null>(null);
 
-  const isAuthenticated = user !== null && supabaseUser !== null;
+  const isDevMode = import.meta.env.DEV && devUser !== null;
+  const isAuthenticated = isDevMode ? devUser !== null : (user !== null && supabaseUser !== null);
+  const effectiveUser = isDevMode ? devUser : user;
 
   useEffect(() => {
     // Check for active session on mount
@@ -93,7 +98,19 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <UserContext.Provider value={{ user, isAuthenticated, isLoading, login, logout, updateProfile, supabaseUser }}>
+    <UserContext.Provider
+      value={{
+        user: effectiveUser,
+        isAuthenticated,
+        isLoading,
+        login,
+        logout,
+        updateProfile,
+        supabaseUser,
+        setDevUser,
+        isDevMode,
+      }}
+    >
       {children}
     </UserContext.Provider>
   );
