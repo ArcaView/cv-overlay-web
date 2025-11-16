@@ -1,5 +1,4 @@
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
+import { DashboardLayout } from "@/components/DashboardLayout";
 import { OnboardingTour, resetOnboardingTour } from "@/components/OnboardingTour";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,11 +40,9 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <DashboardLayout>
       <OnboardingTour run={runTour} />
-      <Navbar />
-
-      <main className="flex-1 bg-muted/30">
+      <div className="bg-muted/30 min-h-full">
         {/* Header */}
         <section className="py-12 bg-gradient-to-b from-primary/5 to-background">
           <div className="container mx-auto px-4">
@@ -349,10 +346,8 @@ const Dashboard = () => {
             </div>
           </div>
         </section>
-      </main>
-
-      <Footer />
-    </div>
+      </div>
+    </DashboardLayout>
   );
 };
 
