@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { cn } from "@/lib/utils";
@@ -81,6 +81,7 @@ const navItems = [
 
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [runTour, setRunTour] = useState(false);
 
   // Check if tour should auto-start from sidebar button click - check every 500ms
@@ -91,8 +92,19 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       const shouldStartTour = localStorage.getItem("start_onboarding_tour");
       if (shouldStartTour === "true") {
         console.log("LAYOUT: Found start_onboarding_tour=true in localStorage!");
+
+        // Navigate to main dashboard if not already there
+        if (location.pathname !== "/dashboard") {
+          console.log("LAYOUT: Not on /dashboard (currently on:", location.pathname, "), navigating...");
+          // Keep the flag set so it triggers after navigation
+          navigate("/dashboard");
+          clearInterval(checkInterval);
+          return;
+        }
+
+        // We're on the right page, start the tour
+        console.log("LAYOUT: On /dashboard, starting tour");
         localStorage.removeItem("start_onboarding_tour");
-        console.log("LAYOUT: Setting runTour to TRUE");
         setRunTour(true);
         clearInterval(checkInterval);
       }
@@ -102,7 +114,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       console.log("LAYOUT: Cleaning up interval");
       clearInterval(checkInterval);
     };
-  }, []);
+  }, [location.pathname, navigate]);
 
   // Log when runTour changes
   useEffect(() => {
