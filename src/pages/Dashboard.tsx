@@ -33,37 +33,24 @@ const Dashboard = () => {
     navigator.clipboard.writeText(text);
   };
 
-  // Check if tour should auto-start from sidebar button click
+  // Check if tour should auto-start from sidebar button click - check every 500ms
   useEffect(() => {
-    console.log("DASHBOARD: useEffect running, checking localStorage...");
-    const shouldStartTour = localStorage.getItem("start_onboarding_tour");
-    console.log("DASHBOARD: start_onboarding_tour =", shouldStartTour);
-    if (shouldStartTour === "true") {
-      console.log("DASHBOARD: Auto-starting tour from localStorage flag");
-      localStorage.removeItem("start_onboarding_tour");
-      setTimeout(() => {
+    console.log("DASHBOARD: useEffect running, setting up interval to check localStorage...");
+
+    const checkInterval = setInterval(() => {
+      const shouldStartTour = localStorage.getItem("start_onboarding_tour");
+      if (shouldStartTour === "true") {
+        console.log("DASHBOARD: Found start_onboarding_tour=true in localStorage!");
+        localStorage.removeItem("start_onboarding_tour");
         console.log("DASHBOARD: Setting runTour to TRUE");
         setRunTour(true);
-      }, 500);
-    } else {
-      console.log("DASHBOARD: NOT auto-starting tour, shouldStartTour =", shouldStartTour);
-    }
-
-    // Listen for custom event from sidebar button
-    const handleStartTourEvent = () => {
-      console.log("DASHBOARD: Received 'startTour' event from sidebar!");
-      setTimeout(() => {
-        console.log("DASHBOARD: Setting runTour to TRUE from event");
-        setRunTour(true);
-      }, 100);
-    };
-
-    window.addEventListener('startTour', handleStartTourEvent);
-    console.log("DASHBOARD: Event listener added for 'startTour'");
+        clearInterval(checkInterval);
+      }
+    }, 500);
 
     return () => {
-      window.removeEventListener('startTour', handleStartTourEvent);
-      console.log("DASHBOARD: Event listener removed");
+      console.log("DASHBOARD: Cleaning up interval");
+      clearInterval(checkInterval);
     };
   }, []);
 
