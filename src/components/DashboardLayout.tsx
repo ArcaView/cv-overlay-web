@@ -102,7 +102,9 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               size="sm"
               className="w-full mb-6 justify-start"
               onClick={() => {
+                console.log("SIDEBAR: Start Tour button clicked!");
                 resetOnboardingTour();
+                console.log("SIDEBAR: resetOnboardingTour called, reloading page...");
                 window.location.reload();
               }}
             >
@@ -146,7 +148,9 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 size="sm"
                 className="w-full justify-start"
                 onClick={() => {
+                  console.log("MOBILE: Start Tour button clicked!");
                   resetOnboardingTour();
+                  console.log("MOBILE: resetOnboardingTour called, reloading page...");
                   window.location.reload();
                 }}
               >

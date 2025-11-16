@@ -24,19 +24,29 @@ const Dashboard = () => {
   const [runTour, setRunTour] = useState(false);
   const apiKey = "ps_live_1234567890abcdef1234567890abcdef";
 
+  // Log when runTour changes
+  useEffect(() => {
+    console.log("DASHBOARD: runTour state changed to:", runTour);
+  }, [runTour]);
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
   };
 
   // Check if tour should auto-start from sidebar button click
   useEffect(() => {
+    console.log("DASHBOARD: useEffect running, checking localStorage...");
     const shouldStartTour = localStorage.getItem("start_onboarding_tour");
+    console.log("DASHBOARD: start_onboarding_tour =", shouldStartTour);
     if (shouldStartTour === "true") {
-      console.log("Auto-starting tour from localStorage flag");
+      console.log("DASHBOARD: Auto-starting tour from localStorage flag");
       localStorage.removeItem("start_onboarding_tour");
       setTimeout(() => {
+        console.log("DASHBOARD: Setting runTour to TRUE");
         setRunTour(true);
       }, 500);
+    } else {
+      console.log("DASHBOARD: NOT auto-starting tour, shouldStartTour =", shouldStartTour);
     }
   }, []);
 
