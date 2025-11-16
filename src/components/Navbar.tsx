@@ -31,11 +31,8 @@ export const Navbar = () => {
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">Q</span>
-            </div>
-            <span className="font-bold text-xl">Qualifyr.AI</span>
+          <Link to="/" className="flex items-center">
+            <span className="font-bold text-2xl">Qualifyr.AI</span>
           </Link>
 
           {/* Desktop Navigation */}
