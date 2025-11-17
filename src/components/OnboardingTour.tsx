@@ -131,78 +131,77 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
 
   const handleJoyrideCallback = (data: CallBackProps) => {
     const { status, type, action, index } = data;
-    console.log("Joyride callback:", { status, type, action, index, data });
+    console.log("Joyride callback:", { status, type, action, index });
 
-    // Handle navigation based on step index
-    if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
+    // Only handle STEP_AFTER events for navigation (when user clicks Next/Back)
+    if (type === EVENTS.STEP_AFTER && (action === ACTIONS.NEXT || action === ACTIONS.PREV)) {
       const nextIndex = index + (action === ACTIONS.PREV ? -1 : 1);
+      console.log("Step after, moving to index:", nextIndex);
 
-      // Navigate to appropriate page based on next step
-      if (action === ACTIONS.NEXT || type === EVENTS.TARGET_NOT_FOUND) {
-        if (nextIndex === 3) {
-          // Step 3: Navigate to Parse CV page
-          console.log("Navigating to /dashboard/parse");
-          navigate("/dashboard/parse");
-          setTimeout(() => setStepIndex(nextIndex), 500);
-          return;
-        } else if (nextIndex === 4) {
-          // Step 4: Navigate to Open Roles page
-          console.log("Navigating to /dashboard/roles");
-          navigate("/dashboard/roles");
-          setTimeout(() => setStepIndex(nextIndex), 500);
-          return;
-        } else if (nextIndex === 5) {
-          // Step 5: Navigate to Candidates page
-          console.log("Navigating to /dashboard/candidates");
-          navigate("/dashboard/candidates");
-          setTimeout(() => setStepIndex(nextIndex), 500);
-          return;
-        } else if (nextIndex === 6) {
-          // Step 6: Navigate to Developer page
-          console.log("Navigating to /dashboard/developer");
-          navigate("/dashboard/developer");
-          setTimeout(() => setStepIndex(nextIndex), 500);
-          return;
-        } else if (nextIndex === 7) {
-          // Step 7: Navigate to Analytics page
-          console.log("Navigating to /dashboard/analytics");
-          navigate("/dashboard/analytics");
-          setTimeout(() => setStepIndex(nextIndex), 500);
-          return;
-        } else if (nextIndex === 8) {
-          // Step 8: Navigate back to Overview for final message
-          console.log("Navigating back to /dashboard");
-          navigate("/dashboard");
-          setTimeout(() => setStepIndex(nextIndex), 500);
-          return;
-        }
-      } else if (action === ACTIONS.PREV) {
-        // Handle going back
-        if (nextIndex === 2) {
-          navigate("/dashboard");
-          setTimeout(() => setStepIndex(nextIndex), 500);
-          return;
-        } else if (nextIndex === 3) {
-          navigate("/dashboard/parse");
-          setTimeout(() => setStepIndex(nextIndex), 500);
-          return;
-        } else if (nextIndex === 4) {
-          navigate("/dashboard/roles");
-          setTimeout(() => setStepIndex(nextIndex), 500);
-          return;
-        } else if (nextIndex === 5) {
-          navigate("/dashboard/candidates");
-          setTimeout(() => setStepIndex(nextIndex), 500);
-          return;
-        } else if (nextIndex === 6) {
-          navigate("/dashboard/developer");
-          setTimeout(() => setStepIndex(nextIndex), 500);
-          return;
-        } else if (nextIndex === 7) {
-          navigate("/dashboard/analytics");
-          setTimeout(() => setStepIndex(nextIndex), 500);
-          return;
-        }
+      // Pause the tour and navigate to the appropriate page
+      setRunTour(false);
+
+      // Navigate based on next step
+      if (nextIndex === 3) {
+        // Step 3: Parse CV page
+        console.log("Navigating to /dashboard/parse");
+        navigate("/dashboard/parse");
+        setTimeout(() => {
+          setStepIndex(nextIndex);
+          setRunTour(true);
+        }, 800);
+      } else if (nextIndex === 4) {
+        // Step 4: Open Roles page
+        console.log("Navigating to /dashboard/roles");
+        navigate("/dashboard/roles");
+        setTimeout(() => {
+          setStepIndex(nextIndex);
+          setRunTour(true);
+        }, 800);
+      } else if (nextIndex === 5) {
+        // Step 5: Candidates page
+        console.log("Navigating to /dashboard/candidates");
+        navigate("/dashboard/candidates");
+        setTimeout(() => {
+          setStepIndex(nextIndex);
+          setRunTour(true);
+        }, 800);
+      } else if (nextIndex === 6) {
+        // Step 6: Developer page
+        console.log("Navigating to /dashboard/developer");
+        navigate("/dashboard/developer");
+        setTimeout(() => {
+          setStepIndex(nextIndex);
+          setRunTour(true);
+        }, 800);
+      } else if (nextIndex === 7) {
+        // Step 7: Analytics page
+        console.log("Navigating to /dashboard/analytics");
+        navigate("/dashboard/analytics");
+        setTimeout(() => {
+          setStepIndex(nextIndex);
+          setRunTour(true);
+        }, 800);
+      } else if (nextIndex === 8) {
+        // Step 8: Back to Overview for completion
+        console.log("Navigating back to /dashboard");
+        navigate("/dashboard");
+        setTimeout(() => {
+          setStepIndex(nextIndex);
+          setRunTour(true);
+        }, 800);
+      } else if (nextIndex === 2 && action === ACTIONS.PREV) {
+        // Going back to Overview from Parse CV
+        console.log("Navigating back to /dashboard");
+        navigate("/dashboard");
+        setTimeout(() => {
+          setStepIndex(nextIndex);
+          setRunTour(true);
+        }, 800);
+      } else {
+        // No navigation needed, just update step index
+        setStepIndex(nextIndex);
+        setRunTour(true);
       }
     }
 
