@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Award, BookOpen, Briefcase, Certificate, TrendingUp, Code } from "lucide-react";
+import { Award, BookOpen, Briefcase, BadgeCheck, TrendingUp, Code } from "lucide-react";
 import { ScoreBreakdown } from "@/contexts/RolesContext";
 
 interface ScoreBreakdownCardProps {
@@ -49,7 +49,7 @@ export const ScoreBreakdownCard = ({ scoreBreakdown, totalScore }: ScoreBreakdow
       name: "Certifications",
       score: scoreBreakdown.certifications || 0,
       weight: 5.0,
-      icon: Certificate,
+      icon: BadgeCheck,
       color: "text-orange-600 dark:text-orange-400",
       bgColor: "bg-orange-100 dark:bg-orange-900/30"
     },
