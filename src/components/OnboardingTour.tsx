@@ -13,12 +13,24 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
   const [stepIndex, setStepIndex] = useState(0);
 
   useEffect(() => {
-    // Only start tour if explicitly requested via run prop
-    if (run) {
-      console.log("OnboardingTour: run prop is TRUE - waiting 800ms for DOM to be ready");
-      // Reset to first step
+    // Check if tour is already running (persisted in localStorage)
+    const tourActive = localStorage.getItem("onboarding_tour_active");
+    const savedStep = localStorage.getItem("onboarding_tour_step");
+
+    if (tourActive === "true" && savedStep) {
+      // Resume tour from saved step
+      console.log("OnboardingTour: Resuming tour at step", savedStep);
+      const step = parseInt(savedStep, 10);
+      setStepIndex(step);
+      setTimeout(() => {
+        setRunTour(true);
+      }, 800);
+    } else if (run) {
+      // Start new tour
+      console.log("OnboardingTour: run prop is TRUE - starting new tour");
       setStepIndex(0);
-      // Wait for DOM elements to be fully rendered
+      localStorage.setItem("onboarding_tour_active", "true");
+      localStorage.setItem("onboarding_tour_step", "0");
       setTimeout(() => {
         console.log("OnboardingTour: Starting tour NOW");
         setRunTour(true);
@@ -138,70 +150,42 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
       const nextIndex = index + (action === ACTIONS.PREV ? -1 : 1);
       console.log("Step after, moving to index:", nextIndex);
 
-      // Pause the tour and navigate to the appropriate page
-      setRunTour(false);
+      // Save tour state to localStorage so it persists across page navigation
+      localStorage.setItem("onboarding_tour_active", "true");
+      localStorage.setItem("onboarding_tour_step", nextIndex.toString());
 
       // Navigate based on next step
       if (nextIndex === 3) {
         // Step 3: Parse CV page
         console.log("Navigating to /dashboard/parse");
         navigate("/dashboard/parse");
-        setTimeout(() => {
-          setStepIndex(nextIndex);
-          setRunTour(true);
-        }, 800);
       } else if (nextIndex === 4) {
         // Step 4: Open Roles page
         console.log("Navigating to /dashboard/roles");
         navigate("/dashboard/roles");
-        setTimeout(() => {
-          setStepIndex(nextIndex);
-          setRunTour(true);
-        }, 800);
       } else if (nextIndex === 5) {
         // Step 5: Candidates page
         console.log("Navigating to /dashboard/candidates");
         navigate("/dashboard/candidates");
-        setTimeout(() => {
-          setStepIndex(nextIndex);
-          setRunTour(true);
-        }, 800);
       } else if (nextIndex === 6) {
         // Step 6: Developer page
         console.log("Navigating to /dashboard/developer");
         navigate("/dashboard/developer");
-        setTimeout(() => {
-          setStepIndex(nextIndex);
-          setRunTour(true);
-        }, 800);
       } else if (nextIndex === 7) {
         // Step 7: Analytics page
         console.log("Navigating to /dashboard/analytics");
         navigate("/dashboard/analytics");
-        setTimeout(() => {
-          setStepIndex(nextIndex);
-          setRunTour(true);
-        }, 800);
       } else if (nextIndex === 8) {
         // Step 8: Back to Overview for completion
         console.log("Navigating back to /dashboard");
         navigate("/dashboard");
-        setTimeout(() => {
-          setStepIndex(nextIndex);
-          setRunTour(true);
-        }, 800);
       } else if (nextIndex === 2 && action === ACTIONS.PREV) {
         // Going back to Overview from Parse CV
         console.log("Navigating back to /dashboard");
         navigate("/dashboard");
-        setTimeout(() => {
-          setStepIndex(nextIndex);
-          setRunTour(true);
-        }, 800);
       } else {
         // No navigation needed, just update step index
         setStepIndex(nextIndex);
-        setRunTour(true);
       }
     }
 
@@ -209,6 +193,8 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
       // Mark tour as completed
       console.log("Tour completed or skipped, saving to localStorage");
       localStorage.setItem("onboarding_tour_completed", "true");
+      localStorage.removeItem("onboarding_tour_active");
+      localStorage.removeItem("onboarding_tour_step");
       setRunTour(false);
       setStepIndex(0);
       // Navigate back to dashboard
@@ -264,12 +250,16 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
 
 // Helper function to reset tour and request it to start
 export const resetOnboardingTour = () => {
-  console.log("resetOnboardingTour: Removing onboarding_tour_completed from localStorage");
+  console.log("resetOnboardingTour: Clearing all tour flags");
   localStorage.removeItem("onboarding_tour_completed");
+  localStorage.removeItem("onboarding_tour_active");
+  localStorage.removeItem("onboarding_tour_step");
   console.log("resetOnboardingTour: Setting start_onboarding_tour=true in localStorage");
   localStorage.setItem("start_onboarding_tour", "true");
   console.log("resetOnboardingTour: localStorage now has:", {
     completed: localStorage.getItem("onboarding_tour_completed"),
-    start: localStorage.getItem("start_onboarding_tour")
+    start: localStorage.getItem("start_onboarding_tour"),
+    active: localStorage.getItem("onboarding_tour_active"),
+    step: localStorage.getItem("onboarding_tour_step")
   });
 };

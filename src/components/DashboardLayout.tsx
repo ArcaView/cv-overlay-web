@@ -90,6 +90,16 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
     const checkInterval = setInterval(() => {
       const shouldStartTour = localStorage.getItem("start_onboarding_tour");
+      const tourActive = localStorage.getItem("onboarding_tour_active");
+
+      // Don't start a new tour if one is already running
+      if (tourActive === "true") {
+        console.log("LAYOUT: Tour already active, setting runTour to true");
+        setRunTour(true);
+        clearInterval(checkInterval);
+        return;
+      }
+
       if (shouldStartTour === "true") {
         console.log("LAYOUT: Found start_onboarding_tour=true in localStorage!");
         localStorage.removeItem("start_onboarding_tour");
