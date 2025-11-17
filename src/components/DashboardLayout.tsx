@@ -102,11 +102,17 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           return;
         }
 
-        // We're on the right page, start the tour
-        console.log("LAYOUT: On /dashboard, starting tour");
-        localStorage.removeItem("start_onboarding_tour");
-        setRunTour(true);
-        clearInterval(checkInterval);
+        // We're on the right page, wait for dashboard elements to be rendered
+        console.log("LAYOUT: On /dashboard, checking if elements are ready...");
+        const statsElement = document.querySelector("[data-tour='stats-overview']");
+        if (statsElement) {
+          console.log("LAYOUT: Dashboard elements found! Starting tour");
+          localStorage.removeItem("start_onboarding_tour");
+          setRunTour(true);
+          clearInterval(checkInterval);
+        } else {
+          console.log("LAYOUT: Dashboard elements not ready yet, will check again in 500ms");
+        }
       }
     }, 500);
 
