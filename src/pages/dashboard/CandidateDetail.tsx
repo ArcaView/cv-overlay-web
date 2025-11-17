@@ -48,6 +48,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useRoles, type Interview } from "@/contexts/RolesContext";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
+import { ScoreBreakdownCard } from "@/components/ScoreBreakdownCard";
+import { PrestigeBreakdown } from "@/components/PrestigeBreakdown";
 
 const CandidateDetail = () => {
   const { candidateId, roleId } = useParams();
@@ -308,6 +310,23 @@ const CandidateDetail = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Score Breakdown */}
+        {candidate.score_breakdown && (
+          <ScoreBreakdownCard
+            scoreBreakdown={candidate.score_breakdown}
+            totalScore={candidate.score}
+          />
+        )}
+
+        {/* Prestige Analysis */}
+        {candidate.prestige_details && candidate.prestige_score !== undefined && candidate.prestige_contribution !== undefined && (
+          <PrestigeBreakdown
+            prestigeScore={candidate.prestige_score}
+            prestigeContribution={candidate.prestige_contribution}
+            prestigeDetails={candidate.prestige_details}
+          />
+        )}
 
         {/* Status History */}
         <Card>
