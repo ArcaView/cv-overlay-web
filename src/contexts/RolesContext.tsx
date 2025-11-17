@@ -14,6 +14,36 @@ export interface StatusHistoryEntry {
   note?: string;
 }
 
+export interface PrestigeDetails {
+  company_prestige: number;
+  university_prestige: number;
+  role_level_prestige: number;
+  top_companies?: Array<{
+    company: string;
+    score: number;
+    tier: string;
+  }>;
+  top_universities?: Array<{
+    university: string;
+    score: number;
+    tier: string;
+  }>;
+  top_roles?: Array<{
+    role: string;
+    score: number;
+    level: string;
+  }>;
+}
+
+export interface ScoreBreakdown {
+  skills?: number;
+  experience?: number;
+  prestige?: number;
+  education?: number;
+  certifications?: number;
+  stability?: number;
+}
+
 export interface Candidate {
   id: string;
   name: string;
@@ -21,6 +51,10 @@ export interface Candidate {
   phone: string;
   fileName: string;
   score?: number;
+  score_breakdown?: ScoreBreakdown;
+  prestige_score?: number;
+  prestige_contribution?: number;
+  prestige_details?: PrestigeDetails;
   fit?: 'excellent' | 'good' | 'fair';
   appliedDate: string;
   skills: string[];
@@ -107,6 +141,47 @@ const initialRoles: Role[] = [
         phone: '+1-555-0124',
         fileName: 'michael_chen_cv.pdf',
         score: 92,
+        score_breakdown: {
+          skills: 94,
+          experience: 88,
+          prestige: 94,
+          education: 92,
+          certifications: 85,
+          stability: 90
+        },
+        prestige_score: 94,
+        prestige_contribution: 7.05,
+        prestige_details: {
+          company_prestige: 100,
+          university_prestige: 100,
+          role_level_prestige: 70,
+          top_companies: [
+            {
+              company: 'Google',
+              score: 100,
+              tier: 'Tier 1 (Top Tech Giants - FAANG)'
+            },
+            {
+              company: 'Stripe',
+              score: 85,
+              tier: 'Tier 2 (Unicorns & Major Tech)'
+            }
+          ],
+          top_universities: [
+            {
+              university: 'MIT',
+              score: 100,
+              tier: 'Tier 1 (Ivy League & Top Global Universities)'
+            }
+          ],
+          top_roles: [
+            {
+              role: 'Senior Software Engineer',
+              score: 70,
+              level: 'Senior/Lead'
+            }
+          ]
+        },
         fit: 'excellent',
         appliedDate: '2024-01-19',
         skills: ['React', 'Vue.js', 'TypeScript', 'Docker'],
@@ -123,18 +198,18 @@ const initialRoles: Role[] = [
             id: 'int2',
             date: '2024-01-22',
             interviewer: 'Sarah Wilson',
-            notes: 'Exceptional candidate. Very strong architecture knowledge and leadership experience.',
+            notes: 'Exceptional candidate. Very strong architecture knowledge and leadership experience. Previous experience at Google shows in his system design approach.',
             type: 'technical'
           },
           {
             id: 'int3',
             date: '2024-01-24',
             interviewer: 'Mark Johnson',
-            notes: 'Great cultural fit. Team collaboration skills are outstanding.',
+            notes: 'Great cultural fit. Team collaboration skills are outstanding. MIT education and Google experience bring high standards.',
             type: 'behavioral'
           }
         ],
-        summary: 'Top-tier candidate with 7 years experience. Strong technical and leadership skills. Highly recommended for senior positions.'
+        summary: 'Top-tier candidate with 7 years experience at Google and Stripe. MIT CS graduate. Strong technical and leadership skills with prestige background. Highly recommended for senior positions.'
       },
       {
         id: '3',

@@ -200,12 +200,19 @@ const ParseCV = () => {
         breakdown: {
           skills: 92,
           experience: 85,
+          prestige: 75,
           education: 78,
           certifications: 95,
           stability: 88
         },
+        prestige_details: {
+          company_prestige: 85,
+          university_prestige: 70,
+          role_level_prestige: 55,
+          note: "Prestige scoring includes evaluation of companies, universities, and role levels (baseline-2.0)"
+        },
         risk_flags: [],
-        rationale: `Strong match for the position. The candidate has ${result.candidate.experience.length} years of relevant experience with ${result.candidate.skills.length} key skills matching the requirements. Education background aligns well with the role.`,
+        rationale: `Strong match for the position. The candidate has ${result.candidate.experience.length} years of relevant experience with ${result.candidate.skills.length} key skills matching the requirements. Education background aligns well with the role. Prestige evaluation shows solid background with recognized companies and institutions.`,
         matched_skills: result.candidate.skills.slice(0, 4),
         missing_skills: ["Kubernetes", "GraphQL"]
       });
