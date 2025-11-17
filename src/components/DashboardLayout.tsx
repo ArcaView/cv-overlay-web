@@ -103,14 +103,14 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           setTimeout(() => {
             console.log("LAYOUT: After navigation, starting tour");
             setRunTour(true);
-          }, 1000);
+          }, 500);
         } else {
           // Already on dashboard, start tour after short delay
-          console.log("LAYOUT: Already on /dashboard, starting tour after 1s delay");
+          console.log("LAYOUT: Already on /dashboard, starting tour after 500ms delay");
           setTimeout(() => {
             console.log("LAYOUT: Setting runTour to TRUE");
             setRunTour(true);
-          }, 1000);
+          }, 500);
         }
 
         clearInterval(checkInterval);

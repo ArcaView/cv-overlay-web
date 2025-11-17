@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import Joyride, { CallBackProps, STATUS, Step } from "react-joyride";
+import { useNavigate } from "react-router-dom";
+import Joyride, { CallBackProps, STATUS, Step, ACTIONS, EVENTS } from "react-joyride";
 
 interface OnboardingTourProps {
   run?: boolean;
@@ -7,17 +8,21 @@ interface OnboardingTourProps {
 }
 
 export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) => {
+  const navigate = useNavigate();
   const [runTour, setRunTour] = useState(false);
+  const [stepIndex, setStepIndex] = useState(0);
 
   useEffect(() => {
     // Only start tour if explicitly requested via run prop
     if (run) {
-      console.log("OnboardingTour: run prop is TRUE - waiting 2s for DOM to be ready");
+      console.log("OnboardingTour: run prop is TRUE - waiting 800ms for DOM to be ready");
+      // Reset to first step
+      setStepIndex(0);
       // Wait for DOM elements to be fully rendered
       setTimeout(() => {
         console.log("OnboardingTour: Starting tour NOW");
         setRunTour(true);
-      }, 2000);
+      }, 800);
     } else {
       console.log("OnboardingTour: run prop is false - NOT running tour");
       setRunTour(false);
@@ -32,8 +37,8 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
       content: (
         <div className="space-y-3">
           <h2 className="text-xl font-bold">Welcome to Qualifyr.AI! 🎉</h2>
-          <p>Let's take a quick tour of the key features to help you get started.</p>
-          <p className="text-sm text-muted-foreground">This tour will show you everything you need to know in about a minute.</p>
+          <p>Let's take a quick tour of the key features. We'll visit different sections to show you everything!</p>
+          <p className="text-sm text-muted-foreground">This tour will take about a minute.</p>
         </div>
       ),
       placement: "center",
@@ -44,7 +49,7 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
       content: (
         <div className="space-y-2">
           <h3 className="font-semibold">Your Dashboard Overview</h3>
-          <p>Track your key metrics at a glance: CVs processed, candidates scored, top matches, and average processing times.</p>
+          <p>Track your key metrics at a glance: CVs processed, candidates scored, top matches, and processing times.</p>
         </div>
       ),
       placement: "bottom",
@@ -54,60 +59,60 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
       content: (
         <div className="space-y-2">
           <h3 className="font-semibold">Quick Actions</h3>
-          <p>Access your most common tasks with one click: upload CVs, score candidates, view all candidates, or download reports.</p>
+          <p>Access common tasks with one click. Now let's explore each section in detail!</p>
         </div>
       ),
       placement: "left",
     },
     {
-      target: "[data-tour='sidebar-nav']",
-      content: (
-        <div className="space-y-2">
-          <h3 className="font-semibold">Navigation Sidebar</h3>
-          <p>Use the sidebar to navigate between different sections of your dashboard. Let's explore some key features!</p>
-        </div>
-      ),
-      placement: "right",
-    },
-    {
-      target: "[data-tour='nav-parse']",
+      target: "[data-tour='upload-cv']",
       content: (
         <div className="space-y-2">
           <h3 className="font-semibold">Parse CV</h3>
-          <p>Upload individual CVs to extract structured data and automatically parse candidate information.</p>
+          <p>Upload individual CVs to extract structured data. Supports PDF, DOCX, DOC, and TXT formats up to 10MB.</p>
         </div>
       ),
-      placement: "right",
+      placement: "bottom",
     },
     {
-      target: "[data-tour='nav-roles']",
+      target: "[data-tour='create-role']",
       content: (
         <div className="space-y-2">
-          <h3 className="font-semibold">Open Roles</h3>
-          <p>Create and manage your job openings, track applications, and organize candidates by position.</p>
+          <h3 className="font-semibold">Create Open Roles</h3>
+          <p>Click here to create job openings. Track applications and organize candidates by position.</p>
         </div>
       ),
-      placement: "right",
+      placement: "bottom",
     },
     {
-      target: "[data-tour='nav-candidates']",
+      target: "[data-tour='candidates-list']",
       content: (
         <div className="space-y-2">
-          <h3 className="font-semibold">Candidates</h3>
-          <p>View all your candidates across all roles in one place. Sort by score, filter by status, and manage your talent pipeline.</p>
+          <h3 className="font-semibold">All Candidates</h3>
+          <p>View all candidates across roles. Sort by score, filter by status, and manage your talent pipeline.</p>
         </div>
       ),
-      placement: "right",
+      placement: "top",
     },
     {
-      target: "[data-tour='nav-developer']",
+      target: "[data-tour='api-keys']",
       content: (
         <div className="space-y-2">
-          <h3 className="font-semibold">Developer Dashboard</h3>
-          <p>Access your API keys, view usage metrics, and explore our technical documentation for API integration.</p>
+          <h3 className="font-semibold">Developer API Keys</h3>
+          <p>Manage your API authentication keys for programmatic access to Qualifyr.AI.</p>
         </div>
       ),
-      placement: "right",
+      placement: "bottom",
+    },
+    {
+      target: "[data-tour='analytics-metrics']",
+      content: (
+        <div className="space-y-2">
+          <h3 className="font-semibold">Analytics & Insights</h3>
+          <p>Monitor recruitment metrics, API performance, and track your hiring progress over time.</p>
+        </div>
+      ),
+      placement: "bottom",
     },
     {
       target: "body",
@@ -125,14 +130,90 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
   ];
 
   const handleJoyrideCallback = (data: CallBackProps) => {
-    const { status, type } = data;
-    console.log("Joyride callback:", { status, type, data });
+    const { status, type, action, index } = data;
+    console.log("Joyride callback:", { status, type, action, index, data });
+
+    // Handle navigation based on step index
+    if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
+      const nextIndex = index + (action === ACTIONS.PREV ? -1 : 1);
+
+      // Navigate to appropriate page based on next step
+      if (action === ACTIONS.NEXT || type === EVENTS.TARGET_NOT_FOUND) {
+        if (nextIndex === 3) {
+          // Step 3: Navigate to Parse CV page
+          console.log("Navigating to /dashboard/parse");
+          navigate("/dashboard/parse");
+          setTimeout(() => setStepIndex(nextIndex), 500);
+          return;
+        } else if (nextIndex === 4) {
+          // Step 4: Navigate to Open Roles page
+          console.log("Navigating to /dashboard/roles");
+          navigate("/dashboard/roles");
+          setTimeout(() => setStepIndex(nextIndex), 500);
+          return;
+        } else if (nextIndex === 5) {
+          // Step 5: Navigate to Candidates page
+          console.log("Navigating to /dashboard/candidates");
+          navigate("/dashboard/candidates");
+          setTimeout(() => setStepIndex(nextIndex), 500);
+          return;
+        } else if (nextIndex === 6) {
+          // Step 6: Navigate to Developer page
+          console.log("Navigating to /dashboard/developer");
+          navigate("/dashboard/developer");
+          setTimeout(() => setStepIndex(nextIndex), 500);
+          return;
+        } else if (nextIndex === 7) {
+          // Step 7: Navigate to Analytics page
+          console.log("Navigating to /dashboard/analytics");
+          navigate("/dashboard/analytics");
+          setTimeout(() => setStepIndex(nextIndex), 500);
+          return;
+        } else if (nextIndex === 8) {
+          // Step 8: Navigate back to Overview for final message
+          console.log("Navigating back to /dashboard");
+          navigate("/dashboard");
+          setTimeout(() => setStepIndex(nextIndex), 500);
+          return;
+        }
+      } else if (action === ACTIONS.PREV) {
+        // Handle going back
+        if (nextIndex === 2) {
+          navigate("/dashboard");
+          setTimeout(() => setStepIndex(nextIndex), 500);
+          return;
+        } else if (nextIndex === 3) {
+          navigate("/dashboard/parse");
+          setTimeout(() => setStepIndex(nextIndex), 500);
+          return;
+        } else if (nextIndex === 4) {
+          navigate("/dashboard/roles");
+          setTimeout(() => setStepIndex(nextIndex), 500);
+          return;
+        } else if (nextIndex === 5) {
+          navigate("/dashboard/candidates");
+          setTimeout(() => setStepIndex(nextIndex), 500);
+          return;
+        } else if (nextIndex === 6) {
+          navigate("/dashboard/developer");
+          setTimeout(() => setStepIndex(nextIndex), 500);
+          return;
+        } else if (nextIndex === 7) {
+          navigate("/dashboard/analytics");
+          setTimeout(() => setStepIndex(nextIndex), 500);
+          return;
+        }
+      }
+    }
 
     if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
       // Mark tour as completed
       console.log("Tour completed or skipped, saving to localStorage");
       localStorage.setItem("onboarding_tour_completed", "true");
       setRunTour(false);
+      setStepIndex(0);
+      // Navigate back to dashboard
+      navigate("/dashboard");
       onComplete?.();
     }
   };
@@ -141,6 +222,7 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
     <Joyride
       steps={steps}
       run={runTour}
+      stepIndex={stepIndex}
       continuous
       showProgress
       showSkipButton
