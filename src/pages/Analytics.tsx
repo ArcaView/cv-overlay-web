@@ -86,7 +86,7 @@ const Analytics = () => {
 
           {/* Recruitment View */}
           <TabsContent value="recruitment" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" data-tour="analytics-metrics">
               {recruitmentStats.map((stat, index) => {
                 const Icon = stat.icon;
                 const isPositive = stat.change.startsWith('+') || stat.change.startsWith('-') && stat.title.includes('Time');
