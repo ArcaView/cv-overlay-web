@@ -94,7 +94,7 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
       content: (
         <div className="space-y-2">
           <h3 className="font-semibold">Create Open Roles</h3>
-          <p>Click here to create job openings. Track applications and organize candidates by position.</p>
+          <p>Click here to create job openings. Track applications and organise candidates by position.</p>
         </div>
       ),
       placement: "left",
