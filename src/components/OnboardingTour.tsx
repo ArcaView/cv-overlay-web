@@ -64,7 +64,8 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
           <p>Track your key metrics at a glance: CVs processed, candidates scored, top matches, and processing times.</p>
         </div>
       ),
-      placement: "bottom",
+      placement: "auto",
+      disableBeacon: true,
     },
     {
       target: "[data-tour='quick-actions']",
@@ -74,7 +75,8 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
           <p>Access common tasks with one click. Now let's explore each section in detail!</p>
         </div>
       ),
-      placement: "left",
+      placement: "auto",
+      disableBeacon: true,
     },
     {
       target: "[data-tour='upload-cv']",
@@ -84,7 +86,8 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
           <p>Upload individual CVs to extract structured data. Supports PDF, DOCX, DOC, and TXT formats up to 10MB.</p>
         </div>
       ),
-      placement: "bottom",
+      placement: "right",
+      disableBeacon: true,
     },
     {
       target: "[data-tour='create-role']",
@@ -94,7 +97,8 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
           <p>Click here to create job openings. Track applications and organize candidates by position.</p>
         </div>
       ),
-      placement: "bottom",
+      placement: "left",
+      disableBeacon: true,
     },
     {
       target: "[data-tour='candidates-list']",
@@ -104,7 +108,8 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
           <p>View all candidates across roles. Sort by score, filter by status, and manage your talent pipeline.</p>
         </div>
       ),
-      placement: "top",
+      placement: "auto",
+      disableBeacon: true,
     },
     {
       target: "[data-tour='api-keys']",
@@ -114,7 +119,8 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
           <p>Manage your API authentication keys for programmatic access to Qualifyr.AI.</p>
         </div>
       ),
-      placement: "bottom",
+      placement: "right",
+      disableBeacon: true,
     },
     {
       target: "[data-tour='analytics-metrics']",
@@ -124,7 +130,8 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
           <p>Monitor recruitment metrics, API performance, and track your hiring progress over time.</p>
         </div>
       ),
-      placement: "bottom",
+      placement: "auto",
+      disableBeacon: true,
     },
     {
       target: "body",
@@ -138,6 +145,7 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
         </div>
       ),
       placement: "center",
+      disableBeacon: true,
     },
   ];
 
@@ -212,10 +220,16 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
       showProgress
       showSkipButton
       callback={handleJoyrideCallback}
+      scrollToFirstStep
       disableScrolling={false}
+      scrollOffset={120}
       spotlightClicks={false}
       disableOverlayClose
       hideCloseButton={false}
+      floaterProps={{
+        disableAnimation: false,
+        hideArrow: false,
+      }}
       styles={{
         options: {
           primaryColor: "hsl(var(--primary))",
@@ -224,6 +238,10 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
         tooltip: {
           borderRadius: 8,
           fontSize: 14,
+          maxWidth: 400,
+        },
+        tooltipContainer: {
+          textAlign: "left",
         },
         buttonNext: {
           backgroundColor: "hsl(var(--primary))",
