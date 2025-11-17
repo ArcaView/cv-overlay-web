@@ -154,7 +154,7 @@ const AdminDashboard = () => {
     },
     {
       title: "Parse CV",
-      description: "Parse and analyze CVs",
+      description: "Parse and analyse CVs",
       icon: FileText,
       link: "/dashboard/parse",
       color: "text-orange-500",

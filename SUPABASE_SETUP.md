@@ -37,7 +37,7 @@ VITE_SUPABASE_ANON_KEY=your-anon-key-here
 
 ## Step 4: Configure Email Authentication
 
-By default, Supabase requires email verification. To customize the email settings:
+By default, Supabase requires email verification. To customise the email settings:
 
 1. In your Supabase dashboard, go to "Authentication" in the sidebar
 2. Click on "Providers"
@@ -52,16 +52,16 @@ Under "Authentication" > "Providers" > "Email":
 - **Secure Email Change**: ON (recommended)
 - **Double Confirm Email Changes**: ON (recommended)
 
-### Customize Email Templates (Optional)
+### Customise Email Templates (Optional)
 
 1. Go to "Authentication" > "Email Templates"
-2. You can customize the following templates:
+2. You can customise the following templates:
    - **Confirm signup**: Sent when users sign up
    - **Magic Link**: For passwordless login
    - **Change Email Address**: When users change their email
    - **Reset Password**: For password resets
 
-Example customization for "Confirm signup":
+Example customisation for "Confirm signup":
 ```html
 <h2>Confirm your signup</h2>
 <p>Follow this link to confirm your email:</p>
