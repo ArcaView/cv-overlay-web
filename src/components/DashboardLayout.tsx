@@ -160,15 +160,25 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               Start Tour
             </Button>
 
-            <nav className="space-y-1">
+            <nav className="space-y-1" data-tour="sidebar-nav">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.href;
+
+                // Add data-tour attributes to specific nav items
+                const getTourAttr = () => {
+                  if (item.href === "/dashboard/parse") return "nav-parse";
+                  if (item.href === "/dashboard/roles") return "nav-roles";
+                  if (item.href === "/dashboard/candidates") return "nav-candidates";
+                  if (item.href === "/dashboard/developer") return "nav-developer";
+                  return undefined;
+                };
 
                 return (
                   <Link
                     key={item.href}
                     to={item.href}
+                    data-tour={getTourAttr()}
                     className={cn(
                       "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
                       isActive

@@ -157,7 +157,7 @@ const DeveloperDashboard = () => {
 
           {/* API Keys Tab */}
           <TabsContent value="api-keys" className="mt-6">
-            <Card>
+            <Card data-tour="api-keys">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>

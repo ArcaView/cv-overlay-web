@@ -32,8 +32,8 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
       content: (
         <div className="space-y-3">
           <h2 className="text-xl font-bold">Welcome to Qualifyr.AI! 🎉</h2>
-          <p>Let's take a quick tour to help you get started with your dashboard.</p>
-          <p className="text-sm text-muted-foreground">This will only take 30 seconds.</p>
+          <p>Let's take a quick tour of the key features to help you get started.</p>
+          <p className="text-sm text-muted-foreground">This tour will show you everything you need to know in about a minute.</p>
         </div>
       ),
       placement: "center",
@@ -43,11 +43,84 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
       target: "[data-tour='stats-overview']",
       content: (
         <div className="space-y-2">
-          <h3 className="font-semibold">Your Key Metrics</h3>
-          <p>Monitor CVs processed, candidates scored, top matches, and processing times at a glance.</p>
+          <h3 className="font-semibold">Your Dashboard Overview</h3>
+          <p>Track your key metrics at a glance: CVs processed, candidates scored, top matches, and average processing times.</p>
         </div>
       ),
       placement: "bottom",
+    },
+    {
+      target: "[data-tour='quick-actions']",
+      content: (
+        <div className="space-y-2">
+          <h3 className="font-semibold">Quick Actions</h3>
+          <p>Access your most common tasks with one click: upload CVs, score candidates, view all candidates, or download reports.</p>
+        </div>
+      ),
+      placement: "left",
+    },
+    {
+      target: "[data-tour='sidebar-nav']",
+      content: (
+        <div className="space-y-2">
+          <h3 className="font-semibold">Navigation Sidebar</h3>
+          <p>Use the sidebar to navigate between different sections of your dashboard. Let's explore some key features!</p>
+        </div>
+      ),
+      placement: "right",
+    },
+    {
+      target: "[data-tour='nav-parse']",
+      content: (
+        <div className="space-y-2">
+          <h3 className="font-semibold">Parse CV</h3>
+          <p>Upload individual CVs to extract structured data and automatically parse candidate information.</p>
+        </div>
+      ),
+      placement: "right",
+    },
+    {
+      target: "[data-tour='nav-roles']",
+      content: (
+        <div className="space-y-2">
+          <h3 className="font-semibold">Open Roles</h3>
+          <p>Create and manage your job openings, track applications, and organize candidates by position.</p>
+        </div>
+      ),
+      placement: "right",
+    },
+    {
+      target: "[data-tour='nav-candidates']",
+      content: (
+        <div className="space-y-2">
+          <h3 className="font-semibold">Candidates</h3>
+          <p>View all your candidates across all roles in one place. Sort by score, filter by status, and manage your talent pipeline.</p>
+        </div>
+      ),
+      placement: "right",
+    },
+    {
+      target: "[data-tour='nav-developer']",
+      content: (
+        <div className="space-y-2">
+          <h3 className="font-semibold">Developer Dashboard</h3>
+          <p>Access your API keys, view usage metrics, and explore our technical documentation for API integration.</p>
+        </div>
+      ),
+      placement: "right",
+    },
+    {
+      target: "body",
+      content: (
+        <div className="space-y-3">
+          <h2 className="text-xl font-bold">You're All Set! 🚀</h2>
+          <p>You now know the key features of Qualifyr.AI. Start by uploading a CV or creating your first open role.</p>
+          <p className="text-sm text-muted-foreground">
+            You can restart this tour anytime by clicking the "Start Tour" button in the sidebar.
+          </p>
+        </div>
+      ),
+      placement: "center",
     },
   ];
 

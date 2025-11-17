@@ -126,7 +126,7 @@ const AllCandidates = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3" data-tour="candidates-list">
             {sortedCandidates.map((candidate, index) => (
               <Card key={`${candidate.roleId}-${candidate.id}`}>
                 <CardContent className="pt-6">
