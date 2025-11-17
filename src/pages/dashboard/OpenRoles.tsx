@@ -140,7 +140,7 @@ const OpenRoles = () => {
 
           <Dialog open={dialogOpen} onOpenChange={handleDialogClose}>
             <DialogTrigger asChild>
-              <Button>
+              <Button data-tour="create-role">
                 <Plus className="w-4 h-4 mr-2" />
                 New Role
               </Button>

@@ -226,7 +226,7 @@ const ParseCV = () => {
 
         <div className="grid lg:grid-cols-2 gap-6">
           {/* Upload Section */}
-          <Card>
+          <Card data-tour="upload-cv">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Upload className="w-5 h-5" />

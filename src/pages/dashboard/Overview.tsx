@@ -205,7 +205,7 @@ const Overview = () => {
 
           {/* Quick Actions */}
           <div className="space-y-6">
-            <Card>
+            <Card data-tour="quick-actions">
               <CardHeader>
                 <CardTitle>Quick Actions</CardTitle>
                 <CardDescription>
