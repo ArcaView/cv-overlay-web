@@ -84,7 +84,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const navigate = useNavigate();
   const [runTour, setRunTour] = useState(false);
 
-  // Check if tour should auto-start from sidebar button click - check every 500ms
+  // Check if tour should auto-start from sidebar button click
   useEffect(() => {
     console.log("LAYOUT: Setting up tour trigger listener...");
 
@@ -92,32 +92,28 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       const shouldStartTour = localStorage.getItem("start_onboarding_tour");
       if (shouldStartTour === "true") {
         console.log("LAYOUT: Found start_onboarding_tour=true in localStorage!");
+        localStorage.removeItem("start_onboarding_tour");
 
         // Navigate to main dashboard if not already there
         if (location.pathname !== "/dashboard") {
           console.log("LAYOUT: Not on /dashboard (currently on:", location.pathname, "), navigating...");
           navigate("/dashboard");
-          // Don't clear interval yet - wait for navigation to complete
-          return;
-        }
 
-        // We're on the right page, wait for dashboard elements to be rendered
-        console.log("LAYOUT: On /dashboard, checking if elements are ready...");
-        const statsElement = document.querySelector("[data-tour='stats-overview']");
-        if (statsElement) {
-          console.log("LAYOUT: Dashboard elements found! Starting tour in 2 seconds...");
-          localStorage.removeItem("start_onboarding_tour");
-
-          // Add a delay before setting runTour to true to ensure everything is stable
+          // Wait for navigation then start tour
+          setTimeout(() => {
+            console.log("LAYOUT: After navigation, starting tour");
+            setRunTour(true);
+          }, 1000);
+        } else {
+          // Already on dashboard, start tour after short delay
+          console.log("LAYOUT: Already on /dashboard, starting tour after 1s delay");
           setTimeout(() => {
             console.log("LAYOUT: Setting runTour to TRUE");
             setRunTour(true);
-          }, 2000);
-
-          clearInterval(checkInterval);
-        } else {
-          console.log("LAYOUT: Dashboard elements not ready yet, will check again in 500ms");
+          }, 1000);
         }
+
+        clearInterval(checkInterval);
       }
     }, 500);
 
