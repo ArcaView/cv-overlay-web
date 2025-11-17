@@ -34,8 +34,7 @@ export const ScoreBreakdownCard = ({ scoreBreakdown, totalScore }: ScoreBreakdow
       weight: 7.5,
       icon: Award,
       color: "text-amber-600 dark:text-amber-400",
-      bgColor: "bg-amber-100 dark:bg-amber-900/30",
-      isNew: true
+      bgColor: "bg-amber-100 dark:bg-amber-900/30"
     },
     {
       name: "Education",
@@ -98,17 +97,10 @@ export const ScoreBreakdownCard = ({ scoreBreakdown, totalScore }: ScoreBreakdow
                       <Icon className={`w-4 h-4 ${component.color}`} />
                     </div>
                     <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">{component.name}</span>
-                        {component.isNew && (
-                          <span className="text-xs px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 font-medium">
-                            NEW
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-sm font-medium">{component.name}</span>
+                      <div className="text-xs text-muted-foreground">
                         Weight: {component.weight}%
-                      </span>
+                      </div>
                     </div>
                   </div>
                   <div className="text-right">
@@ -122,16 +114,6 @@ export const ScoreBreakdownCard = ({ scoreBreakdown, totalScore }: ScoreBreakdow
               </div>
             );
           })}
-        </div>
-
-        <div className="pt-4 border-t text-xs text-muted-foreground">
-          <p className="font-medium mb-1">Scoring Model v2.0 Changes:</p>
-          <ul className="list-disc list-inside space-y-0.5">
-            <li>Added Prestige scoring (7.5% weight) for companies, universities, and roles</li>
-            <li>Skills weight: 55% → 52.5%</li>
-            <li>Experience weight: 25% → 22.5%</li>
-            <li>Education weight: 10% → 7.5%</li>
-          </ul>
         </div>
       </CardContent>
     </Card>
