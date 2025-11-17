@@ -43,55 +43,11 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
       target: "[data-tour='stats-overview']",
       content: (
         <div className="space-y-2">
-          <h3 className="font-semibold">Your API Statistics</h3>
-          <p>Monitor your API usage, parses, scores, and response times at a glance.</p>
+          <h3 className="font-semibold">Your Key Metrics</h3>
+          <p>Monitor CVs processed, candidates scored, top matches, and processing times at a glance.</p>
         </div>
       ),
       placement: "bottom",
-    },
-    {
-      target: "[data-tour='api-keys-tab']",
-      content: (
-        <div className="space-y-2">
-          <h3 className="font-semibold">API Keys</h3>
-          <p>This is where you'll find and manage your API authentication keys.</p>
-        </div>
-      ),
-      placement: "bottom",
-    },
-    {
-      target: "[data-tour='api-key-section']",
-      content: (
-        <div className="space-y-2">
-          <h3 className="font-semibold">Your Production Key</h3>
-          <p>Click the eye icon to reveal your API key, or the copy icon to copy it to your clipboard.</p>
-          <p className="text-sm text-yellow-600 dark:text-yellow-500">
-            ⚠️ Keep this key secure and never share it publicly!
-          </p>
-        </div>
-      ),
-      placement: "top",
-    },
-    {
-      target: "[data-tour='usage-tab']",
-      content: (
-        <div className="space-y-2">
-          <h3 className="font-semibold">Usage & Analytics</h3>
-          <p>Track your API usage, success rates, and performance metrics here.</p>
-        </div>
-      ),
-      placement: "bottom",
-    },
-    {
-      target: "[data-tour='documentation-link']",
-      content: (
-        <div className="space-y-2">
-          <h3 className="font-semibold">Ready to Get Started?</h3>
-          <p>Check out our documentation to learn how to integrate the API into your application.</p>
-          <p className="text-sm font-medium text-primary">Happy coding! 🚀</p>
-        </div>
-      ),
-      placement: "top",
     },
   ];
 

@@ -92,7 +92,7 @@ const Overview = () => {
         </div>
 
         {/* Key Metrics */}
-        <div className="grid md:grid-cols-4 gap-6">
+        <div className="grid md:grid-cols-4 gap-6" data-tour="stats-overview">
           <Card>
             <CardHeader className="pb-3">
               <CardDescription className="flex items-center gap-2">
