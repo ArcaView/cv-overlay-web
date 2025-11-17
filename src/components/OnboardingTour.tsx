@@ -12,14 +12,10 @@ export const OnboardingTour = ({ run = true, onComplete }: OnboardingTourProps) 
   useEffect(() => {
     // Only start tour if explicitly requested via run prop
     if (run) {
-      console.log("Starting onboarding tour - run prop is true, waiting 1.5s for DOM...");
-      // Longer delay to ensure all dashboard elements are fully rendered
-      setTimeout(() => {
-        console.log("OnboardingTour: Now actually starting tour, setting runTour to true");
-        setRunTour(true);
-      }, 1500);
+      console.log("OnboardingTour: run prop is TRUE - starting tour immediately");
+      setRunTour(true);
     } else {
-      console.log("NOT starting tour - run prop is false");
+      console.log("OnboardingTour: run prop is false - NOT running tour");
       setRunTour(false);
     }
   }, [run]);
