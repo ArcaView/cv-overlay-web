@@ -86,7 +86,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   // Check if tour should auto-start from sidebar button click - check every 500ms
   useEffect(() => {
-    console.log("LAYOUT: useEffect running, setting up interval to check localStorage...");
+    console.log("LAYOUT: Setting up tour trigger listener...");
 
     const checkInterval = setInterval(() => {
       const shouldStartTour = localStorage.getItem("start_onboarding_tour");
@@ -96,9 +96,8 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         // Navigate to main dashboard if not already there
         if (location.pathname !== "/dashboard") {
           console.log("LAYOUT: Not on /dashboard (currently on:", location.pathname, "), navigating...");
-          // Keep the flag set so it triggers after navigation
           navigate("/dashboard");
-          clearInterval(checkInterval);
+          // Don't clear interval yet - wait for navigation to complete
           return;
         }
 
@@ -106,9 +105,15 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         console.log("LAYOUT: On /dashboard, checking if elements are ready...");
         const statsElement = document.querySelector("[data-tour='stats-overview']");
         if (statsElement) {
-          console.log("LAYOUT: Dashboard elements found! Starting tour");
+          console.log("LAYOUT: Dashboard elements found! Starting tour in 2 seconds...");
           localStorage.removeItem("start_onboarding_tour");
-          setRunTour(true);
+
+          // Add a delay before setting runTour to true to ensure everything is stable
+          setTimeout(() => {
+            console.log("LAYOUT: Setting runTour to TRUE");
+            setRunTour(true);
+          }, 2000);
+
           clearInterval(checkInterval);
         } else {
           console.log("LAYOUT: Dashboard elements not ready yet, will check again in 500ms");
@@ -117,7 +122,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     }, 500);
 
     return () => {
-      console.log("LAYOUT: Cleaning up interval");
+      console.log("LAYOUT: Cleaning up interval on unmount");
       clearInterval(checkInterval);
     };
   }, [location.pathname, navigate]);
