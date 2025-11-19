@@ -37,6 +37,7 @@ import {
 import { useState } from "react";
 import { useRoles } from "@/contexts/RolesContext";
 import { useToast } from "@/hooks/use-toast";
+import { parseScoreAPI } from "@/lib/api";
 
 const ParseCV = () => {
   const { roles, addCandidateToRole, addRole } = useRoles();
@@ -55,7 +56,8 @@ const ParseCV = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
-      setResult(null); // Clear previous result
+      setResult(null);
+      setScoreResult(null);
     }
   };
 
@@ -64,68 +66,33 @@ const ParseCV = () => {
 
     setParsing(true);
 
-    // Simulate API call - replace with actual API call
-    setTimeout(() => {
-      const parseResult = {
-        id: "parse_abc123",
-        candidate: {
-          name: "Sarah Johnson",
-          email: "sarah.johnson@email.com",
-          phone: "+1-555-0123",
-          location: { city: "San Francisco", state: "CA", country: "USA" },
-          skills: ["Python", "React", "TypeScript", "Node.js", "AWS", "Docker"],
-          experience: [
-            {
-              title: "Senior Software Engineer",
-              company: "TechCorp",
-              start_date: "2021-03-01",
-              end_date: "2024-11-01",
-              duration_months: 44,
-              description: "Led development of microservices architecture"
-            },
-            {
-              title: "Software Engineer",
-              company: "StartupXYZ",
-              start_date: "2019-01-01",
-              end_date: "2021-02-28",
-              duration_months: 26,
-              description: "Full-stack development using React and Node.js"
-            }
-          ],
-          education: [
-            {
-              institution: "Stanford University",
-              degree: "BS",
-              field: "Computer Science",
-              graduation_date: "2018-06-01"
-            }
-          ],
-          certifications: ["AWS Certified Solutions Architect"],
-        },
-        confidence: {
-          overall: 0.94,
-          contact: 0.98,
-          experience: 0.92,
-          education: 0.96,
-          skills: 0.91
-        }
-      };
+    try {
+      const parseResult = await parseScoreAPI.parseCV(file);
+      
+      console.log("API Response:", parseResult);
 
       setResult(parseResult);
 
-      // Create candidate object and add to role
-      const totalExperienceMonths = parseResult.candidate.experience.reduce(
-        (sum, exp) => sum + exp.duration_months, 0
+      // Adapt to actual API structure
+      const candidate = parseResult.candidate?.contact || {};
+      const workExperience = candidate.work_experience || [];
+      const skills = candidate.skills || [];
+      const emails = candidate.emails || [];
+      const phones = candidate.phones || [];
+
+      // Calculate experience
+      const totalExperienceMonths = workExperience.reduce(
+        (sum: number, exp: any) => sum + (exp?.duration_months || 0), 0
       );
       const experienceYears = Math.floor(totalExperienceMonths / 12);
 
-      const candidate = {
+      const candidateData = {
         id: `candidate_${Math.random().toString(36).substr(2, 9)}`,
-        name: parseResult.candidate.name,
-        email: parseResult.candidate.email,
-        phone: parseResult.candidate.phone,
+        name: candidate.full_name || 'Unknown',
+        email: emails[0] || '',
+        phone: phones[0] || '',
         fileName: file.name,
-        skills: parseResult.candidate.skills,
+        skills: skills,
         experience_years: experienceYears,
         appliedDate: new Date().toISOString().split('T')[0],
         status: 'reviewing' as const,
@@ -140,20 +107,31 @@ const ParseCV = () => {
         summary: '',
       };
 
-      // Add candidate to selected role
-      addCandidateToRole(selectedRole, candidate);
+      addCandidateToRole(selectedRole, candidateData);
 
       toast({
         title: "CV Parsed Successfully",
-        description: `${parseResult.candidate.name} has been added to the role.`,
+        description: `${candidate.full_name || 'Candidate'} has been added to the role.`,
       });
 
+    } catch (error: any) {
+      console.error('Parse error:', error);
+      toast({
+        title: "Parse Failed",
+        description: error.message || "Failed to parse CV. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setParsing(false);
-    }, 2000);
+    }
   };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
+    toast({
+      title: "Copied!",
+      description: "JSON copied to clipboard",
+    });
   };
 
   const handleCreateRole = () => {
@@ -170,7 +148,6 @@ const ParseCV = () => {
 
     addRole(newRoleData);
 
-    // Find the newly added role (it will be the last one)
     setTimeout(() => {
       const latestRole = roles[roles.length - 1];
       if (latestRole) {
@@ -192,38 +169,42 @@ const ParseCV = () => {
 
     setScoring(true);
 
-    // Simulate scoring API call - replace with actual API call
-    setTimeout(() => {
-      setScoreResult({
-        overall_score: 87,
-        fit: "excellent",
-        breakdown: {
-          skills: 92,
-          experience: 85,
-          prestige: 75,
-          education: 78,
-          certifications: 95,
-          stability: 88
-        },
-        prestige_details: {
-          company_prestige: 85,
-          university_prestige: 70,
-          role_level_prestige: 55,
-          note: "Prestige scoring includes evaluation of companies, universities, and role levels (baseline-2.0)"
-        },
-        risk_flags: [],
-        rationale: `Strong match for the position. The candidate has ${result.candidate.experience.length} years of relevant experience with ${result.candidate.skills.length} key skills matching the requirements. Education background aligns well with the role. Prestige evaluation shows solid background with recognized companies and institutions.`,
-        matched_skills: result.candidate.skills.slice(0, 4),
-        missing_skills: ["Kubernetes", "GraphQL"]
+    try {
+      const scoreResponse = await parseScoreAPI.scoreCV(
+        result.request_id,
+        jobDescription
+      );
+
+      setScoreResult(scoreResponse);
+
+      toast({
+        title: "Scoring Complete",
+        description: `Match score: ${scoreResponse.overall_score}/100`,
       });
+
+    } catch (error: any) {
+      console.error('Scoring error:', error);
+      toast({
+        title: "Scoring Failed",
+        description: error.message || "Failed to score candidate. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setScoring(false);
-    }, 1500);
+    }
   };
+
+  // Safe accessors for API response
+  const candidate = result?.candidate?.contact || {};
+  const emails = candidate.emails || [];
+  const phones = candidate.phones || [];
+  const skills = candidate.skills || [];
+  const workExperience = candidate.work_experience || [];
+  const education = candidate.education || [];
 
   return (
     <DashboardLayout>
       <div className="p-6 space-y-6">
-        {/* Header */}
         <div>
           <h1 className="text-3xl font-bold mb-2">Parse CV</h1>
           <p className="text-muted-foreground">
@@ -232,7 +213,6 @@ const ParseCV = () => {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-6">
-          {/* Upload Section */}
           <Card data-tour="upload-cv">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -252,10 +232,7 @@ const ParseCV = () => {
                   onChange={handleFileChange}
                   className="hidden"
                 />
-                <label
-                  htmlFor="cv-upload"
-                  className="cursor-pointer flex flex-col items-center gap-3"
-                >
+                <label htmlFor="cv-upload" className="cursor-pointer flex flex-col items-center gap-3">
                   <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
                     <FileText className="w-8 h-8 text-primary" />
                   </div>
@@ -279,17 +256,12 @@ const ParseCV = () => {
                       </p>
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setFile(null)}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => setFile(null)}>
                     Remove
                   </Button>
                 </div>
               )}
 
-              {/* Role Selection */}
               <div className="space-y-2 pt-4 border-t">
                 <Label htmlFor="role-select">Attach to Role *</Label>
                 <div className="flex gap-2">
@@ -349,11 +321,8 @@ const ParseCV = () => {
                 </p>
               </div>
 
-              {/* Job Description */}
               <div className="space-y-2 pt-4 border-t">
-                <Label htmlFor="job-description">
-                  Job Description (Optional)
-                </Label>
+                <Label htmlFor="job-description">Job Description (Optional)</Label>
                 <Textarea
                   id="job-description"
                   placeholder="Paste the job description here to score the candidate against the role..."
@@ -376,7 +345,6 @@ const ParseCV = () => {
                 {parsing ? "Parsing..." : "Parse CV"}
               </Button>
 
-              {/* Quick Stats */}
               <div className="grid grid-cols-2 gap-4 pt-4 border-t">
                 <div>
                   <p className="text-sm text-muted-foreground">This Month</p>
@@ -392,7 +360,6 @@ const ParseCV = () => {
             </CardContent>
           </Card>
 
-          {/* Results Section */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -420,84 +387,104 @@ const ParseCV = () => {
                   </TabsList>
 
                   <TabsContent value="overview" className="space-y-4 mt-4">
-                    {/* Confidence Scores */}
-                    <div className="flex items-center gap-2 mb-4">
-                      <Badge className="bg-success/10 text-success border-success/20">
-                        {(result.confidence.overall * 100).toFixed(1)}% Confidence
-                      </Badge>
-                    </div>
-
-                    {/* Basic Info */}
                     <div className="space-y-3">
                       <div>
                         <p className="text-sm text-muted-foreground">Name</p>
-                        <p className="font-medium">{result.candidate.name}</p>
+                        <p className="font-medium">{candidate.full_name || 'N/A'}</p>
                       </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Email</p>
-                        <p className="font-medium">{result.candidate.email}</p>
+                      {emails.length > 0 && (
+                        <div>
+                          <p className="text-sm text-muted-foreground">Email</p>
+                          <p className="font-medium">{emails[0]}</p>
+                        </div>
+                      )}
+                      {phones.length > 0 && (
+                        <div>
+                          <p className="text-sm text-muted-foreground">Phone</p>
+                          <p className="font-medium">{phones[0]}</p>
+                        </div>
+                      )}
+                      {candidate.location && (
+                        <div>
+                          <p className="text-sm text-muted-foreground">Location</p>
+                          <p className="font-medium">{candidate.location}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {skills.length > 0 && (
+                      <div className="pt-4 border-t">
+                        <p className="text-sm text-muted-foreground mb-2">Skills ({skills.length})</p>
+                        <div className="flex flex-wrap gap-2">
+                          {skills.map((skill: string, idx: number) => (
+                            <Badge key={idx} variant="secondary">
+                              {skill}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Phone</p>
-                        <p className="font-medium">{result.candidate.phone}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Location</p>
-                        <p className="font-medium">
-                          {result.candidate.location.city}, {result.candidate.location.state}
+                    )}
+
+                    {workExperience.length > 0 && (
+                      <div className="pt-4 border-t">
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Experience ({workExperience.length})
                         </p>
+                        <div className="space-y-3">
+                          {workExperience.map((exp: any, idx: number) => (
+                            <div key={idx} className="text-sm">
+                              <p className="font-medium">{exp.title || 'N/A'}</p>
+                              <p className="text-muted-foreground">{exp.company || 'N/A'}</p>
+                              {exp.duration_months && (
+                                <p className="text-xs text-muted-foreground">
+                                  {exp.duration_months} months
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    )}
 
-                    {/* Skills */}
-                    <div className="pt-4 border-t">
-                      <p className="text-sm text-muted-foreground mb-2">Skills ({result.candidate.skills.length})</p>
-                      <div className="flex flex-wrap gap-2">
-                        {result.candidate.skills.map((skill: string, idx: number) => (
-                          <Badge key={idx} variant="secondary">
-                            {skill}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Experience */}
-                    <div className="pt-4 border-t">
-                      <p className="text-sm text-muted-foreground mb-3">
-                        Experience ({result.candidate.experience.length})
-                      </p>
-                      <div className="space-y-3">
-                        {result.candidate.experience.map((exp: any, idx: number) => (
-                          <div key={idx} className="text-sm">
-                            <p className="font-medium">{exp.title}</p>
-                            <p className="text-muted-foreground">{exp.company}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {exp.duration_months} months
+                    {education.length > 0 && (
+                      <div className="pt-4 border-t">
+                        <p className="text-sm text-muted-foreground mb-3">Education</p>
+                        {education.map((edu: any, idx: number) => (
+                          <div key={idx} className="text-sm mb-2">
+                            <p className="font-medium">
+                              {edu.degree || ''} {edu.field || ''}
                             </p>
+                            <p className="text-muted-foreground">{edu.institution || 'N/A'}</p>
                           </div>
                         ))}
                       </div>
-                    </div>
-
-                    {/* Education */}
-                    <div className="pt-4 border-t">
-                      <p className="text-sm text-muted-foreground mb-3">Education</p>
-                      <div className="text-sm">
-                        <p className="font-medium">
-                          {result.candidate.education[0].degree} {result.candidate.education[0].field}
-                        </p>
-                        <p className="text-muted-foreground">
-                          {result.candidate.education[0].institution}
-                        </p>
-                      </div>
-                    </div>
+                    )}
 
                     <div className="flex gap-2 pt-4">
-                      <Button variant="outline" className="flex-1">
+                      <Button 
+                        variant="outline" 
+                        className="flex-1"
+                        onClick={() => {
+                          const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `${candidate.full_name?.replace(/\s+/g, '_') || 'parsed'}_cv.json`;
+                          a.click();
+                          URL.revokeObjectURL(url);
+                        }}
+                      >
                         <Download className="w-4 h-4 mr-2" />
                         Download JSON
                       </Button>
-                      <Button variant="outline" className="flex-1">
+                      <Button 
+                        variant="outline" 
+                        className="flex-1"
+                        onClick={() => {
+                          const scoreTab = document.querySelector('[value="score"]') as HTMLButtonElement;
+                          if (scoreTab) scoreTab.click();
+                        }}
+                      >
                         Score Candidate
                       </Button>
                     </div>
@@ -514,11 +501,7 @@ const ParseCV = () => {
 
                     {jobDescription && !scoreResult && (
                       <div className="text-center py-8">
-                        <Button
-                          onClick={handleScore}
-                          disabled={scoring}
-                          size="lg"
-                        >
+                        <Button onClick={handleScore} disabled={scoring} size="lg">
                           {scoring ? (
                             <>
                               <CheckCircle2 className="w-4 h-4 mr-2 animate-spin" />
@@ -536,65 +519,62 @@ const ParseCV = () => {
 
                     {scoreResult && (
                       <div className="space-y-4">
-                        {/* Overall Score */}
                         <div className="text-center p-6 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg border">
                           <p className="text-sm text-muted-foreground mb-2">Overall Match Score</p>
                           <p className="text-5xl font-bold text-primary mb-2">{scoreResult.overall_score}</p>
-                          <Badge
-                            className={
-                              scoreResult.fit === 'excellent'
-                                ? 'bg-success/10 text-success border-success/20'
-                                : scoreResult.fit === 'good'
-                                ? 'bg-primary/10 text-primary border-primary/20'
-                                : 'bg-warning/10 text-warning border-warning/20'
-                            }
-                          >
-                            {scoreResult.fit.toUpperCase()} FIT
+                          <Badge className={
+                            scoreResult.fit === 'excellent' ? 'bg-success/10 text-success border-success/20' :
+                            scoreResult.fit === 'good' ? 'bg-primary/10 text-primary border-primary/20' :
+                            'bg-warning/10 text-warning border-warning/20'
+                          }>
+                            {scoreResult.fit?.toUpperCase() || 'N/A'} FIT
                           </Badge>
                         </div>
 
-                        {/* Score Breakdown */}
-                        <div className="space-y-3">
-                          <p className="font-medium">Score Breakdown</p>
-                          {Object.entries(scoreResult.breakdown).map(([key, value]: [string, any]) => (
-                            <div key={key}>
-                              <div className="flex justify-between text-sm mb-1">
-                                <span className="capitalize">{key}</span>
-                                <span className="font-medium">{value}/100</span>
+                        {scoreResult.breakdown && (
+                          <div className="space-y-3">
+                            <p className="font-medium">Score Breakdown</p>
+                            {Object.entries(scoreResult.breakdown).map(([key, value]: [string, any]) => (
+                              <div key={key}>
+                                <div className="flex justify-between text-sm mb-1">
+                                  <span className="capitalize">{key}</span>
+                                  <span className="font-medium">{value}/100</span>
+                                </div>
+                                <div className="w-full bg-muted rounded-full h-2">
+                                  <div
+                                    className={`h-2 rounded-full ${
+                                      value >= 85 ? 'bg-success' : value >= 70 ? 'bg-primary' : 'bg-warning'
+                                    }`}
+                                    style={{ width: `${value}%` }}
+                                  />
+                                </div>
                               </div>
-                              <div className="w-full bg-muted rounded-full h-2">
-                                <div
-                                  className={`h-2 rounded-full ${
-                                    value >= 85 ? 'bg-success' : value >= 70 ? 'bg-primary' : 'bg-warning'
-                                  }`}
-                                  style={{ width: `${value}%` }}
-                                />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Rationale */}
-                        <div className="pt-4 border-t">
-                          <p className="font-medium mb-2">Rationale</p>
-                          <p className="text-sm text-muted-foreground">{scoreResult.rationale}</p>
-                        </div>
-
-                        {/* Matched Skills */}
-                        <div className="pt-4 border-t">
-                          <p className="font-medium mb-2">Matched Skills</p>
-                          <div className="flex flex-wrap gap-2">
-                            {scoreResult.matched_skills.map((skill: string, idx: number) => (
-                              <Badge key={idx} className="bg-success/10 text-success border-success/20">
-                                <CheckCircle2 className="w-3 h-3 mr-1" />
-                                {skill}
-                              </Badge>
                             ))}
                           </div>
-                        </div>
+                        )}
 
-                        {/* Missing Skills */}
-                        {scoreResult.missing_skills.length > 0 && (
+                        {scoreResult.rationale && (
+                          <div className="pt-4 border-t">
+                            <p className="font-medium mb-2">Rationale</p>
+                            <p className="text-sm text-muted-foreground">{scoreResult.rationale}</p>
+                          </div>
+                        )}
+
+                        {scoreResult.matched_skills && scoreResult.matched_skills.length > 0 && (
+                          <div className="pt-4 border-t">
+                            <p className="font-medium mb-2">Matched Skills</p>
+                            <div className="flex flex-wrap gap-2">
+                              {scoreResult.matched_skills.map((skill: string, idx: number) => (
+                                <Badge key={idx} className="bg-success/10 text-success border-success/20">
+                                  <CheckCircle2 className="w-3 h-3 mr-1" />
+                                  {skill}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {scoreResult.missing_skills && scoreResult.missing_skills.length > 0 && (
                           <div className="pt-4 border-t">
                             <p className="font-medium mb-2">Missing Skills</p>
                             <div className="flex flex-wrap gap-2">
@@ -609,14 +589,22 @@ const ParseCV = () => {
                         )}
 
                         <div className="flex gap-2 pt-4">
-                          <Button
-                            variant="outline"
-                            className="flex-1"
-                            onClick={() => setScoreResult(null)}
-                          >
+                          <Button variant="outline" className="flex-1" onClick={() => setScoreResult(null)}>
                             Score Again
                           </Button>
-                          <Button variant="outline" className="flex-1">
+                          <Button 
+                            variant="outline" 
+                            className="flex-1"
+                            onClick={() => {
+                              const blob = new Blob([JSON.stringify(scoreResult, null, 2)], { type: 'application/json' });
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = `${candidate.full_name?.replace(/\s+/g, '_') || 'score'}_score.json`;
+                              a.click();
+                              URL.revokeObjectURL(url);
+                            }}
+                          >
                             <Download className="w-4 h-4 mr-2" />
                             Export Score
                           </Button>

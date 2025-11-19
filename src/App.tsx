@@ -32,6 +32,7 @@ import Terms from "./pages/Terms";
 import FeatureRequests from "./pages/FeatureRequests";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
+import ParseScoreTest from "./pages/ParseScoreTest";
 
 const queryClient = new QueryClient();
 
@@ -70,6 +71,8 @@ const AppContent = () => {
           <Route path="/terms" element={<Terms />} />
           <Route path="/feature-requests" element={<FeatureRequests />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          {/* ParseScore API Test Route */}
+          <Route path="/test-parsescore" element={<ParseScoreTest />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
           </Routes>

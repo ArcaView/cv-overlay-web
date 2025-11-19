@@ -1,0 +1,125 @@
+const API_BASE_URL = import.meta.env.VITE_PARSESCORE_API_URL || 'http://localhost:8000';
+const API_KEY = import.meta.env.VITE_PARSESCORE_API_KEY;
+
+interface ParseResponse {
+  request_id: string;
+  candidate: any;
+  processing_time_ms: number;
+}
+
+interface ScoreRequest {
+  candidate: any;
+  job: {
+    title: string;
+    description: string;
+    required_skills: string[];
+    preferred_skills?: string[];
+    min_years_experience?: number;
+    min_education?: string;
+  };
+  mode: 'baseline' | 'llm';
+}
+
+interface ScoreResponse {
+  request_id: string;
+  result: {
+    overall_score: number;
+    breakdown: {
+      skills_score: number;
+      experience_score: number;
+      education_score: number;
+      certifications_score: number;
+      stability_score: number;
+    };
+    rationale?: string;
+    flags: Array<{
+      type: string;
+      severity: string;
+      description: string;
+    }>;
+    mode: string;
+    llm_adjustment?: number;
+  };
+  processing_time_ms: number;
+}
+
+class ParseScoreAPI {
+  private baseURL: string;
+  private apiKey: string;
+
+  constructor() {
+    this.baseURL = API_BASE_URL;
+    this.apiKey = API_KEY || '';
+  }
+
+  private async request(endpoint: string, options: RequestInit = {}) {
+    const url = `${this.baseURL}${endpoint}`;
+    
+    const headers: any = {
+  ...options.headers,
+    };
+
+    // Only add Authorization if API key exists
+    if (this.apiKey) {
+      headers['Authorization'] = `Bearer ${this.apiKey}`;
+    }
+
+    const response = await fetch(url, {
+      ...options,
+      headers,
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.message || `API request failed: ${response.status}`);
+    }
+
+    return response.json();
+  }
+
+  async parseCV(file: File, persist: boolean = false): Promise<ParseResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.request(`/v1/parse?persist=${persist}`, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        // Don't set Content-Type - browser will set it with boundary
+      },
+    });
+  }
+
+  async scoreCandidate(request: ScoreRequest): Promise<ScoreResponse> {
+    return this.request('/v1/score', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    });
+  }
+
+  async getCV(cvId: string) {
+    return this.request(`/v1/cvs/${cvId}`);
+  }
+
+  async listCVs(limit: number = 50) {
+    return this.request(`/v1/cvs?limit=${limit}`);
+  }
+
+  async getScore(scoreId: string) {
+    return this.request(`/v1/scores/${scoreId}`);
+  }
+
+  async getCVScores(cvId: string) {
+    return this.request(`/v1/cvs/${cvId}/scores`);
+  }
+
+  async healthCheck() {
+    return this.request('/v1/health');
+  }
+}
+
+export const parseScoreAPI = new ParseScoreAPI();
+export type { ParseResponse, ScoreRequest, ScoreResponse };
