@@ -400,12 +400,33 @@ const CandidateDetail = () => {
                                 </p>
                               </div>
 
-                              {/* Description/Summary */}
-                              {(exp.description || exp.summary || exp.details) && (
-                                <p className="text-sm mb-3 text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                                  {exp.description || exp.summary || exp.details}
-                                </p>
-                              )}
+                              {/* Description/Summary - check multiple possible field names */}
+                              {(() => {
+                                const description = exp.description || exp.summary || exp.details || exp.text || exp.content || '';
+                                const bullets = exp.bullets || exp.bullet_points || exp.highlights || [];
+
+                                // Show description if available
+                                if (description) {
+                                  return (
+                                    <p className="text-sm mb-3 text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                                      {description}
+                                    </p>
+                                  );
+                                }
+
+                                // Otherwise show bullets if they're strings (not already shown as responsibilities)
+                                if (Array.isArray(bullets) && bullets.length > 0 && !exp.responsibilities) {
+                                  return (
+                                    <ul className="list-disc list-inside text-sm space-y-1 text-muted-foreground mb-3">
+                                      {bullets.map((bullet: string, idx: number) => (
+                                        <li key={idx} className="leading-relaxed">{bullet}</li>
+                                      ))}
+                                    </ul>
+                                  );
+                                }
+
+                                return null;
+                              })()}
 
                               {/* Responsibilities */}
                               {exp.responsibilities && Array.isArray(exp.responsibilities) && exp.responsibilities.length > 0 && (
@@ -450,30 +471,41 @@ const CandidateDetail = () => {
                         <div className="space-y-3">
                           {candidate.education.map((edu: any, index: number) => {
                             // Helper to format degree names properly
-                            const formatDegreeName = (degree: string, field?: string) => {
+                            const formatEducation = (degree: string, field?: string) => {
                               const degreeMap: { [key: string]: string } = {
                                 'bachelors': "Bachelor's Degree",
                                 'masters': "Master's Degree",
                                 'phd': 'Ph.D.',
                                 'doctorate': 'Doctorate',
-                                'high_school': 'High School Diploma',
+                                'high_school': 'High School',
                                 'associates': "Associate's Degree",
                                 'mba': 'MBA',
                               };
 
                               const baseDegree = degreeMap[degree?.toLowerCase()] || degree;
-                              return field ? `${baseDegree} in ${field}` : baseDegree;
+
+                              // Special handling for high school/secondary qualifications
+                              const isSecondary = degree?.toLowerCase() === 'high_school' ||
+                                                field?.match(/a-level|gcse|secondary|high school/i);
+
+                              if (isSecondary && field) {
+                                // For A-Levels, GCSEs, etc., show them separately
+                                return field;
+                              }
+
+                              // For degrees, combine with field
+                              return field && !isSecondary ? `${baseDegree} in ${field}` : baseDegree;
                             };
 
-                            const degreeName = formatDegreeName(
-                              edu.degree || edu.qualification || 'Degree',
+                            const educationTitle = formatEducation(
+                              edu.degree || edu.qualification || 'Education',
                               edu.field
                             );
 
                             return (
                               <div key={index} className="border-l-2 border-muted pl-4">
                                 <h4 className="font-medium text-base">
-                                  {degreeName}
+                                  {educationTitle}
                                 </h4>
                                 <p className="text-sm text-muted-foreground">
                                   {edu.institution || edu.school || edu.university || 'Institution'}
@@ -481,6 +513,11 @@ const CandidateDetail = () => {
                                 <p className="text-xs text-muted-foreground mt-1">
                                   {edu.start_date || edu.from || ''} {edu.start_date && edu.end_date && '- '} {edu.graduation_date || edu.year || edu.end_date || ''}
                                 </p>
+                                {/* Show grades for secondary education */}
+                                {(edu.grade || edu.grades) && (
+                                  <p className="text-sm mt-1">Grades: {edu.grade || edu.grades}</p>
+                                )}
+                                {/* Show GPA for university */}
                                 {edu.gpa && (
                                   <p className="text-sm mt-1">GPA: {edu.gpa}</p>
                                 )}
