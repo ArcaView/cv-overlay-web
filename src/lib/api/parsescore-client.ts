@@ -43,6 +43,50 @@ interface ScoreResponse {
   processing_time_ms: number;
 }
 
+interface BatchParseResponse {
+  request_id: string;
+  total_cvs: number;
+  successful_parses: number;
+  failed_parses: number;
+  results: Array<{
+    filename: string;
+    candidate?: any;
+    parsing_errors?: string;
+  }>;
+  processing_time_ms: number;
+}
+
+interface BatchScoreResponse {
+  request_id: string;
+  job_title: string;
+  total_cvs: number;
+  successful_reviews: number;
+  failed_reviews: number;
+  reviews: Array<{
+    filename: string;
+    candidate_name?: string;
+    suitability_score: number;
+    recommendation: 'strong_match' | 'good_match' | 'moderate_match' | 'weak_match';
+    strengths: string[];
+    weaknesses: string[];
+    detailed_review: string;
+    baseline_scores: {
+      skills_score: number;
+      experience_score: number;
+      education_score: number;
+      certifications_score: number;
+      stability_score: number;
+    };
+    flags: Array<{
+      type: string;
+      severity: string;
+      description: string;
+    }>;
+    parsing_errors?: string;
+  }>;
+  processing_time_ms: number;
+}
+
 class ParseScoreAPI {
   private baseURL: string;
   private apiKey: string;
@@ -56,7 +100,7 @@ class ParseScoreAPI {
     const url = `${this.baseURL}${endpoint}`;
     
     const headers: any = {
-  ...options.headers,
+      ...options.headers,
     };
 
     // Only add Authorization if API key exists
@@ -115,6 +159,53 @@ class ParseScoreAPI {
     });
   }
 
+  async batchParse(files: File[]): Promise<BatchParseResponse> {
+    const formData = new FormData();
+    
+    // Add all CV files
+    files.forEach(file => {
+      formData.append('files', file);
+    });
+
+    return this.request('/v1/batch-parse', {
+      method: 'POST',
+      body: formData,
+    });
+  }
+
+  async batchScore(
+    files: File[],
+    jobTitle: string,
+    jobDescription: string,
+    requiredSkills: string[],
+    preferredSkills: string[] = [],
+    minYearsExperience: number = 0,
+    minEducation?: string
+  ): Promise<BatchScoreResponse> {
+    const formData = new FormData();
+    
+    // Add all CV files
+    files.forEach(file => {
+      formData.append('files', file);
+    });
+    
+    // Add job details
+    formData.append('job_title', jobTitle);
+    formData.append('job_description', jobDescription);
+    formData.append('required_skills', requiredSkills.join(','));
+    formData.append('preferred_skills', preferredSkills.join(','));
+    formData.append('min_years_experience', minYearsExperience.toString());
+    
+    if (minEducation) {
+      formData.append('min_education', minEducation);
+    }
+
+    return this.request('/v1/batch-score', {
+      method: 'POST',
+      body: formData,
+    });
+  }
+
   async getCV(cvId: string) {
     return this.request(`/v1/cvs/${cvId}`);
   }
@@ -137,4 +228,4 @@ class ParseScoreAPI {
 }
 
 export const parseScoreAPI = new ParseScoreAPI();
-export type { ParseResponse, ScoreRequest, ScoreResponse };
+export type { ParseResponse, ScoreRequest, ScoreResponse, BatchScoreResponse, BatchParseResponse };
