@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { UserProvider } from "@/contexts/UserContext";
 import { RolesProvider } from "@/contexts/RolesContext";
+import { PricingProvider } from "@/contexts/PricingContext";
 import { ImpersonationProvider } from "@/contexts/ImpersonationContext";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { FeedbackPopup } from "@/components/FeedbackPopup";
@@ -86,9 +87,11 @@ const App = () => (
     <UserProvider>
       <ImpersonationProvider>
         <RolesProvider>
-          <TooltipProvider>
-            <AppContent />
-          </TooltipProvider>
+          <PricingProvider>
+            <TooltipProvider>
+              <AppContent />
+            </TooltipProvider>
+          </PricingProvider>
         </RolesProvider>
       </ImpersonationProvider>
     </UserProvider>

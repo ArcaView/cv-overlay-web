@@ -3,73 +3,17 @@ import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
-
-const plans = [
-  {
-    name: "Starter",
-    price: "£39.99",
-    period: "/month",
-    description: "Perfect for small teams getting started",
-    features: [
-      "Up to 100 candidates/month",
-      "AI-powered CV parsing",
-      "Basic candidate scoring",
-      "10 active job roles",
-      "Email support",
-      "Core collaboration features",
-      "Mobile-friendly access",
-    ],
-    cta: "Get Started",
-    popular: false,
-  },
-  {
-    name: "Professional",
-    price: "£79.99",
-    period: "/month",
-    description: "For growing recruitment teams",
-    features: [
-      "Up to 500 candidates/month",
-      "Advanced AI scoring & insights",
-      "Unlimited job roles",
-      "Team collaboration tools",
-      "Priority support",
-      "Advanced analytics dashboard",
-      "Custom branding on reports",
-      "Bulk candidate upload",
-      "Email integrations",
-    ],
-    cta: "Get Started",
-    popular: true,
-  },
-  {
-    name: "Enterprise",
-    price: "£119.99",
-    period: "/month",
-    description: "For large organisations and agencies",
-    features: [
-      "Unlimited candidates",
-      "All Professional features",
-      "Dedicated account manager",
-      "Custom integrations & API access",
-      "SSO / SAML authentication",
-      "On-premise deployment option",
-      "Advanced security controls",
-      "Custom SLAs & support",
-      "White-label options",
-      "Training & onboarding",
-    ],
-    cta: "Get Started",
-    popular: false,
-  },
-];
+import { usePricing } from "@/contexts/PricingContext";
 
 const PricingPage = () => {
+  const { plans, isLoading, error } = usePricing();
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      
+
       <main className="flex-1">
         {/* Hero Section */}
         <section className="py-20 bg-gradient-to-b from-primary/5 to-background">
@@ -87,55 +31,66 @@ const PricingPage = () => {
         {/* Pricing Cards */}
         <section className="py-20">
           <div className="container mx-auto px-4">
-            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-              {plans.map((plan, index) => (
-                <Card 
-                  key={index} 
-                  className={`relative ${
-                    plan.popular 
-                      ? 'border-primary shadow-lg scale-105' 
-                      : 'border-border'
-                  }`}
-                >
-                  {plan.popular && (
-                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                      <Badge className="bg-accent text-accent-foreground">Most Popular</Badge>
-                    </div>
-                  )}
-                  
-                  <CardHeader>
-                    <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                    <CardDescription className="text-base">{plan.description}</CardDescription>
-                    <div className="mt-4">
-                      <span className="text-4xl font-bold">{plan.price}</span>
-                      {plan.period && (
-                        <span className="text-muted-foreground">{plan.period}</span>
-                      )}
-                    </div>
-                  </CardHeader>
-                  
-                  <CardContent className="space-y-4">
-                    <Button
-                      asChild
-                      variant={plan.popular ? "hero" : "default"}
-                      className="w-full"
-                      size="lg"
-                    >
-                      <Link to="/dashboard">{plan.cta}</Link>
-                    </Button>
-                    
-                    <ul className="space-y-3 pt-4">
-                      {plan.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-start gap-2">
-                          <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
-                          <span className="text-sm text-muted-foreground">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            {isLoading ? (
+              <div className="flex justify-center items-center py-20">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            ) : error ? (
+              <div className="text-center py-20">
+                <p className="text-destructive">Failed to load pricing plans. Please try again later.</p>
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                {plans.map((plan, index) => (
+                  <Card
+                    key={plan.id}
+                    className={`relative ${
+                      plan.is_popular
+                        ? 'border-primary shadow-lg scale-105'
+                        : 'border-border'
+                    }`}
+                  >
+                    {plan.is_popular && (
+                      <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                        <Badge className="bg-accent text-accent-foreground">Most Popular</Badge>
+                      </div>
+                    )}
+
+                    <CardHeader>
+                      <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                      <CardDescription className="text-base">{plan.description}</CardDescription>
+                      <div className="mt-4">
+                        <span className="text-4xl font-bold">
+                          {plan.price_currency === 'GBP' ? '£' : '$'}
+                          {plan.price_monthly.toFixed(2)}
+                        </span>
+                        <span className="text-muted-foreground">/month</span>
+                      </div>
+                    </CardHeader>
+
+                    <CardContent className="space-y-4">
+                      <Button
+                        asChild
+                        variant={plan.is_popular ? "hero" : "default"}
+                        className="w-full"
+                        size="lg"
+                      >
+                        <Link to="/dashboard">Get Started</Link>
+                      </Button>
+
+                      <ul className="space-y-3 pt-4">
+                        {plan.features.map((feature, idx) => (
+                          <li key={idx} className="flex items-start gap-2">
+                            <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                            <span className="text-sm text-muted-foreground">{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 
