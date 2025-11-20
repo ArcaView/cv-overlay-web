@@ -79,10 +79,11 @@ const AllCandidates = () => {
 
   const getStatusColor = (status: Candidate['status']) => {
     switch (status) {
+      case 'new': return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
       case 'reviewing': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+      case 'shortlisted': return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400';
       case 'interviewing': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
-      case 'interviewed': return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400';
-      case 'offer_outstanding': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400';
+      case 'offered': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400';
       case 'hired': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
       case 'rejected': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
@@ -91,10 +92,11 @@ const AllCandidates = () => {
 
   const getStatusLabel = (status: Candidate['status']) => {
     switch (status) {
+      case 'new': return 'New';
       case 'reviewing': return 'Reviewing';
+      case 'shortlisted': return 'Shortlisted';
       case 'interviewing': return 'Interviewing';
-      case 'interviewed': return 'Interviewed';
-      case 'offer_outstanding': return 'Offer Outstanding';
+      case 'offered': return 'Offered';
       case 'hired': return 'Hired';
       case 'rejected': return 'Rejected';
       default: return status;
@@ -203,10 +205,11 @@ const AllCandidates = () => {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
+                              <SelectItem value="new">New</SelectItem>
                               <SelectItem value="reviewing">Reviewing</SelectItem>
+                              <SelectItem value="shortlisted">Shortlisted</SelectItem>
                               <SelectItem value="interviewing">Interviewing</SelectItem>
-                              <SelectItem value="interviewed">Interviewed</SelectItem>
-                              <SelectItem value="offer_outstanding">Offer Outstanding</SelectItem>
+                              <SelectItem value="offered">Offered</SelectItem>
                               <SelectItem value="hired">Hired</SelectItem>
                               <SelectItem value="rejected">Rejected</SelectItem>
                             </SelectContent>

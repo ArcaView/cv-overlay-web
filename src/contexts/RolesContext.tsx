@@ -11,7 +11,7 @@ export interface Interview {
 }
 
 export interface StatusHistoryEntry {
-  status: 'reviewing' | 'interviewing' | 'interviewed' | 'offer_outstanding' | 'hired' | 'rejected';
+  status: 'new' | 'reviewing' | 'shortlisted' | 'interviewing' | 'offered' | 'hired' | 'rejected';
   changedAt: string;
   note?: string;
 }
@@ -61,7 +61,7 @@ export interface Candidate {
   appliedDate: string;
   skills: string[];
   experience_years: number;
-  status: 'reviewing' | 'interviewing' | 'interviewed' | 'offer_outstanding' | 'hired' | 'rejected';
+  status: 'new' | 'reviewing' | 'shortlisted' | 'interviewing' | 'offered' | 'hired' | 'rejected';
   statusHistory: StatusHistoryEntry[];
   interviews: Interview[];
   summary: string;
