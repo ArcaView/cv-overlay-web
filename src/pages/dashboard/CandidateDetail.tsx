@@ -360,26 +360,6 @@ const CandidateDetail = () => {
             </CollapsibleTrigger>
             <CollapsibleContent>
               <CardContent className="space-y-6">
-                {/* Debug: Always show raw CV data first to see what's available */}
-                {candidate.cv_parsed_data && (
-                  <details open className="mb-4 p-3 border border-primary/20 rounded-lg bg-primary/5">
-                    <summary className="cursor-pointer text-sm font-medium text-primary hover:text-primary/80 mb-2">
-                      🔍 Debug: View Raw CV Data (Click to see what data is available)
-                    </summary>
-                    <pre className="mt-2 p-3 bg-muted rounded text-xs overflow-auto max-h-96">
-                      {JSON.stringify(candidate.cv_parsed_data, null, 2)}
-                    </pre>
-                    <div className="mt-2 text-xs text-muted-foreground">
-                      <p>Extracted fields check:</p>
-                      <p>• experience: {candidate.experience?.length || 0} items</p>
-                      <p>• education: {candidate.education?.length || 0} items</p>
-                      <p>• certifications: {candidate.certifications?.length || 0} items</p>
-                      <p>• languages: {candidate.languages?.length || 0} items</p>
-                      <p>• summary: {candidate.cv_parsed_data?.summary ? 'Yes' : 'No'}</p>
-                    </div>
-                  </details>
-                )}
-
                 {/* Show message if no CV data */}
                 {!candidate.experience?.length &&
                  !candidate.education?.length &&
@@ -387,10 +367,7 @@ const CandidateDetail = () => {
                  !candidate.languages?.length &&
                  !candidate.cv_parsed_data?.summary &&
                  !candidate.cv_parsed_data?.professional_summary ? (
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-2">No formatted CV details available for this candidate.</p>
-                    <p className="text-xs text-muted-foreground">Check the debug section above to see what information is stored in the database.</p>
-                  </div>
+                  <p className="text-sm text-muted-foreground">No CV details available for this candidate.</p>
                 ) : (
                   <>
                     {/* Professional Summary */}
@@ -423,29 +400,32 @@ const CandidateDetail = () => {
                                 </p>
                               </div>
 
-                              {exp.description && (
-                                <p className="text-sm mb-2 whitespace-pre-wrap">
-                                  {exp.description}
+                              {/* Description/Summary */}
+                              {(exp.description || exp.summary || exp.details) && (
+                                <p className="text-sm mb-3 text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                                  {exp.description || exp.summary || exp.details}
                                 </p>
                               )}
 
+                              {/* Responsibilities */}
                               {exp.responsibilities && Array.isArray(exp.responsibilities) && exp.responsibilities.length > 0 && (
-                                <div className="mb-2">
-                                  <p className="text-xs font-medium text-muted-foreground mb-1">Responsibilities:</p>
-                                  <ul className="list-disc list-inside text-sm space-y-1">
+                                <div className="mb-3">
+                                  <p className="text-xs font-semibold text-foreground mb-1.5">Key Responsibilities</p>
+                                  <ul className="list-disc list-inside text-sm space-y-1 text-muted-foreground">
                                     {exp.responsibilities.map((resp: string, idx: number) => (
-                                      <li key={idx}>{resp}</li>
+                                      <li key={idx} className="leading-relaxed">{resp}</li>
                                     ))}
                                   </ul>
                                 </div>
                               )}
 
+                              {/* Achievements */}
                               {exp.achievements && Array.isArray(exp.achievements) && exp.achievements.length > 0 && (
-                                <div className="mb-2">
-                                  <p className="text-xs font-medium text-muted-foreground mb-1">Achievements:</p>
-                                  <ul className="list-disc list-inside text-sm space-y-1">
+                                <div className="mb-3">
+                                  <p className="text-xs font-semibold text-foreground mb-1.5">Key Achievements</p>
+                                  <ul className="list-disc list-inside text-sm space-y-1 text-muted-foreground">
                                     {exp.achievements.map((achievement: string, idx: number) => (
-                                      <li key={idx}>{achievement}</li>
+                                      <li key={idx} className="leading-relaxed">{achievement}</li>
                                     ))}
                                   </ul>
                                 </div>
@@ -468,31 +448,51 @@ const CandidateDetail = () => {
                       <div>
                         <h3 className="font-semibold mb-3 text-sm">Education</h3>
                         <div className="space-y-3">
-                          {candidate.education.map((edu: any, index: number) => (
-                            <div key={index} className="border-l-2 border-muted pl-4">
-                              <h4 className="font-medium text-base">
-                                {edu.degree || edu.qualification || 'Degree'}
-                              </h4>
-                              <p className="text-sm text-muted-foreground">
-                                {edu.institution || edu.school || edu.university || 'Institution'}
-                              </p>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {edu.start_date || edu.from || ''} {edu.start_date && edu.end_date && '- '} {edu.graduation_date || edu.year || edu.end_date || ''}
-                              </p>
-                              {edu.field && (
-                                <p className="text-sm mt-1">Field: {edu.field}</p>
-                              )}
-                              {edu.gpa && (
-                                <p className="text-sm">GPA: {edu.gpa}</p>
-                              )}
-                              {edu.honors && (
-                                <p className="text-sm">{edu.honors}</p>
-                              )}
-                              {edu.description && (
-                                <p className="text-sm text-muted-foreground mt-1">{edu.description}</p>
-                              )}
-                            </div>
-                          ))}
+                          {candidate.education.map((edu: any, index: number) => {
+                            // Helper to format degree names properly
+                            const formatDegreeName = (degree: string, field?: string) => {
+                              const degreeMap: { [key: string]: string } = {
+                                'bachelors': "Bachelor's Degree",
+                                'masters': "Master's Degree",
+                                'phd': 'Ph.D.',
+                                'doctorate': 'Doctorate',
+                                'high_school': 'High School Diploma',
+                                'associates': "Associate's Degree",
+                                'mba': 'MBA',
+                              };
+
+                              const baseDegree = degreeMap[degree?.toLowerCase()] || degree;
+                              return field ? `${baseDegree} in ${field}` : baseDegree;
+                            };
+
+                            const degreeName = formatDegreeName(
+                              edu.degree || edu.qualification || 'Degree',
+                              edu.field
+                            );
+
+                            return (
+                              <div key={index} className="border-l-2 border-muted pl-4">
+                                <h4 className="font-medium text-base">
+                                  {degreeName}
+                                </h4>
+                                <p className="text-sm text-muted-foreground">
+                                  {edu.institution || edu.school || edu.university || 'Institution'}
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {edu.start_date || edu.from || ''} {edu.start_date && edu.end_date && '- '} {edu.graduation_date || edu.year || edu.end_date || ''}
+                                </p>
+                                {edu.gpa && (
+                                  <p className="text-sm mt-1">GPA: {edu.gpa}</p>
+                                )}
+                                {edu.honors && (
+                                  <p className="text-sm">{edu.honors}</p>
+                                )}
+                                {edu.description && (
+                                  <p className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap">{edu.description}</p>
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     )}
@@ -532,18 +532,6 @@ const CandidateDetail = () => {
                           ))}
                         </div>
                       </div>
-                    )}
-
-                    {/* Raw Data for Reference */}
-                    {candidate.cv_parsed_data && Object.keys(candidate.cv_parsed_data).filter(k => k !== 'status_history').length > 0 && (
-                      <details>
-                        <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
-                          View Raw CV Data
-                        </summary>
-                        <pre className="mt-2 p-3 bg-muted rounded text-xs overflow-auto max-h-96">
-                          {JSON.stringify(candidate.cv_parsed_data, null, 2)}
-                        </pre>
-                      </details>
                     )}
                   </>
                 )}
