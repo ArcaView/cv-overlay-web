@@ -458,18 +458,40 @@ const ParseCV = () => {
                         <p className="text-sm text-muted-foreground mb-3">
                           Experience ({workExperience.length})
                         </p>
-                        <div className="space-y-3">
-                          {workExperience.map((exp: any, idx: number) => (
-                            <div key={idx} className="text-sm">
-                              <p className="font-medium">{exp.title || 'N/A'}</p>
-                              <p className="text-muted-foreground">{exp.company || 'N/A'}</p>
-                              {exp.duration_months && (
-                                <p className="text-xs text-muted-foreground">
-                                  {exp.duration_months} months
-                                </p>
-                              )}
-                            </div>
-                          ))}
+                        <div className="space-y-4">
+                          {workExperience.map((exp: any, idx: number) => {
+                            const description = exp.description || exp.summary || exp.details || '';
+                            const bullets = exp.bullets || exp.bullet_points || exp.highlights || [];
+
+                            return (
+                              <div key={idx} className="text-sm border-l-2 border-muted pl-3">
+                                <p className="font-medium">{exp.title || 'N/A'}</p>
+                                <p className="text-muted-foreground">{exp.company || 'N/A'}</p>
+                                {exp.duration_months && (
+                                  <p className="text-xs text-muted-foreground">
+                                    {exp.duration_months} months
+                                  </p>
+                                )}
+                                {/* Show description if available */}
+                                {description && (
+                                  <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+                                    {description.length > 150 ? `${description.substring(0, 150)}...` : description}
+                                  </p>
+                                )}
+                                {/* Show first few bullets if available and no description */}
+                                {!description && bullets.length > 0 && (
+                                  <ul className="list-disc list-inside text-xs text-muted-foreground mt-2 space-y-0.5">
+                                    {bullets.slice(0, 2).map((bullet: string, bidx: number) => (
+                                      <li key={bidx}>{bullet.length > 80 ? `${bullet.substring(0, 80)}...` : bullet}</li>
+                                    ))}
+                                    {bullets.length > 2 && (
+                                      <li className="text-xs italic">+{bullets.length - 2} more...</li>
+                                    )}
+                                  </ul>
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     )}
@@ -477,14 +499,46 @@ const ParseCV = () => {
                     {education.length > 0 && (
                       <div className="pt-4 border-t">
                         <p className="text-sm text-muted-foreground mb-3">Education</p>
-                        {education.map((edu: any, idx: number) => (
-                          <div key={idx} className="text-sm mb-2">
-                            <p className="font-medium">
-                              {edu.degree || ''} {edu.field || ''}
-                            </p>
-                            <p className="text-muted-foreground">{edu.institution || 'N/A'}</p>
-                          </div>
-                        ))}
+                        {education.map((edu: any, idx: number) => {
+                          // Format education title properly
+                          const formatEducationTitle = (degree: string, field?: string) => {
+                            const degreeMap: { [key: string]: string } = {
+                              'bachelors': "Bachelor's Degree",
+                              'masters': "Master's Degree",
+                              'phd': 'Ph.D.',
+                              'doctorate': 'Doctorate',
+                              'high_school': 'High School',
+                              'associates': "Associate's Degree",
+                              'mba': 'MBA',
+                            };
+
+                            const baseDegree = degreeMap[degree?.toLowerCase()] || degree;
+
+                            // Special handling for secondary education
+                            const isSecondary = degree?.toLowerCase() === 'high_school' ||
+                                              field?.match(/a-level|gcse|secondary|high school/i);
+
+                            if (isSecondary && field) {
+                              return field; // Show just "A-Level" or "GCSE"
+                            }
+
+                            return field && !isSecondary ? `${baseDegree} in ${field}` : baseDegree;
+                          };
+
+                          const educationTitle = formatEducationTitle(
+                            edu.degree || edu.qualification || '',
+                            edu.field
+                          );
+
+                          return (
+                            <div key={idx} className="text-sm mb-2">
+                              <p className="font-medium">
+                                {educationTitle}
+                              </p>
+                              <p className="text-muted-foreground">{edu.institution || 'N/A'}</p>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
 
