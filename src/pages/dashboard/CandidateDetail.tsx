@@ -310,88 +310,66 @@ const CandidateDetail = () => {
           />
         )}
 
-        {/* CV Details - All in One Interview Page */}
+        {/* CV Details */}
         <Card>
           <CardHeader>
-            <CardTitle>📋 Interview Reference Sheet</CardTitle>
-            <CardDescription>Complete candidate background - everything you need for the interview</CardDescription>
+            <CardTitle>CV Details</CardTitle>
+            <CardDescription>Candidate's curriculum vitae information</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Professional Summary */}
-            {(candidate.cv_parsed_data?.summary || candidate.cv_parsed_data?.professional_summary || candidate.summary) && (
+            {(candidate.cv_parsed_data?.summary || candidate.cv_parsed_data?.professional_summary) && (
               <div>
-                <h3 className="font-semibold mb-2 text-sm uppercase tracking-wide flex items-center gap-2">
-                  <span className="text-lg">💼</span> Professional Summary
-                </h3>
-                <p className="text-sm leading-relaxed bg-muted/30 p-3 rounded-lg">
-                  {candidate.cv_parsed_data?.summary || candidate.cv_parsed_data?.professional_summary || candidate.summary}
+                <h3 className="font-semibold mb-2 text-sm">Professional Summary</h3>
+                <p className="text-sm leading-relaxed">
+                  {candidate.cv_parsed_data?.summary || candidate.cv_parsed_data?.professional_summary}
                 </p>
-              </div>
-            )}
-
-            {/* Key Skills */}
-            {candidate.skills && candidate.skills.length > 0 && (
-              <div>
-                <h3 className="font-semibold mb-2 text-sm uppercase tracking-wide flex items-center gap-2">
-                  <span className="text-lg">🎯</span> Technical Skills
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {candidate.skills.map((skill, idx) => (
-                    <Badge key={idx} variant="secondary" className="text-sm">
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
               </div>
             )}
 
             {/* Work Experience */}
             {candidate.experience && candidate.experience.length > 0 && (
               <div>
-                <h3 className="font-semibold mb-3 text-sm uppercase tracking-wide flex items-center gap-2">
-                  <span className="text-lg">💼</span> Work Experience
-                </h3>
-                <div className="space-y-6">
+                <h3 className="font-semibold mb-3 text-sm">Work Experience</h3>
+                <div className="space-y-4">
                   {candidate.experience.map((exp: any, index: number) => (
-                    <div key={index} className="bg-muted/20 p-4 rounded-lg border-l-4 border-primary">
-                      <div className="mb-3">
-                        <h4 className="font-bold text-base text-foreground">
+                    <div key={index} className="border-l-2 border-muted pl-4">
+                      <div className="mb-2">
+                        <h4 className="font-medium text-base">
                           {exp.title || exp.role || exp.position || 'Position'}
                         </h4>
-                        <p className="text-sm font-medium text-muted-foreground">
+                        <p className="text-sm text-muted-foreground">
                           {exp.company || exp.employer || 'Company'}
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          📅 {exp.start_date || exp.from || exp.startDate || ''} → {exp.end_date || exp.to || exp.endDate || 'Present'}
+                          {exp.start_date || exp.from || exp.startDate || ''} - {exp.end_date || exp.to || exp.endDate || 'Present'}
                           {exp.duration && ` (${exp.duration})`}
                         </p>
                       </div>
 
                       {exp.description && (
-                        <div className="mb-3">
-                          <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                            {exp.description}
-                          </p>
-                        </div>
+                        <p className="text-sm mb-2 whitespace-pre-wrap">
+                          {exp.description}
+                        </p>
                       )}
 
                       {exp.responsibilities && Array.isArray(exp.responsibilities) && exp.responsibilities.length > 0 && (
-                        <div className="mb-3">
-                          <p className="text-xs font-semibold text-muted-foreground mb-2">📌 Key Responsibilities:</p>
-                          <ul className="list-disc list-outside text-sm space-y-1 ml-5">
+                        <div className="mb-2">
+                          <p className="text-xs font-medium text-muted-foreground mb-1">Responsibilities:</p>
+                          <ul className="list-disc list-inside text-sm space-y-1">
                             {exp.responsibilities.map((resp: string, idx: number) => (
-                              <li key={idx} className="leading-relaxed">{resp}</li>
+                              <li key={idx}>{resp}</li>
                             ))}
                           </ul>
                         </div>
                       )}
 
                       {exp.achievements && Array.isArray(exp.achievements) && exp.achievements.length > 0 && (
-                        <div className="mb-3">
-                          <p className="text-xs font-semibold text-muted-foreground mb-2">🏆 Key Achievements:</p>
-                          <ul className="list-disc list-outside text-sm space-y-1 ml-5">
+                        <div className="mb-2">
+                          <p className="text-xs font-medium text-muted-foreground mb-1">Achievements:</p>
+                          <ul className="list-disc list-inside text-sm space-y-1">
                             {exp.achievements.map((achievement: string, idx: number) => (
-                              <li key={idx} className="leading-relaxed">{achievement}</li>
+                              <li key={idx}>{achievement}</li>
                             ))}
                           </ul>
                         </div>
@@ -399,7 +377,7 @@ const CandidateDetail = () => {
 
                       {exp.technologies && (
                         <div>
-                          <p className="text-xs font-semibold text-muted-foreground mb-1">🛠️ Technologies Used:</p>
+                          <p className="text-xs font-medium text-muted-foreground mb-1">Technologies:</p>
                           <p className="text-sm">{Array.isArray(exp.technologies) ? exp.technologies.join(', ') : exp.technologies}</p>
                         </div>
                       )}
@@ -412,32 +390,30 @@ const CandidateDetail = () => {
             {/* Education */}
             {candidate.education && candidate.education.length > 0 && (
               <div>
-                <h3 className="font-semibold mb-3 text-sm uppercase tracking-wide flex items-center gap-2">
-                  <span className="text-lg">🎓</span> Education
-                </h3>
+                <h3 className="font-semibold mb-3 text-sm">Education</h3>
                 <div className="space-y-3">
                   {candidate.education.map((edu: any, index: number) => (
-                    <div key={index} className="bg-muted/20 p-3 rounded-lg">
-                      <h4 className="font-bold text-base">
+                    <div key={index} className="border-l-2 border-muted pl-4">
+                      <h4 className="font-medium text-base">
                         {edu.degree || edu.qualification || 'Degree'}
                       </h4>
-                      <p className="text-sm font-medium text-muted-foreground">
+                      <p className="text-sm text-muted-foreground">
                         {edu.institution || edu.school || edu.university || 'Institution'}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        📅 {edu.start_date || edu.from || ''} {edu.start_date && edu.end_date && '→ '} {edu.graduation_date || edu.year || edu.end_date || ''}
+                        {edu.start_date || edu.from || ''} {edu.start_date && edu.end_date && '- '} {edu.graduation_date || edu.year || edu.end_date || ''}
                       </p>
                       {edu.field && (
-                        <p className="text-sm mt-2">📚 Field: {edu.field}</p>
+                        <p className="text-sm mt-1">Field: {edu.field}</p>
                       )}
                       {edu.gpa && (
-                        <p className="text-sm">📊 GPA: {edu.gpa}</p>
+                        <p className="text-sm">GPA: {edu.gpa}</p>
                       )}
                       {edu.honors && (
-                        <p className="text-sm">🏅 {edu.honors}</p>
+                        <p className="text-sm">{edu.honors}</p>
                       )}
                       {edu.description && (
-                        <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{edu.description}</p>
+                        <p className="text-sm text-muted-foreground mt-1">{edu.description}</p>
                       )}
                     </div>
                   ))}
@@ -448,65 +424,47 @@ const CandidateDetail = () => {
             {/* Certifications */}
             {candidate.certifications && candidate.certifications.length > 0 && (
               <div>
-                <h3 className="font-semibold mb-2 text-sm uppercase tracking-wide flex items-center gap-2">
-                  <span className="text-lg">🏅</span> Certifications & Licenses
-                </h3>
-                <div className="space-y-2">
+                <h3 className="font-semibold mb-2 text-sm">Certifications</h3>
+                <ul className="space-y-1 text-sm">
                   {candidate.certifications.map((cert: any, index: number) => (
-                    <div key={index} className="text-sm bg-muted/20 p-2 rounded">
+                    <li key={index}>
                       <span className="font-medium">
                         {typeof cert === 'string' ? cert : cert.name || cert.title || 'Certification'}
                       </span>
                       {cert.issuer && <span className="text-muted-foreground"> by {cert.issuer}</span>}
                       {cert.year && <span className="text-muted-foreground"> ({cert.year})</span>}
                       {cert.expiry && <span className="text-muted-foreground"> • Expires: {cert.expiry}</span>}
-                    </div>
+                    </li>
                   ))}
-                </div>
+                </ul>
               </div>
             )}
 
             {/* Languages */}
             {candidate.languages && candidate.languages.length > 0 && (
               <div>
-                <h3 className="font-semibold mb-2 text-sm uppercase tracking-wide flex items-center gap-2">
-                  <span className="text-lg">🌍</span> Languages
-                </h3>
+                <h3 className="font-semibold mb-2 text-sm">Languages</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   {candidate.languages.map((lang: any, index: number) => (
-                    <div key={index} className="text-sm bg-muted/20 p-2 rounded">
+                    <div key={index} className="text-sm">
                       <span className="font-medium">
                         {typeof lang === 'string' ? lang : lang.name || lang.language || 'Language'}
                       </span>
                       {lang.proficiency && <span className="text-muted-foreground block text-xs">{lang.proficiency}</span>}
-                      {lang.level && <span className="text-muted-foreground block text-xs">Level: {lang.level}</span>}
+                      {lang.level && <span className="text-muted-foreground block text-xs">{lang.level}</span>}
                     </div>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Interview Tips */}
-            <div className="mt-6 p-4 bg-primary/5 rounded-lg border-2 border-primary/20">
-              <h3 className="font-bold mb-2 text-sm flex items-center gap-2">
-                <span className="text-lg">💡</span> Interview Question Ideas
-              </h3>
-              <ul className="text-sm space-y-1 list-disc list-inside text-muted-foreground">
-                <li>Ask about specific projects and responsibilities mentioned above</li>
-                <li>Deep dive into technologies and skills - assess hands-on experience</li>
-                <li>Discuss career transitions between roles/companies - motivation & growth</li>
-                <li>Explore achievements and their measurable impact</li>
-                <li>Ask about challenges faced and how they were overcome</li>
-              </ul>
-            </div>
-
             {/* Raw Data for Reference */}
             {candidate.cv_parsed_data && Object.keys(candidate.cv_parsed_data).filter(k => k !== 'status_history').length > 0 && (
-              <details className="mt-6">
-                <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground">
-                  🔍 View Raw CV Data (Technical Reference)
+              <details>
+                <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
+                  View Raw CV Data
                 </summary>
-                <pre className="mt-3 p-4 bg-muted rounded-lg text-xs overflow-auto max-h-96 font-mono">
+                <pre className="mt-2 p-3 bg-muted rounded text-xs overflow-auto max-h-96">
                   {JSON.stringify(candidate.cv_parsed_data, null, 2)}
                 </pre>
               </details>
