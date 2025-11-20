@@ -52,7 +52,7 @@ const OpenRoles = () => {
     title: '',
     department: '',
     location: '',
-    type: 'Full-time',
+    type: 'full-time',
     salary: '',
     description: '',
   });
@@ -62,9 +62,9 @@ const OpenRoles = () => {
       await addRole(formData);
       setDialogOpen(false);
       resetForm();
-    } catch (error) {
+    } catch (error: any) {
       // Error is already handled by addRole with toast notification
-      console.error('Failed to create role:', error);
+      console.error('Failed to create role:', error?.message || error);
     }
   };
 
@@ -88,9 +88,9 @@ const OpenRoles = () => {
       setDialogOpen(false);
       setEditingRole(null);
       resetForm();
-    } catch (error) {
+    } catch (error: any) {
       // Error is already handled by updateRole with toast notification
-      console.error('Failed to update role:', error);
+      console.error('Failed to update role:', error?.message || error);
     }
   };
 
@@ -112,7 +112,7 @@ const OpenRoles = () => {
       title: '',
       department: '',
       location: '',
-      type: 'Full-time',
+      type: 'full-time',
       salary: '',
       description: '',
     });
