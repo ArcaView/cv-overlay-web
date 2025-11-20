@@ -42,7 +42,7 @@ import { useRoles, type Role } from "@/contexts/RolesContext";
 
 const OpenRoles = () => {
   const navigate = useNavigate();
-  const { roles, setRoles, deleteRole: deleteRoleFromContext } = useRoles();
+  const { roles, addRole, updateRole, deleteRole: deleteRoleFromContext } = useRoles();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
@@ -57,17 +57,15 @@ const OpenRoles = () => {
     description: '',
   });
 
-  const handleCreateRole = () => {
-    const newRole: Role = {
-      id: Math.random().toString(36).substr(2, 9),
-      ...formData,
-      candidates: 0,
-      createdAt: new Date().toISOString().split('T')[0],
-      status: 'active',
-    };
-    setRoles([newRole, ...roles]);
-    setDialogOpen(false);
-    resetForm();
+  const handleCreateRole = async () => {
+    try {
+      await addRole(formData);
+      setDialogOpen(false);
+      resetForm();
+    } catch (error) {
+      // Error is already handled by addRole with toast notification
+      console.error('Failed to create role:', error);
+    }
   };
 
   const handleEditRole = (role: Role) => {
@@ -83,12 +81,17 @@ const OpenRoles = () => {
     setDialogOpen(true);
   };
 
-  const handleUpdateRole = () => {
+  const handleUpdateRole = async () => {
     if (!editingRole) return;
-    setRoles(roles.map(r => r.id === editingRole.id ? { ...r, ...formData } : r));
-    setDialogOpen(false);
-    setEditingRole(null);
-    resetForm();
+    try {
+      await updateRole(editingRole.id, formData);
+      setDialogOpen(false);
+      setEditingRole(null);
+      resetForm();
+    } catch (error) {
+      // Error is already handled by updateRole with toast notification
+      console.error('Failed to update role:', error);
+    }
   };
 
   const handleDeleteRole = (id: string) => {
