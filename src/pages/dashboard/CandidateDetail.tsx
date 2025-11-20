@@ -59,7 +59,7 @@ import { ScoreBreakdownCard } from "@/components/ScoreBreakdownCard";
 const CandidateDetail = () => {
   const { candidateId, roleId } = useParams();
   const navigate = useNavigate();
-  const { roles, updateCandidateStatus, updateCandidateSummary, addInterview, updateInterview, deleteInterview } = useRoles();
+  const { roles, updateCandidateStatus, updateCandidateSummary, addInterview, updateInterview, deleteInterview, removeCandidateFromRole } = useRoles();
   const { toast } = useToast();
 
   // Find the role and candidate
@@ -72,6 +72,7 @@ const CandidateDetail = () => {
   const [interviewDialogOpen, setInterviewDialogOpen] = useState(false);
   const [editingInterview, setEditingInterview] = useState<Interview | null>(null);
   const [deleteInterviewId, setDeleteInterviewId] = useState<string | null>(null);
+  const [deleteCandidateDialogOpen, setDeleteCandidateDialogOpen] = useState(false);
   const [cvOpen, setCvOpen] = useState(false);
   const [interviewForm, setInterviewForm] = useState({
     date: '',
@@ -166,6 +167,26 @@ const CandidateDetail = () => {
     }
   };
 
+  const handleDeleteCandidate = async () => {
+    if (roleId && candidateId) {
+      try {
+        await removeCandidateFromRole(roleId, candidateId);
+        toast({
+          title: 'Candidate deleted',
+          description: 'The candidate has been removed successfully'
+        });
+        navigate('/dashboard/candidates');
+      } catch (err: any) {
+        toast({
+          title: 'Error deleting candidate',
+          description: err.message,
+          variant: 'destructive'
+        });
+      }
+      setDeleteCandidateDialogOpen(false);
+    }
+  };
+
   const getStatusColor = (status: typeof candidate.status) => {
     switch (status) {
       case 'new': return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
@@ -220,6 +241,10 @@ const CandidateDetail = () => {
           <Button variant="ghost" onClick={() => navigate('/dashboard/candidates')}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to All Candidates
+          </Button>
+          <Button variant="destructive" onClick={() => setDeleteCandidateDialogOpen(true)}>
+            <Trash2 className="w-4 h-4 mr-2" />
+            Delete Candidate
           </Button>
         </div>
 
@@ -335,158 +360,170 @@ const CandidateDetail = () => {
             </CollapsibleTrigger>
             <CollapsibleContent>
               <CardContent className="space-y-6">
-            {/* Professional Summary */}
-            {(candidate.cv_parsed_data?.summary || candidate.cv_parsed_data?.professional_summary) && (
-              <div>
-                <h3 className="font-semibold mb-2 text-sm">Professional Summary</h3>
-                <p className="text-sm leading-relaxed">
-                  {candidate.cv_parsed_data?.summary || candidate.cv_parsed_data?.professional_summary}
-                </p>
-              </div>
-            )}
-
-            {/* Work Experience */}
-            {candidate.experience && candidate.experience.length > 0 && (
-              <div>
-                <h3 className="font-semibold mb-3 text-sm">Work Experience</h3>
-                <div className="space-y-4">
-                  {candidate.experience.map((exp: any, index: number) => (
-                    <div key={index} className="border-l-2 border-muted pl-4">
-                      <div className="mb-2">
-                        <h4 className="font-medium text-base">
-                          {exp.title || exp.role || exp.position || 'Position'}
-                        </h4>
-                        <p className="text-sm text-muted-foreground">
-                          {exp.company || exp.employer || 'Company'}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {exp.start_date || exp.from || exp.startDate || ''} - {exp.end_date || exp.to || exp.endDate || 'Present'}
-                          {exp.duration && ` (${exp.duration})`}
+                {/* Show message if no CV data */}
+                {!candidate.experience?.length &&
+                 !candidate.education?.length &&
+                 !candidate.certifications?.length &&
+                 !candidate.languages?.length &&
+                 !candidate.cv_parsed_data?.summary &&
+                 !candidate.cv_parsed_data?.professional_summary ? (
+                  <p className="text-sm text-muted-foreground">No CV details available for this candidate.</p>
+                ) : (
+                  <>
+                    {/* Professional Summary */}
+                    {(candidate.cv_parsed_data?.summary || candidate.cv_parsed_data?.professional_summary) && (
+                      <div>
+                        <h3 className="font-semibold mb-2 text-sm">Professional Summary</h3>
+                        <p className="text-sm leading-relaxed">
+                          {candidate.cv_parsed_data?.summary || candidate.cv_parsed_data?.professional_summary}
                         </p>
                       </div>
+                    )}
 
-                      {exp.description && (
-                        <p className="text-sm mb-2 whitespace-pre-wrap">
-                          {exp.description}
-                        </p>
-                      )}
+                    {/* Work Experience */}
+                    {candidate.experience && candidate.experience.length > 0 && (
+                      <div>
+                        <h3 className="font-semibold mb-3 text-sm">Work Experience</h3>
+                        <div className="space-y-4">
+                          {candidate.experience.map((exp: any, index: number) => (
+                            <div key={index} className="border-l-2 border-muted pl-4">
+                              <div className="mb-2">
+                                <h4 className="font-medium text-base">
+                                  {exp.title || exp.role || exp.position || 'Position'}
+                                </h4>
+                                <p className="text-sm text-muted-foreground">
+                                  {exp.company || exp.employer || 'Company'}
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {exp.start_date || exp.from || exp.startDate || ''} - {exp.end_date || exp.to || exp.endDate || 'Present'}
+                                  {exp.duration && ` (${exp.duration})`}
+                                </p>
+                              </div>
 
-                      {exp.responsibilities && Array.isArray(exp.responsibilities) && exp.responsibilities.length > 0 && (
-                        <div className="mb-2">
-                          <p className="text-xs font-medium text-muted-foreground mb-1">Responsibilities:</p>
-                          <ul className="list-disc list-inside text-sm space-y-1">
-                            {exp.responsibilities.map((resp: string, idx: number) => (
-                              <li key={idx}>{resp}</li>
-                            ))}
-                          </ul>
+                              {exp.description && (
+                                <p className="text-sm mb-2 whitespace-pre-wrap">
+                                  {exp.description}
+                                </p>
+                              )}
+
+                              {exp.responsibilities && Array.isArray(exp.responsibilities) && exp.responsibilities.length > 0 && (
+                                <div className="mb-2">
+                                  <p className="text-xs font-medium text-muted-foreground mb-1">Responsibilities:</p>
+                                  <ul className="list-disc list-inside text-sm space-y-1">
+                                    {exp.responsibilities.map((resp: string, idx: number) => (
+                                      <li key={idx}>{resp}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+
+                              {exp.achievements && Array.isArray(exp.achievements) && exp.achievements.length > 0 && (
+                                <div className="mb-2">
+                                  <p className="text-xs font-medium text-muted-foreground mb-1">Achievements:</p>
+                                  <ul className="list-disc list-inside text-sm space-y-1">
+                                    {exp.achievements.map((achievement: string, idx: number) => (
+                                      <li key={idx}>{achievement}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+
+                              {exp.technologies && (
+                                <div>
+                                  <p className="text-xs font-medium text-muted-foreground mb-1">Technologies:</p>
+                                  <p className="text-sm">{Array.isArray(exp.technologies) ? exp.technologies.join(', ') : exp.technologies}</p>
+                                </div>
+                              )}
+                            </div>
+                          ))}
                         </div>
-                      )}
+                      </div>
+                    )}
 
-                      {exp.achievements && Array.isArray(exp.achievements) && exp.achievements.length > 0 && (
-                        <div className="mb-2">
-                          <p className="text-xs font-medium text-muted-foreground mb-1">Achievements:</p>
-                          <ul className="list-disc list-inside text-sm space-y-1">
-                            {exp.achievements.map((achievement: string, idx: number) => (
-                              <li key={idx}>{achievement}</li>
-                            ))}
-                          </ul>
+                    {/* Education */}
+                    {candidate.education && candidate.education.length > 0 && (
+                      <div>
+                        <h3 className="font-semibold mb-3 text-sm">Education</h3>
+                        <div className="space-y-3">
+                          {candidate.education.map((edu: any, index: number) => (
+                            <div key={index} className="border-l-2 border-muted pl-4">
+                              <h4 className="font-medium text-base">
+                                {edu.degree || edu.qualification || 'Degree'}
+                              </h4>
+                              <p className="text-sm text-muted-foreground">
+                                {edu.institution || edu.school || edu.university || 'Institution'}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {edu.start_date || edu.from || ''} {edu.start_date && edu.end_date && '- '} {edu.graduation_date || edu.year || edu.end_date || ''}
+                              </p>
+                              {edu.field && (
+                                <p className="text-sm mt-1">Field: {edu.field}</p>
+                              )}
+                              {edu.gpa && (
+                                <p className="text-sm">GPA: {edu.gpa}</p>
+                              )}
+                              {edu.honors && (
+                                <p className="text-sm">{edu.honors}</p>
+                              )}
+                              {edu.description && (
+                                <p className="text-sm text-muted-foreground mt-1">{edu.description}</p>
+                              )}
+                            </div>
+                          ))}
                         </div>
-                      )}
+                      </div>
+                    )}
 
-                      {exp.technologies && (
-                        <div>
-                          <p className="text-xs font-medium text-muted-foreground mb-1">Technologies:</p>
-                          <p className="text-sm">{Array.isArray(exp.technologies) ? exp.technologies.join(', ') : exp.technologies}</p>
+                    {/* Certifications */}
+                    {candidate.certifications && candidate.certifications.length > 0 && (
+                      <div>
+                        <h3 className="font-semibold mb-2 text-sm">Certifications</h3>
+                        <ul className="space-y-1 text-sm">
+                          {candidate.certifications.map((cert: any, index: number) => (
+                            <li key={index}>
+                              <span className="font-medium">
+                                {typeof cert === 'string' ? cert : cert.name || cert.title || 'Certification'}
+                              </span>
+                              {cert.issuer && <span className="text-muted-foreground"> by {cert.issuer}</span>}
+                              {cert.year && <span className="text-muted-foreground"> ({cert.year})</span>}
+                              {cert.expiry && <span className="text-muted-foreground"> • Expires: {cert.expiry}</span>}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Languages */}
+                    {candidate.languages && candidate.languages.length > 0 && (
+                      <div>
+                        <h3 className="font-semibold mb-2 text-sm">Languages</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                          {candidate.languages.map((lang: any, index: number) => (
+                            <div key={index} className="text-sm">
+                              <span className="font-medium">
+                                {typeof lang === 'string' ? lang : lang.name || lang.language || 'Language'}
+                              </span>
+                              {lang.proficiency && <span className="text-muted-foreground block text-xs">{lang.proficiency}</span>}
+                              {lang.level && <span className="text-muted-foreground block text-xs">{lang.level}</span>}
+                            </div>
+                          ))}
                         </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                      </div>
+                    )}
 
-            {/* Education */}
-            {candidate.education && candidate.education.length > 0 && (
-              <div>
-                <h3 className="font-semibold mb-3 text-sm">Education</h3>
-                <div className="space-y-3">
-                  {candidate.education.map((edu: any, index: number) => (
-                    <div key={index} className="border-l-2 border-muted pl-4">
-                      <h4 className="font-medium text-base">
-                        {edu.degree || edu.qualification || 'Degree'}
-                      </h4>
-                      <p className="text-sm text-muted-foreground">
-                        {edu.institution || edu.school || edu.university || 'Institution'}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {edu.start_date || edu.from || ''} {edu.start_date && edu.end_date && '- '} {edu.graduation_date || edu.year || edu.end_date || ''}
-                      </p>
-                      {edu.field && (
-                        <p className="text-sm mt-1">Field: {edu.field}</p>
-                      )}
-                      {edu.gpa && (
-                        <p className="text-sm">GPA: {edu.gpa}</p>
-                      )}
-                      {edu.honors && (
-                        <p className="text-sm">{edu.honors}</p>
-                      )}
-                      {edu.description && (
-                        <p className="text-sm text-muted-foreground mt-1">{edu.description}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Certifications */}
-            {candidate.certifications && candidate.certifications.length > 0 && (
-              <div>
-                <h3 className="font-semibold mb-2 text-sm">Certifications</h3>
-                <ul className="space-y-1 text-sm">
-                  {candidate.certifications.map((cert: any, index: number) => (
-                    <li key={index}>
-                      <span className="font-medium">
-                        {typeof cert === 'string' ? cert : cert.name || cert.title || 'Certification'}
-                      </span>
-                      {cert.issuer && <span className="text-muted-foreground"> by {cert.issuer}</span>}
-                      {cert.year && <span className="text-muted-foreground"> ({cert.year})</span>}
-                      {cert.expiry && <span className="text-muted-foreground"> • Expires: {cert.expiry}</span>}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* Languages */}
-            {candidate.languages && candidate.languages.length > 0 && (
-              <div>
-                <h3 className="font-semibold mb-2 text-sm">Languages</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  {candidate.languages.map((lang: any, index: number) => (
-                    <div key={index} className="text-sm">
-                      <span className="font-medium">
-                        {typeof lang === 'string' ? lang : lang.name || lang.language || 'Language'}
-                      </span>
-                      {lang.proficiency && <span className="text-muted-foreground block text-xs">{lang.proficiency}</span>}
-                      {lang.level && <span className="text-muted-foreground block text-xs">{lang.level}</span>}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Raw Data for Reference */}
-            {candidate.cv_parsed_data && Object.keys(candidate.cv_parsed_data).filter(k => k !== 'status_history').length > 0 && (
-              <details>
-                <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
-                  View Raw CV Data
-                </summary>
-                <pre className="mt-2 p-3 bg-muted rounded text-xs overflow-auto max-h-96">
-                  {JSON.stringify(candidate.cv_parsed_data, null, 2)}
-                </pre>
-              </details>
-            )}
+                    {/* Raw Data for Reference */}
+                    {candidate.cv_parsed_data && Object.keys(candidate.cv_parsed_data).filter(k => k !== 'status_history').length > 0 && (
+                      <details>
+                        <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
+                          View Raw CV Data
+                        </summary>
+                        <pre className="mt-2 p-3 bg-muted rounded text-xs overflow-auto max-h-96">
+                          {JSON.stringify(candidate.cv_parsed_data, null, 2)}
+                        </pre>
+                      </details>
+                    )}
+                  </>
+                )}
               </CardContent>
             </CollapsibleContent>
           </Card>
@@ -714,6 +751,24 @@ const CandidateDetail = () => {
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={handleDeleteInterview} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                 Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Delete Candidate Confirmation */}
+        <AlertDialog open={deleteCandidateDialogOpen} onOpenChange={setDeleteCandidateDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Candidate</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete this candidate? This action cannot be undone and will remove all associated data including interviews, notes, and status history.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDeleteCandidate} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Delete Candidate
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
