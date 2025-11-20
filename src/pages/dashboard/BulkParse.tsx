@@ -4,8 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -22,6 +20,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import {
   Upload,
   FileText,
@@ -29,20 +28,22 @@ import {
   AlertCircle,
   Loader2,
   X,
-  Star,
-  Sparkles,
   Plus,
   Briefcase,
+  User,
+  Mail,
+  Phone,
+  MapPin,
 } from "lucide-react";
 import { useState } from "react";
 import { useRoles } from "@/contexts/RolesContext";
 import { useToast } from "@/hooks/use-toast";
+import { parseScoreAPI } from "@/lib/api/parsescore-client";
 
 interface FileWithStatus {
   file: File;
   status: 'pending' | 'processing' | 'completed' | 'error';
   result?: any;
-  score?: any;
   error?: string;
 }
 
@@ -52,12 +53,10 @@ const BulkParse = () => {
 
   const [files, setFiles] = useState<FileWithStatus[]>([]);
   const [processing, setProcessing] = useState(false);
-  const [jobDescription, setJobDescription] = useState("");
-  const [useLLMScoring, setUseLLMScoring] = useState(false);
   const [selectedRole, setSelectedRole] = useState<string>("");
+  const [jobDescription, setJobDescription] = useState("");
   const [newRoleDialogOpen, setNewRoleDialogOpen] = useState(false);
   const [newRoleTitle, setNewRoleTitle] = useState("");
-  const [showTips, setShowTips] = useState(true);
 
   const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -82,7 +81,7 @@ const BulkParse = () => {
       location: "TBD",
       type: "Full-time",
       salary: "TBD",
-      description: "Role description to be added",
+      description: jobDescription || "Role description to be added",
     };
 
     addRole(newRoleData);
@@ -105,73 +104,82 @@ const BulkParse = () => {
   };
 
   const handleBulkParse = async () => {
-    if (!selectedRole) return;
+    if (!selectedRole) {
+      toast({
+        title: "Role Required",
+        description: "Please select a role to attach these CVs to.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setProcessing(true);
 
-    let successCount = 0;
+    // Mark all files as processing
+    setFiles(prev => prev.map(f => ({ ...f, status: 'processing' as const })));
 
-    // Simulate bulk processing - replace with actual API calls
-    for (let i = 0; i < files.length; i++) {
-      if (files[i].status !== 'pending') continue;
+    try {
+      // Call the batch parse API (no scoring)
+      const response = await parseScoreAPI.batchParse(files.map(f => f.file));
 
-      // Update status to processing
-      setFiles(prev => prev.map((f, idx) =>
-        idx === i ? { ...f, status: 'processing' as const } : f
-      ));
+      console.log('Batch parse response:', response);
 
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      let successCount = 0;
 
-      // Randomly succeed or fail for demo
-      const success = Math.random() > 0.1;
+      // Update file statuses and add candidates to role
+      const updatedFiles = files.map((fileItem, index) => {
+        const parseResult = response.results[index];
+        
+        if (!parseResult) {
+          return {
+            ...fileItem,
+            status: 'error' as const,
+            error: 'No response from API'
+          };
+        }
 
-      const parseResult = success ? {
-        id: `parse_${Math.random().toString(36).substr(2, 9)}`,
-        name: files[i].file.name,
-        candidate_name: `Candidate ${i + 1}`,
-        candidate_email: `candidate${i + 1}@email.com`,
-        candidate_phone: `+1-555-${String(i).padStart(4, '0')}`,
-        skills: ['JavaScript', 'React', 'Node.js', 'TypeScript'].slice(0, Math.floor(Math.random() * 4) + 1),
-        skills_count: Math.floor(Math.random() * 15) + 5,
-        experience_years: Math.floor(Math.random() * 10) + 1,
-      } : undefined;
+        if (parseResult.parsing_errors) {
+          return {
+            ...fileItem,
+            status: 'error' as const,
+            error: parseResult.parsing_errors
+          };
+        }
 
-      // Generate score if job description is provided
-      const scoreResult = success && jobDescription.trim() ? {
-        overall_score: Math.floor(Math.random() * 30) + 70, // 70-100
-        fit: Math.random() > 0.5 ? 'excellent' as const : Math.random() > 0.3 ? 'good' as const : 'fair' as const,
-      } : undefined;
+        if (!parseResult.candidate) {
+          return {
+            ...fileItem,
+            status: 'error' as const,
+            error: 'No candidate data returned'
+          };
+        }
 
-      setFiles(prev => prev.map((f, idx) =>
-        idx === i ? {
-          ...f,
-          status: success ? 'completed' as const : 'error' as const,
-          result: parseResult,
-          score: scoreResult,
-          error: success ? undefined : 'Failed to parse document'
-        } : f
-      ));
+        successCount++;
 
-      // Add candidate to selected role if successful
-      if (success && parseResult) {
+        const candidateData = parseResult.candidate;
+
+        // Add candidate to the selected role
         const candidate = {
           id: `candidate_${Math.random().toString(36).substr(2, 9)}`,
-          name: parseResult.candidate_name,
-          email: parseResult.candidate_email,
-          phone: parseResult.candidate_phone,
-          fileName: files[i].file.name,
-          skills: parseResult.skills,
-          experience_years: parseResult.experience_years,
+          name: candidateData.contact?.full_name || 'Unknown',
+          email: candidateData.contact?.emails?.[0] || '',
+          phone: candidateData.contact?.phones?.[0] || '',
+          fileName: parseResult.filename,
+          skills: candidateData.skills?.map((s: any) => s.name || s) || [],
+          experience_years: Math.round(
+            candidateData.work_experience?.reduce((sum: number, exp: any) => 
+              sum + ((exp.duration_months || 0) / 12), 0
+            ) || 0
+          ),
           appliedDate: new Date().toISOString().split('T')[0],
-          score: scoreResult?.overall_score,
-          fit: scoreResult?.fit,
+          score: undefined, // No scoring yet
+          fit: undefined, // No scoring yet
           status: 'reviewing' as const,
           statusHistory: [
             {
               status: 'reviewing' as const,
               changedAt: new Date().toISOString(),
-              note: 'Candidate added to role'
+              note: 'Candidate added via bulk parse'
             }
           ],
           interviews: [],
@@ -179,63 +187,54 @@ const BulkParse = () => {
         };
 
         addCandidateToRole(selectedRole, candidate);
-        successCount++;
-      }
+
+        return {
+          ...fileItem,
+          status: 'completed' as const,
+          result: candidateData,
+        };
+      });
+
+      setFiles(updatedFiles);
+
+      toast({
+        title: "Bulk Parse Complete",
+        description: `Successfully parsed ${successCount} of ${files.length} CVs (${response.processing_time_ms.toFixed(0)}ms total)`,
+      });
+
+    } catch (error: any) {
+      console.error('Batch parsing failed:', error);
+      
+      // Mark all files as error
+      setFiles(prev => prev.map(f => ({
+        ...f,
+        status: 'error' as const,
+        error: error.message || 'Failed to parse CVs'
+      })));
+
+      toast({
+        title: "Batch Parse Failed",
+        description: error.message || "An error occurred while parsing CVs. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessing(false);
     }
-
-    setProcessing(false);
-
-    toast({
-      title: "Bulk Parse Complete",
-      description: `Successfully parsed ${successCount} CVs and added them to the role.`,
-    });
   };
 
   const completedCount = files.filter(f => f.status === 'completed').length;
   const errorCount = files.filter(f => f.status === 'error').length;
   const pendingCount = files.filter(f => f.status === 'pending').length;
 
-  // Find the top candidate based on score
-  const topCandidate = files
-    .filter(f => f.status === 'completed' && f.score)
-    .sort((a, b) => (b.score?.overall_score || 0) - (a.score?.overall_score || 0))[0];
-
   return (
     <DashboardLayout>
       <div className="p-6 space-y-6">
-        {/* Tips Banner */}
-        {showTips && (
-          <Card className="bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 border-primary/20">
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <h3 className="font-semibold mb-2 flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-primary" />
-                    Bulk Processing Tips
-                  </h3>
-                  <div className="text-sm text-muted-foreground">
-                    <span className="font-medium">Optimal batch:</span> 10-50 files • <span className="font-medium">File naming:</span> Use clear conventions for easy identification
-                  </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowTips(false)}
-                  className="flex-shrink-0 h-8 w-8 p-0"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
             <h1 className="text-3xl font-bold mb-2">Bulk Parse CVs</h1>
             <p className="text-muted-foreground">
-              Upload multiple CVs and process them in batch
+              Upload and parse multiple CVs to extract candidate information
             </p>
           </div>
           {files.length > 0 && (
@@ -279,75 +278,6 @@ const BulkParse = () => {
           </div>
         )}
 
-        {/* Star Candidate & LLM Scoring */}
-        {topCandidate && (
-          <Card className="bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-950/20 dark:to-amber-950/20 border-yellow-200 dark:border-yellow-800">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-yellow-500 rounded-lg">
-                    <Star className="w-6 h-6 text-white fill-white" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-xl">Star Candidate</CardTitle>
-                    <CardDescription>Highest scoring match for this role</CardDescription>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 bg-white/50 dark:bg-black/20 px-3 py-2 rounded-lg">
-                  <Sparkles className="w-4 h-4 text-purple-600" />
-                  <Label htmlFor="llm-scoring" className="text-sm font-medium cursor-pointer">
-                    LLM Scoring
-                  </Label>
-                  <Switch
-                    id="llm-scoring"
-                    checked={useLLMScoring}
-                    onCheckedChange={setUseLLMScoring}
-                    disabled={processing}
-                  />
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="text-2xl font-bold">{topCandidate.result?.candidate_name}</p>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <FileText className="w-4 h-4" />
-                    <span>{topCandidate.file.name}</span>
-                  </div>
-                  <div className="flex items-center gap-2 mt-2">
-                    <Badge variant={topCandidate.score.fit === 'excellent' ? 'default' : 'secondary'}>
-                      {topCandidate.score.fit}
-                    </Badge>
-                    <span className="text-sm text-muted-foreground">
-                      {topCandidate.result?.experience_years} years exp • {topCandidate.result?.skills_count} skills
-                    </span>
-                  </div>
-                </div>
-
-                <div className="text-right">
-                  <div className="text-5xl font-bold bg-gradient-to-br from-yellow-600 to-amber-600 bg-clip-text text-transparent">
-                    {topCandidate.score.overall_score}%
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1">Overall Match</p>
-                </div>
-              </div>
-
-              {useLLMScoring && (
-                <div className="mt-4 p-3 bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-lg">
-                  <div className="flex items-start gap-2">
-                    <Sparkles className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
-                    <p className="text-sm text-muted-foreground">
-                      <span className="font-medium text-purple-700 dark:text-purple-400">LLM Enhancement Active:</span> Scores are being enhanced with advanced AI analysis for deeper insights into candidate-role fit, soft skills assessment, and cultural alignment predictions.
-                    </p>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Upload Section */}
           <Card className="lg:col-span-1">
@@ -357,11 +287,11 @@ const BulkParse = () => {
                 Upload CVs
               </CardTitle>
               <CardDescription>
-                Select multiple CV files to parse
+                Supported formats: PDF, DOCX, DOC, TXT (max 10MB each)
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
+              <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
                 <input
                   type="file"
                   id="bulk-upload"
@@ -379,16 +309,44 @@ const BulkParse = () => {
                     <FileText className="w-8 h-8 text-primary" />
                   </div>
                   <div>
-                    <p className="font-medium">Upload multiple files</p>
+                    <p className="font-medium">Click to upload or drag and drop</p>
                     <p className="text-sm text-muted-foreground mt-1">
-                      PDF, DOCX, DOC, or TXT
+                      PDF, DOCX, DOC, or TXT up to 10MB (max 50 files)
                     </p>
                   </div>
                 </label>
               </div>
 
+              {files.length > 0 && (
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {files.slice(0, 3).map((fileItem, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 bg-muted rounded-lg text-sm">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <FileText className="w-4 h-4 text-primary flex-shrink-0" />
+                        <span className="truncate">{fileItem.file.name}</span>
+                      </div>
+                      {!processing && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeFile(index)}
+                          className="h-6 w-6 p-0"
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  {files.length > 3 && (
+                    <p className="text-xs text-muted-foreground text-center">
+                      +{files.length - 3} more files
+                    </p>
+                  )}
+                </div>
+              )}
+
               {/* Role Selection */}
-              <div className="space-y-2">
+              <div className="space-y-2 pt-4 border-t">
                 <Label htmlFor="role-select">Attach to Role *</Label>
                 <div className="flex gap-2">
                   <Select value={selectedRole} onValueChange={setSelectedRole}>
@@ -447,20 +405,20 @@ const BulkParse = () => {
                 </p>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="job-description" className="text-sm font-medium">
-                  Job Description (Optional)
-                </Label>
+              {/* Job Description (Optional) */}
+              <div className="space-y-2 pt-4 border-t">
+                <Label htmlFor="job-description">Job Description (Optional)</Label>
                 <Textarea
                   id="job-description"
-                  placeholder="Paste the job description here to score candidates against requirements..."
+                  placeholder="Paste the job description here to score candidates later..."
                   value={jobDescription}
                   onChange={(e) => setJobDescription(e.target.value)}
-                  className="min-h-[100px] resize-none"
+                  rows={4}
+                  className="resize-none"
                   disabled={processing}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Add a job description to automatically score each candidate's fit
+                  Add a job description to enable scoring candidates against the role later
                 </p>
               </div>
 
@@ -476,22 +434,21 @@ const BulkParse = () => {
                     Processing {completedCount}/{files.length}
                   </>
                 ) : (
-                  `Parse ${pendingCount} ${pendingCount === 1 ? 'File' : 'Files'}`
+                  `Parse ${pendingCount} ${pendingCount === 1 ? 'CV' : 'CVs'}`
                 )}
               </Button>
 
-              {/* Usage Info */}
-              <div className="pt-4 border-t space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Monthly Usage</span>
-                  <span className="font-medium">156 / 1,000</span>
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                <div>
+                  <p className="text-sm text-muted-foreground">This Month</p>
+                  <p className="text-2xl font-bold">156</p>
+                  <p className="text-xs text-muted-foreground">parses used</p>
                 </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div className="bg-primary h-2 rounded-full" style={{ width: '15.6%' }} />
+                <div>
+                  <p className="text-sm text-muted-foreground">Remaining</p>
+                  <p className="text-2xl font-bold">844</p>
+                  <p className="text-xs text-muted-foreground">in your plan</p>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  844 parses remaining in your plan
-                </p>
               </div>
             </CardContent>
           </Card>
@@ -509,17 +466,17 @@ const BulkParse = () => {
                 <div className="text-center py-12 text-muted-foreground">
                   <Upload className="w-12 h-12 mx-auto mb-3 opacity-50" />
                   <p>No files uploaded yet</p>
-                  <p className="text-sm mt-1">Upload CVs to start bulk processing</p>
+                  <p className="text-sm mt-1">Upload CVs to start bulk parsing</p>
                 </div>
               ) : (
-                <div className="space-y-2 max-h-[600px] overflow-y-auto">
+                <div className="space-y-3 max-h-[600px] overflow-y-auto">
                   {files.map((fileItem, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-3 border rounded-lg"
+                      className="flex items-start justify-between p-4 border rounded-lg"
                     >
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className="flex-shrink-0">
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                        <div className="flex-shrink-0 mt-0.5">
                           {fileItem.status === 'pending' && (
                             <FileText className="w-5 h-5 text-muted-foreground" />
                           )}
@@ -535,15 +492,67 @@ const BulkParse = () => {
                         </div>
 
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">
+                          <p className="font-medium text-sm truncate mb-1">
                             {fileItem.file.name}
                           </p>
-                          <p className="text-xs text-muted-foreground">
-                            {(fileItem.file.size / 1024).toFixed(1)} KB
-                            {fileItem.result && ` • ${fileItem.result.candidate_name}`}
-                            {fileItem.score && ` • Score: ${fileItem.score.overall_score}%`}
-                            {fileItem.error && ` • ${fileItem.error}`}
-                          </p>
+                          
+                          {fileItem.status === 'completed' && fileItem.result && (
+                            <div className="space-y-1 text-xs text-muted-foreground">
+                              <div className="flex items-center gap-1.5">
+                                <User className="w-3 h-3" />
+                                <span className="font-medium">{fileItem.result.contact?.full_name || 'Unknown'}</span>
+                              </div>
+                              {fileItem.result.contact?.emails?.[0] && (
+                                <div className="flex items-center gap-1.5">
+                                  <Mail className="w-3 h-3" />
+                                  <span>{fileItem.result.contact.emails[0]}</span>
+                                </div>
+                              )}
+                              {fileItem.result.contact?.phones?.[0] && (
+                                <div className="flex items-center gap-1.5">
+                                  <Phone className="w-3 h-3" />
+                                  <span>{fileItem.result.contact.phones[0]}</span>
+                                </div>
+                              )}
+                              {fileItem.result.contact?.location && (
+                                <div className="flex items-center gap-1.5">
+                                  <MapPin className="w-3 h-3" />
+                                  <span>{fileItem.result.contact.location}</span>
+                                </div>
+                              )}
+                              <div className="flex items-center gap-2 mt-1">
+                                <Badge variant="outline" className="text-xs">
+                                  {fileItem.result.skills?.length || 0} skills
+                                </Badge>
+                                <Badge variant="outline" className="text-xs">
+                                  {fileItem.result.work_experience?.length || 0} jobs
+                                </Badge>
+                                <Badge variant="outline" className="text-xs">
+                                  {(() => {
+                                    // Only count university degrees, not secondary school qualifications
+                                    const universityDegrees = fileItem.result.education?.filter((edu: any) => {
+                                      const degreeLevel = edu.degree?.toLowerCase();
+                                      return degreeLevel === 'bachelors' || 
+                                            degreeLevel === 'masters' || 
+                                            degreeLevel === 'doctorate';
+                                    }) || [];
+                                    const count = universityDegrees.length;
+                                    return `${count} ${count === 1 ? 'degree' : 'degrees'}`;
+                                  })()}
+                                </Badge>
+                              </div>
+                            </div>
+                          )}
+
+                          {fileItem.status === 'error' && (
+                            <p className="text-xs text-destructive">{fileItem.error}</p>
+                          )}
+
+                          {fileItem.status === 'pending' && (
+                            <p className="text-xs text-muted-foreground">
+                              {(fileItem.file.size / 1024).toFixed(1)} KB
+                            </p>
+                          )}
                         </div>
 
                         <div className="flex items-center gap-2">
