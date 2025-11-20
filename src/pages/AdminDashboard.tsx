@@ -80,7 +80,7 @@ const AdminDashboard = () => {
       if (error) throw error;
       setFeatures(data || []);
     } catch (error) {
-      console.error("Error fetching features:", error);
+      // TODO: Replace with proper error logging service (e.g., Sentry)
     } finally {
       setIsLoading(false);
     }

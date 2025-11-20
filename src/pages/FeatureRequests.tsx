@@ -97,7 +97,7 @@ const FeatureRequests = () => {
       const { data: featuresData, error: featuresError } = await query;
 
       if (featuresError) {
-        console.error("Error fetching features:", featuresError);
+        // TODO: Replace with proper error logging service (e.g., Sentry)
         throw featuresError;
       }
 
@@ -108,7 +108,7 @@ const FeatureRequests = () => {
         .eq("user_fingerprint", fingerprint);
 
       if (votesError) {
-        console.error("Error fetching votes:", votesError);
+        // TODO: Replace with proper error logging service (e.g., Sentry)
       }
 
       const votesMap = new Map(
@@ -139,7 +139,7 @@ const FeatureRequests = () => {
 
       setFeatures(sortedFeatures);
     } catch (error) {
-      console.error("Error fetching features:", error);
+      // TODO: Replace with proper error logging service (e.g., Sentry)
       toast({
         title: "Error",
         description: "Failed to load feature requests",
@@ -175,7 +175,7 @@ const FeatureRequests = () => {
       });
 
       if (error) {
-        console.error("Insert error:", error);
+        // TODO: Replace with proper error logging service (e.g., Sentry)
         throw error;
       }
 
@@ -191,7 +191,7 @@ const FeatureRequests = () => {
         fetchFeatures();
       }, 500);
     } catch (error) {
-      console.error("Error submitting feature:", error);
+      // TODO: Replace with proper error logging service (e.g., Sentry)
       toast({
         title: "Error",
         description: "Failed to submit feature request",
@@ -265,7 +265,7 @@ const FeatureRequests = () => {
         });
       }
     } catch (error) {
-      console.error("Error voting:", error);
+      // TODO: Replace with proper error logging service (e.g., Sentry)
       fetchFeatures();
       toast({
         title: "Error",
@@ -294,7 +294,7 @@ const FeatureRequests = () => {
 
       fetchFeatures();
     } catch (error) {
-      console.error("Error updating status:", error);
+      // TODO: Replace with proper error logging service (e.g., Sentry)
       toast({
         title: "Error",
         description: "Failed to update status",
@@ -331,7 +331,7 @@ const FeatureRequests = () => {
       setFeedback({ message: "", email: "" });
       setIsFeedbackOpen(false);
     } catch (error) {
-      console.error("Error submitting feedback:", error);
+      // TODO: Replace with proper error logging service (e.g., Sentry)
       toast({
         title: "Error",
         description: "Failed to submit feedback",

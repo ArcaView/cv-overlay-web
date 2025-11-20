@@ -100,7 +100,7 @@ export const FeedbackPopup = () => {
       setFeedback({ message: "", email: "" });
       setIsOpen(false);
     } catch (error) {
-      console.error("Error submitting feedback:", error);
+      // TODO: Replace with proper error logging service (e.g., Sentry)
       toast({
         title: "Error",
         description: "Failed to submit feedback",

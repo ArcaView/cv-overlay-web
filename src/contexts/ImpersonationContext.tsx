@@ -89,7 +89,7 @@ export const ImpersonationProvider = ({ children }: { children: ReactNode }) => 
         }
       } catch (error) {
         // Silently fail if impersonation tables don't exist
-        console.log("Impersonation system not configured:", error);
+        // TODO: Add proper error logging if this becomes a real issue
       }
     };
 
@@ -185,7 +185,7 @@ export const ImpersonationProvider = ({ children }: { children: ReactNode }) => 
       });
 
       if (error) {
-        console.error("Impersonation request error:", error);
+        // TODO: Replace with proper error logging service (e.g., Sentry)
         toast({
           title: "Error",
           description: "Failed to create impersonation request",
@@ -204,7 +204,7 @@ export const ImpersonationProvider = ({ children }: { children: ReactNode }) => 
 
       return true;
     } catch (error) {
-      console.error("Start impersonation error:", error);
+      // TODO: Replace with proper error logging service (e.g., Sentry)
       return false;
     }
   };
@@ -227,7 +227,7 @@ export const ImpersonationProvider = ({ children }: { children: ReactNode }) => 
         .eq("id", sessionId);
 
       if (error) {
-        console.error("Approve error:", error);
+        // TODO: Replace with proper error logging service (e.g., Sentry)
         return false;
       }
 
@@ -241,7 +241,7 @@ export const ImpersonationProvider = ({ children }: { children: ReactNode }) => 
       setPendingRequest(null);
       return true;
     } catch (error) {
-      console.error("Approve impersonation error:", error);
+      // TODO: Replace with proper error logging service (e.g., Sentry)
       return false;
     }
   };
@@ -260,7 +260,7 @@ export const ImpersonationProvider = ({ children }: { children: ReactNode }) => 
         .eq("id", sessionId);
 
       if (error) {
-        console.error("Reject error:", error);
+        // TODO: Replace with proper error logging service (e.g., Sentry)
         return false;
       }
 
@@ -274,7 +274,7 @@ export const ImpersonationProvider = ({ children }: { children: ReactNode }) => 
       setPendingRequest(null);
       return true;
     } catch (error) {
-      console.error("Reject impersonation error:", error);
+      // TODO: Replace with proper error logging service (e.g., Sentry)
       return false;
     }
   };
@@ -293,7 +293,7 @@ export const ImpersonationProvider = ({ children }: { children: ReactNode }) => 
         .eq("id", currentSession.id);
 
       if (error) {
-        console.error("End session error:", error);
+        // TODO: Replace with proper error logging service (e.g., Sentry)
         return;
       }
 
@@ -311,7 +311,7 @@ export const ImpersonationProvider = ({ children }: { children: ReactNode }) => 
         description: "You are now viewing as yourself",
       });
     } catch (error) {
-      console.error("End impersonation error:", error);
+      // TODO: Replace with proper error logging service (e.g., Sentry)
     }
   };
 
@@ -326,7 +326,7 @@ export const ImpersonationProvider = ({ children }: { children: ReactNode }) => 
         p_details: details ? JSON.stringify(details) : null,
       });
     } catch (error) {
-      console.error("Log action error:", error);
+      // TODO: Replace with proper error logging service (e.g., Sentry)
     }
   };
 

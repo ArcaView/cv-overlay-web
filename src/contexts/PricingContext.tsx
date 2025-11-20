@@ -46,7 +46,7 @@ export const PricingProvider: React.FC<{ children: ReactNode }> = ({ children })
       setPlans(data || []);
     } catch (err: any) {
       setError(err.message);
-      console.error('Error loading pricing plans:', err);
+      // TODO: Replace with proper error logging service (e.g., Sentry)
     } finally {
       setIsLoading(false);
     }

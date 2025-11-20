@@ -70,7 +70,7 @@ const Billing = () => {
       // Redirect to Stripe Customer Portal
       window.location.href = url;
     } catch (error) {
-      console.error('Error redirecting to Stripe:', error);
+      // TODO: Replace with proper error logging service (e.g., Sentry)
 
       // Development mode: Show helpful message instead of error
       const isDev = import.meta.env.DEV || import.meta.env.MODE === 'development';
@@ -117,7 +117,7 @@ const Billing = () => {
         throw new Error('Failed to fetch invoice');
       }
     } catch (error) {
-      console.error('Error downloading invoice:', error);
+      // TODO: Replace with proper error logging service (e.g., Sentry)
 
       // DEVELOPMENT MODE: Generate demo PDF client-side
       if (import.meta.env.DEV || import.meta.env.MODE === 'development') {

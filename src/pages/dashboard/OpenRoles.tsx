@@ -64,7 +64,7 @@ const OpenRoles = () => {
       resetForm();
     } catch (error: any) {
       // Error is already handled by addRole with toast notification
-      console.error('Failed to create role:', error?.message || error);
+      // TODO: Replace with proper error logging service (e.g., Sentry)
     }
   };
 
@@ -90,7 +90,7 @@ const OpenRoles = () => {
       resetForm();
     } catch (error: any) {
       // Error is already handled by updateRole with toast notification
-      console.error('Failed to update role:', error?.message || error);
+      // TODO: Replace with proper error logging service (e.g., Sentry)
     }
   };
 

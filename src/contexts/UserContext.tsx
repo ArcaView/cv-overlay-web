@@ -45,7 +45,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
           });
         }
       } catch (error) {
-        console.error("Error initializing auth:", error);
+        // TODO: Replace with proper error logging service (e.g., Sentry)
       } finally {
         setIsLoading(false);
       }

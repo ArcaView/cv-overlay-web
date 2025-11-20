@@ -17,7 +17,6 @@ export function CVUploader({ onParsed }: { onParsed?: (result: any) => void }) {
       const response = await parseScoreAPI.parseCV(file, true);
       setResult(response);
       onParsed?.(response);
-      console.log('Parsed CV:', response);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upload failed');
     } finally {

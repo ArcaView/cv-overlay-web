@@ -436,18 +436,20 @@ const BulkParse = () => {
                 )}
               </Button>
 
+              {/* TODO: Replace with real usage data from API/database
               <div className="grid grid-cols-2 gap-4 pt-4 border-t">
                 <div>
                   <p className="text-sm text-muted-foreground">This Month</p>
-                  <p className="text-2xl font-bold">156</p>
+                  <p className="text-2xl font-bold">{usageData.parsesUsed}</p>
                   <p className="text-xs text-muted-foreground">parses used</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Remaining</p>
-                  <p className="text-2xl font-bold">844</p>
+                  <p className="text-2xl font-bold">{usageData.parsesRemaining}</p>
                   <p className="text-xs text-muted-foreground">in your plan</p>
                 </div>
               </div>
+              */}
             </CardContent>
           </Card>
 
