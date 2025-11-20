@@ -112,6 +112,19 @@ const RolesContext = createContext<RolesContextType | undefined>(undefined);
 
 // Helper function to transform database candidates to Role format
 const transformCandidatesForRole = (candidates: any[]): { candidatesList: Candidate[], candidates: number } => {
+  // Helper to normalize skills to string array
+  const normalizeSkills = (skills: any): string[] => {
+    if (!Array.isArray(skills)) return [];
+    return skills.map(skill => {
+      // If skill is already a string, return it
+      if (typeof skill === 'string') return skill;
+      // If skill is an object with a name property, extract it
+      if (skill && typeof skill === 'object' && skill.name) return skill.name;
+      // Otherwise, stringify it
+      return String(skill);
+    }).filter(Boolean); // Remove any empty/falsy values
+  };
+
   const candidatesList = candidates.map(c => {
     // Extract arrays from database columns, or fallback to cv_parsed_data
     const getArrayField = (directField: any, parsedDataField: any) => {
@@ -119,6 +132,10 @@ const transformCandidatesForRole = (candidates: any[]): { candidatesList: Candid
       if (Array.isArray(parsedDataField) && parsedDataField.length > 0) return parsedDataField;
       return [];
     };
+
+    // Get skills and normalize them to strings
+    const rawSkills = getArrayField(c.skills, c.cv_parsed_data?.skills);
+    const normalizedSkills = normalizeSkills(rawSkills);
 
     return {
       id: c.id,
@@ -133,7 +150,7 @@ const transformCandidatesForRole = (candidates: any[]): { candidatesList: Candid
       prestige_details: c.cv_parsed_data?.prestige_details,
       fit: c.overall_score >= 80 ? 'excellent' as const : c.overall_score >= 60 ? 'good' as const : 'fair' as const,
       appliedDate: c.created_at.split('T')[0],
-      skills: getArrayField(c.skills, c.cv_parsed_data?.skills),
+      skills: normalizedSkills,
       experience_years: c.cv_parsed_data?.experience_years || c.cv_parsed_data?.years_of_experience || 0,
       status: c.status || 'new',
       statusHistory: c.cv_parsed_data?.status_history || [{ status: c.status || 'new', changedAt: c.created_at }],

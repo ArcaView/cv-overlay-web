@@ -78,11 +78,18 @@ const ParseCV = () => {
       const contact = parsedCandidate.contact || {};
       const workExperience = parsedCandidate.work_experience || [];
       const education = parsedCandidate.education || [];
-      const skills = parsedCandidate.skills || [];
+      const rawSkills = parsedCandidate.skills || [];
       const certifications = parsedCandidate.certifications || [];
       const languages = parsedCandidate.languages || [];
       const emails = contact.emails || [];
       const phones = contact.phones || [];
+
+      // Normalize skills to string array (handle both string and object formats)
+      const skills = rawSkills.map((skill: any) => {
+        if (typeof skill === 'string') return skill;
+        if (skill && typeof skill === 'object' && skill.name) return skill.name;
+        return String(skill);
+      }).filter(Boolean);
 
       // Calculate experience
       const totalExperienceMonths = workExperience.reduce(
@@ -213,7 +220,13 @@ const ParseCV = () => {
   const contactView = parsedCandidateView.contact || {};
   const emails = contactView.emails || [];
   const phones = contactView.phones || [];
-  const skills = parsedCandidateView.skills || [];
+  const rawSkillsView = parsedCandidateView.skills || [];
+  // Normalize skills for display
+  const skills = rawSkillsView.map((skill: any) => {
+    if (typeof skill === 'string') return skill;
+    if (skill && typeof skill === 'object' && skill.name) return skill.name;
+    return String(skill);
+  }).filter(Boolean);
   const workExperience = parsedCandidateView.work_experience || [];
   const education = parsedCandidateView.education || [];
 
