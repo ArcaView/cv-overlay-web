@@ -40,6 +40,34 @@ const Overview = () => {
     }))
   );
 
+  // Calculate statistics from real data
+  const totalCandidates = allCandidates.length;
+  const candidatesWithScores = allCandidates.filter(c => c.score != null).length;
+  const topMatches = allCandidates.filter(c => c.score && c.score >= 85).length;
+  const averageScore = candidatesWithScores > 0
+    ? allCandidates.reduce((sum, c) => sum + (c.score || 0), 0) / candidatesWithScores
+    : 0;
+
+  // Get recent candidates (sorted by appliedDate, most recent first)
+  const recentCandidates = [...allCandidates]
+    .sort((a, b) => new Date(b.appliedDate).getTime() - new Date(a.appliedDate).getTime())
+    .slice(0, 5);
+
+  // Calculate time difference for "time ago" display
+  const getTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes} min ago`;
+    if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+    return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+  };
+
   const handleUploadNewCV = () => {
     navigate('/dashboard/parse');
   };
@@ -99,12 +127,11 @@ const Overview = () => {
                 <FileText className="w-4 h-4" />
                 CVs Processed
               </CardDescription>
-              <CardTitle className="text-3xl">156</CardTitle>
+              <CardTitle className="text-3xl">{totalCandidates}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center gap-1 text-xs text-success">
-                <TrendingUp className="w-3 h-3" />
-                <span>+12% from last month</span>
+              <div className="text-xs text-muted-foreground">
+                {roles.length} active {roles.length === 1 ? 'role' : 'roles'}
               </div>
             </CardContent>
           </Card>
@@ -115,12 +142,13 @@ const Overview = () => {
                 <Users className="w-4 h-4" />
                 Candidates Scored
               </CardDescription>
-              <CardTitle className="text-3xl">91</CardTitle>
+              <CardTitle className="text-3xl">{candidatesWithScores}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center gap-1 text-xs text-success">
-                <TrendingUp className="w-3 h-3" />
-                <span>+8% from last month</span>
+              <div className="text-xs text-muted-foreground">
+                {totalCandidates > 0
+                  ? `${Math.round((candidatesWithScores / totalCandidates) * 100)}% scored`
+                  : 'Upload CVs to get started'}
               </div>
             </CardContent>
           </Card>
@@ -131,7 +159,7 @@ const Overview = () => {
                 <Award className="w-4 h-4" />
                 Top Matches
               </CardDescription>
-              <CardTitle className="text-3xl">23</CardTitle>
+              <CardTitle className="text-3xl">{topMatches}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-xs text-muted-foreground">
@@ -143,14 +171,18 @@ const Overview = () => {
           <Card>
             <CardHeader className="pb-3">
               <CardDescription className="flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                Avg. Processing Time
+                <Award className="w-4 h-4" />
+                Avg. Match Score
               </CardDescription>
-              <CardTitle className="text-3xl">1.8s</CardTitle>
+              <CardTitle className="text-3xl">
+                {candidatesWithScores > 0 ? averageScore.toFixed(1) : '—'}
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-xs text-success">
-                Excellent performance
+              <div className="text-xs text-muted-foreground">
+                {candidatesWithScores > 0
+                  ? `Based on ${candidatesWithScores} ${candidatesWithScores === 1 ? 'candidate' : 'candidates'}`
+                  : 'No scored candidates yet'}
               </div>
             </CardContent>
           </Card>
@@ -166,40 +198,45 @@ const Overview = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {[
-                  { name: "Sarah Johnson", score: 92, role: "Senior Developer", time: "5 min ago" },
-                  { name: "Michael Chen", score: 88, role: "Product Manager", time: "12 min ago" },
-                  { name: "Emily Watson", score: 85, role: "UX Designer", time: "28 min ago" },
-                  { name: "James Rodriguez", score: 78, role: "Marketing Lead", time: "1 hour ago" },
-                  { name: "Lisa Anderson", score: 91, role: "Data Scientist", time: "2 hours ago" },
-                ].map((candidate, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between py-3 border-b last:border-0"
-                  >
-                    <div className="flex-1">
-                      <p className="font-medium">{candidate.name}</p>
-                      <p className="text-sm text-muted-foreground">{candidate.role}</p>
+              {recentCandidates.length === 0 ? (
+                <div className="py-8 text-center text-muted-foreground">
+                  <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <p>No recent activity yet</p>
+                  <p className="text-sm mt-2">Upload and parse CVs to see candidates here</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {recentCandidates.map((candidate) => (
+                    <div
+                      key={candidate.id}
+                      className="flex items-center justify-between py-3 border-b last:border-0 cursor-pointer hover:bg-accent/50 -mx-3 px-3 rounded-md transition-colors"
+                      onClick={() => navigate(`/dashboard/candidates/${candidate.id}/${candidate.roleId}`)}
+                    >
+                      <div className="flex-1">
+                        <p className="font-medium">{candidate.name}</p>
+                        <p className="text-sm text-muted-foreground">{candidate.roleTitle}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        {candidate.score != null && (
+                          <Badge
+                            variant={candidate.score >= 85 ? "default" : "secondary"}
+                            className={
+                              candidate.score >= 85
+                                ? "bg-success/10 text-success border-success/20"
+                                : ""
+                            }
+                          >
+                            Score: {candidate.score}
+                          </Badge>
+                        )}
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">
+                          {getTimeAgo(candidate.appliedDate)}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <Badge
-                        variant={candidate.score >= 85 ? "default" : "secondary"}
-                        className={
-                          candidate.score >= 85
-                            ? "bg-success/10 text-success border-success/20"
-                            : ""
-                        }
-                      >
-                        Score: {candidate.score}
-                      </Badge>
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        {candidate.time}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -262,25 +299,25 @@ const Overview = () => {
                 <div>
                   <div className="flex justify-between mb-2 text-sm">
                     <span className="text-muted-foreground">CV Parses</span>
-                    <span className="font-medium">156 / 25,000</span>
+                    <span className="font-medium">{totalCandidates} / Unlimited</span>
                   </div>
                   <div className="w-full bg-muted rounded-full h-2">
                     <div
                       className="bg-primary h-2 rounded-full"
-                      style={{ width: "0.6%" }}
+                      style={{ width: `${Math.min((totalCandidates / 500) * 100, 100)}%` }}
                     />
                   </div>
                 </div>
 
                 <div>
                   <div className="flex justify-between mb-2 text-sm">
-                    <span className="text-muted-foreground">Scores</span>
-                    <span className="font-medium">91 / 12,500</span>
+                    <span className="text-muted-foreground">Scores Generated</span>
+                    <span className="font-medium">{candidatesWithScores} / Unlimited</span>
                   </div>
                   <div className="w-full bg-muted rounded-full h-2">
                     <div
                       className="bg-accent h-2 rounded-full"
-                      style={{ width: "0.7%" }}
+                      style={{ width: `${Math.min((candidatesWithScores / 500) * 100, 100)}%` }}
                     />
                   </div>
                 </div>
@@ -289,9 +326,9 @@ const Overview = () => {
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">Resets in</span>
+                      <span className="text-muted-foreground">Active Roles</span>
                     </div>
-                    <span className="font-medium">18 days</span>
+                    <span className="font-medium">{roles.length}</span>
                   </div>
                 </div>
               </CardContent>
@@ -304,7 +341,7 @@ const Overview = () => {
           <CardHeader>
             <CardTitle>Performance Insights</CardTitle>
             <CardDescription>
-              Key metrics and trends for this month
+              Key metrics from your hiring process
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -314,7 +351,9 @@ const Overview = () => {
                   <div className="w-2 h-2 rounded-full bg-success" />
                   High-Quality Matches
                 </div>
-                <p className="text-2xl font-bold">23 candidates</p>
+                <p className="text-2xl font-bold">
+                  {topMatches} {topMatches === 1 ? 'candidate' : 'candidates'}
+                </p>
                 <p className="text-sm text-muted-foreground">
                   Scored 85 or above - ready for interview
                 </p>
@@ -325,9 +364,13 @@ const Overview = () => {
                   <div className="w-2 h-2 rounded-full bg-primary" />
                   Average Match Score
                 </div>
-                <p className="text-2xl font-bold">76.8</p>
+                <p className="text-2xl font-bold">
+                  {candidatesWithScores > 0 ? averageScore.toFixed(1) : '—'}
+                </p>
                 <p className="text-sm text-muted-foreground">
-                  +3.2 points from last month
+                  {candidatesWithScores > 0
+                    ? `Across ${candidatesWithScores} scored ${candidatesWithScores === 1 ? 'candidate' : 'candidates'}`
+                    : 'No scored candidates yet'}
                 </p>
               </div>
 
@@ -336,7 +379,9 @@ const Overview = () => {
                   <div className="w-2 h-2 rounded-full bg-accent" />
                   Time Saved
                 </div>
-                <p className="text-2xl font-bold">~52 hours</p>
+                <p className="text-2xl font-bold">
+                  ~{Math.round(totalCandidates * 0.33)} hours
+                </p>
                 <p className="text-sm text-muted-foreground">
                   Estimated manual review time saved
                 </p>
