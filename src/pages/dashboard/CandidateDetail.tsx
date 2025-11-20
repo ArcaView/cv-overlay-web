@@ -514,38 +514,6 @@ const CandidateDetail = () => {
           </CardContent>
         </Card>
 
-        {/* Status History */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Status History</CardTitle>
-            <CardDescription>Timeline of status changes for this candidate</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {[...candidate.statusHistory].reverse().map((entry, index) => (
-                <div key={index} className="flex items-start gap-4 p-3 rounded-lg bg-muted/30">
-                  <div className="flex-shrink-0">
-                    <Badge className={getStatusColor(entry.status)} variant="secondary">
-                      {getStatusLabel(entry.status)}
-                    </Badge>
-                  </div>
-                  <div className="flex-1">
-                    {entry.note && (
-                      <p className="text-sm font-medium mb-1">{entry.note}</p>
-                    )}
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Clock className="w-3 h-3" />
-                      <span>{formatDistanceToNow(new Date(entry.changedAt), { addSuffix: true })}</span>
-                      <span>•</span>
-                      <span>{new Date(entry.changedAt).toLocaleString()}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Interviews */}
         <Card>
           <CardHeader>
@@ -655,6 +623,38 @@ const CandidateDetail = () => {
                 )}
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Status History */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Status History</CardTitle>
+            <CardDescription>Timeline of status changes for this candidate</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {[...candidate.statusHistory].reverse().map((entry, index) => (
+                <div key={index} className="flex items-start gap-4 p-3 rounded-lg bg-muted/30">
+                  <div className="flex-shrink-0">
+                    <Badge className={getStatusColor(entry.status)} variant="secondary">
+                      {getStatusLabel(entry.status)}
+                    </Badge>
+                  </div>
+                  <div className="flex-1">
+                    {entry.note && (
+                      <p className="text-sm font-medium mb-1">{entry.note}</p>
+                    )}
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Clock className="w-3 h-3" />
+                      <span>{formatDistanceToNow(new Date(entry.changedAt), { addSuffix: true })}</span>
+                      <span>•</span>
+                      <span>{new Date(entry.changedAt).toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
 
