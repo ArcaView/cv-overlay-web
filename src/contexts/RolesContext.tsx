@@ -306,6 +306,45 @@ export const RolesProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
+      // Build cv_parsed_data with all available CV information
+      const cvParsedData: any = {
+        score_breakdown: candidate.score_breakdown,
+        prestige_score: candidate.prestige_score,
+        prestige_contribution: candidate.prestige_contribution,
+        prestige_details: candidate.prestige_details,
+        experience_years: candidate.experience_years,
+        status_history: candidate.statusHistory
+      };
+
+      // Include full CV data if provided
+      if (candidate.cv_parsed_data) {
+        // If cv_parsed_data is already provided, merge it
+        Object.assign(cvParsedData, candidate.cv_parsed_data);
+      } else {
+        // Otherwise, add individual fields if they exist
+        if (candidate.experience && candidate.experience.length > 0) {
+          cvParsedData.work_experience = candidate.experience;
+        }
+        if (candidate.education && candidate.education.length > 0) {
+          cvParsedData.education = candidate.education;
+        }
+        if (candidate.certifications && candidate.certifications.length > 0) {
+          cvParsedData.certifications = candidate.certifications;
+        }
+        if (candidate.languages && candidate.languages.length > 0) {
+          cvParsedData.languages = candidate.languages;
+        }
+        if (candidate.location) {
+          cvParsedData.location = candidate.location;
+        }
+        if (candidate.linkedin_url) {
+          cvParsedData.linkedin_url = candidate.linkedin_url;
+        }
+        if (candidate.portfolio_url) {
+          cvParsedData.portfolio_url = candidate.portfolio_url;
+        }
+      }
+
       const { data, error } = await supabase
         .from('candidates')
         .insert({
@@ -320,14 +359,15 @@ export const RolesProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           status: candidate.status,
           notes: candidate.summary,
           interview_notes: candidate.interviews,
-          cv_parsed_data: {
-            score_breakdown: candidate.score_breakdown,
-            prestige_score: candidate.prestige_score,
-            prestige_contribution: candidate.prestige_contribution,
-            prestige_details: candidate.prestige_details,
-            experience_years: candidate.experience_years,
-            status_history: candidate.statusHistory
-          }
+          // Store comprehensive CV data
+          experience: candidate.experience || [],
+          education: candidate.education || [],
+          certifications: candidate.certifications || [],
+          languages: candidate.languages || [],
+          location: candidate.location,
+          linkedin_url: candidate.linkedin_url,
+          portfolio_url: candidate.portfolio_url,
+          cv_parsed_data: cvParsedData
         })
         .select()
         .single();

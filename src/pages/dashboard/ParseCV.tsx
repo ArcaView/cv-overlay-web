@@ -74,11 +74,15 @@ const ParseCV = () => {
       setResult(parseResult);
 
       // Adapt to actual API structure
-      const candidate = parseResult.candidate?.contact || {};
-      const workExperience = candidate.work_experience || [];
-      const skills = candidate.skills || [];
-      const emails = candidate.emails || [];
-      const phones = candidate.phones || [];
+      const parsedCandidate = parseResult.candidate || {};
+      const contact = parsedCandidate.contact || {};
+      const workExperience = parsedCandidate.work_experience || [];
+      const education = parsedCandidate.education || [];
+      const skills = parsedCandidate.skills || [];
+      const certifications = parsedCandidate.certifications || [];
+      const languages = parsedCandidate.languages || [];
+      const emails = contact.emails || [];
+      const phones = contact.phones || [];
 
       // Calculate experience
       const totalExperienceMonths = workExperience.reduce(
@@ -88,7 +92,7 @@ const ParseCV = () => {
 
       const candidateData = {
         id: `candidate_${Math.random().toString(36).substr(2, 9)}`,
-        name: candidate.full_name || 'Unknown',
+        name: contact.full_name || 'Unknown',
         email: emails[0] || '',
         phone: phones[0] || '',
         fileName: file.name,
@@ -104,14 +108,24 @@ const ParseCV = () => {
           }
         ],
         interviews: [],
-        summary: '',
+        summary: parsedCandidate.summary || '',
+        // Include all parsed CV data
+        experience: workExperience,
+        education: education,
+        certifications: certifications,
+        languages: languages,
+        location: contact.location,
+        linkedin_url: contact.linkedin_url || parsedCandidate.linkedin_url,
+        portfolio_url: contact.portfolio_url || parsedCandidate.website_url,
+        // Store the entire parsed candidate object for reference
+        cv_parsed_data: parsedCandidate
       };
 
       addCandidateToRole(selectedRole, candidateData);
 
       toast({
         title: "CV Parsed Successfully",
-        description: `${candidate.full_name || 'Candidate'} has been added to the role.`,
+        description: `${contact.full_name || 'Candidate'} has been added to the role.`,
       });
 
     } catch (error: any) {
@@ -195,12 +209,13 @@ const ParseCV = () => {
   };
 
   // Safe accessors for API response
-  const candidate = result?.candidate?.contact || {};
-  const emails = candidate.emails || [];
-  const phones = candidate.phones || [];
-  const skills = candidate.skills || [];
-  const workExperience = candidate.work_experience || [];
-  const education = candidate.education || [];
+  const parsedCandidateView = result?.candidate || {};
+  const contactView = parsedCandidateView.contact || {};
+  const emails = contactView.emails || [];
+  const phones = contactView.phones || [];
+  const skills = parsedCandidateView.skills || [];
+  const workExperience = parsedCandidateView.work_experience || [];
+  const education = parsedCandidateView.education || [];
 
   return (
     <DashboardLayout>
@@ -390,7 +405,7 @@ const ParseCV = () => {
                     <div className="space-y-3">
                       <div>
                         <p className="text-sm text-muted-foreground">Name</p>
-                        <p className="font-medium">{candidate.full_name || 'N/A'}</p>
+                        <p className="font-medium">{contactView.full_name || 'N/A'}</p>
                       </div>
                       {emails.length > 0 && (
                         <div>
@@ -404,10 +419,10 @@ const ParseCV = () => {
                           <p className="font-medium">{phones[0]}</p>
                         </div>
                       )}
-                      {candidate.location && (
+                      {contactView.location && (
                         <div>
                           <p className="text-sm text-muted-foreground">Location</p>
-                          <p className="font-medium">{candidate.location}</p>
+                          <p className="font-medium">{contactView.location}</p>
                         </div>
                       )}
                     </div>
@@ -469,7 +484,7 @@ const ParseCV = () => {
                           const url = URL.createObjectURL(blob);
                           const a = document.createElement('a');
                           a.href = url;
-                          a.download = `${candidate.full_name?.replace(/\s+/g, '_') || 'parsed'}_cv.json`;
+                          a.download = `${contactView.full_name?.replace(/\s+/g, '_') || 'parsed'}_cv.json`;
                           a.click();
                           URL.revokeObjectURL(url);
                         }}
@@ -600,7 +615,7 @@ const ParseCV = () => {
                               const url = URL.createObjectURL(blob);
                               const a = document.createElement('a');
                               a.href = url;
-                              a.download = `${candidate.full_name?.replace(/\s+/g, '_') || 'score'}_score.json`;
+                              a.download = `${contactView.full_name?.replace(/\s+/g, '_') || 'score'}_score.json`;
                               a.click();
                               URL.revokeObjectURL(url);
                             }}
