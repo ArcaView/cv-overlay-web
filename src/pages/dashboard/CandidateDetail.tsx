@@ -31,6 +31,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
   ArrowLeft,
   Mail,
   Phone,
@@ -42,6 +47,7 @@ import {
   Plus,
   Save,
   X,
+  ChevronDown,
 } from "lucide-react";
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -66,6 +72,7 @@ const CandidateDetail = () => {
   const [interviewDialogOpen, setInterviewDialogOpen] = useState(false);
   const [editingInterview, setEditingInterview] = useState<Interview | null>(null);
   const [deleteInterviewId, setDeleteInterviewId] = useState<string | null>(null);
+  const [cvOpen, setCvOpen] = useState(false);
   const [interviewForm, setInterviewForm] = useState({
     date: '',
     interviewer: '',
@@ -311,12 +318,23 @@ const CandidateDetail = () => {
         )}
 
         {/* CV Details */}
-        <Card>
-          <CardHeader>
-            <CardTitle>CV Details</CardTitle>
-            <CardDescription>Candidate's curriculum vitae information</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
+        <Collapsible open={cvOpen} onOpenChange={setCvOpen}>
+          <Card>
+            <CollapsibleTrigger asChild>
+              <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>CV Details</CardTitle>
+                    <CardDescription>Candidate's curriculum vitae information</CardDescription>
+                  </div>
+                  <ChevronDown
+                    className={`h-5 w-5 transition-transform duration-200 ${cvOpen ? 'rotate-180' : ''}`}
+                  />
+                </div>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent className="space-y-6">
             {/* Professional Summary */}
             {(candidate.cv_parsed_data?.summary || candidate.cv_parsed_data?.professional_summary) && (
               <div>
@@ -469,8 +487,10 @@ const CandidateDetail = () => {
                 </pre>
               </details>
             )}
-          </CardContent>
-        </Card>
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
 
         {/* Interviews */}
         <Card>
