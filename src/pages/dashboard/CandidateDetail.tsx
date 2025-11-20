@@ -243,10 +243,10 @@ const CandidateDetail = () => {
             Back to All Candidates
           </Button>
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             onClick={() => setDeleteCandidateDialogOpen(true)}
-            className="text-muted-foreground hover:text-destructive"
+            className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
           >
             <Trash2 className="w-4 h-4 mr-2" />
             Delete
