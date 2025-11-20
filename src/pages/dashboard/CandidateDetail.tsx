@@ -98,8 +98,8 @@ const CandidateDetail = () => {
     if (roleId && candidateId) {
       updateCandidateStatus(roleId, candidateId, newStatus);
       toast({
-        title: "Status Updated",
-        description: `${candidate.name}'s status changed to ${getStatusLabel(newStatus)}`,
+        title: 'Status updated',
+        description: `Candidate status changed to ${newStatus}`
       });
     }
   };
@@ -108,10 +108,6 @@ const CandidateDetail = () => {
     if (roleId && candidateId) {
       updateCandidateSummary(roleId, candidateId, summaryText);
       setEditingSummary(false);
-      toast({
-        title: "Summary Updated",
-        description: "Candidate summary has been saved",
-      });
     }
   };
 
@@ -141,32 +137,25 @@ const CandidateDetail = () => {
     if (!roleId || !candidateId) return;
 
     if (editingInterview) {
-      // Update existing interview
       updateInterview(roleId, candidateId, editingInterview.id, interviewForm);
-      toast({
-        title: "Interview Updated",
-        description: "Interview notes have been updated",
-      });
     } else {
-      // Add new interview
       addInterview(roleId, candidateId, interviewForm);
-      toast({
-        title: "Interview Added",
-        description: "New interview has been recorded",
-      });
     }
 
     setInterviewDialogOpen(false);
+    setEditingInterview(null);
+    setInterviewForm({
+      date: '',
+      interviewer: '',
+      notes: '',
+      type: 'technical'
+    });
   };
 
   const handleDeleteInterview = () => {
     if (roleId && candidateId && deleteInterviewId) {
       deleteInterview(roleId, candidateId, deleteInterviewId);
       setDeleteInterviewId(null);
-      toast({
-        title: "Interview Deleted",
-        description: "Interview has been removed",
-      });
     }
   };
 
@@ -324,47 +313,34 @@ const CandidateDetail = () => {
         {/* CV Details - All in One Interview Page */}
         <Card>
           <CardHeader>
-            <CardTitle>CV Details</CardTitle>
-            <CardDescription>Complete candidate information for interview reference</CardDescription>
+            <CardTitle>📋 Interview Reference Sheet</CardTitle>
+            <CardDescription>Complete candidate background - everything you need for the interview</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Contact & Links */}
-            {(candidate.location || candidate.linkedin_url || candidate.portfolio_url) && (
+            {/* Professional Summary */}
+            {(candidate.cv_parsed_data?.summary || candidate.cv_parsed_data?.professional_summary || candidate.summary) && (
               <div>
-                <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wide">Contact & Links</h3>
-                <div className="grid md:grid-cols-2 gap-3">
-                  {candidate.location && (
-                    <div>
-                      <span className="text-sm font-medium">Location:</span>
-                      <p className="text-sm text-muted-foreground">{candidate.location}</p>
-                    </div>
-                  )}
-                  {candidate.linkedin_url && (
-                    <div>
-                      <span className="text-sm font-medium">LinkedIn:</span>
-                      <a
-                        href={candidate.linkedin_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-primary hover:underline block truncate"
-                      >
-                        {candidate.linkedin_url}
-                      </a>
-                    </div>
-                  )}
-                  {candidate.portfolio_url && (
-                    <div>
-                      <span className="text-sm font-medium">Portfolio:</span>
-                      <a
-                        href={candidate.portfolio_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-primary hover:underline block truncate"
-                      >
-                        {candidate.portfolio_url}
-                      </a>
-                    </div>
-                  )}
+                <h3 className="font-semibold mb-2 text-sm uppercase tracking-wide flex items-center gap-2">
+                  <span className="text-lg">💼</span> Professional Summary
+                </h3>
+                <p className="text-sm leading-relaxed bg-muted/30 p-3 rounded-lg">
+                  {candidate.cv_parsed_data?.summary || candidate.cv_parsed_data?.professional_summary || candidate.summary}
+                </p>
+              </div>
+            )}
+
+            {/* Key Skills */}
+            {candidate.skills && candidate.skills.length > 0 && (
+              <div>
+                <h3 className="font-semibold mb-2 text-sm uppercase tracking-wide flex items-center gap-2">
+                  <span className="text-lg">🎯</span> Technical Skills
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {candidate.skills.map((skill, idx) => (
+                    <Badge key={idx} variant="secondary" className="text-sm">
+                      {skill}
+                    </Badge>
+                  ))}
                 </div>
               </div>
             )}
@@ -372,28 +348,60 @@ const CandidateDetail = () => {
             {/* Work Experience */}
             {candidate.experience && candidate.experience.length > 0 && (
               <div>
-                <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wide">Work Experience</h3>
-                <div className="space-y-4">
+                <h3 className="font-semibold mb-3 text-sm uppercase tracking-wide flex items-center gap-2">
+                  <span className="text-lg">💼</span> Work Experience
+                </h3>
+                <div className="space-y-6">
                   {candidate.experience.map((exp: any, index: number) => (
-                    <div key={index} className="border-l-2 border-primary/20 pl-4 pb-4">
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <h4 className="font-semibold">{exp.title || exp.role || exp.position || 'Position'}</h4>
-                          <p className="text-sm text-muted-foreground">{exp.company || exp.employer || 'Company'}</p>
-                        </div>
-                        <span className="text-xs text-muted-foreground whitespace-nowrap ml-4">
-                          {exp.start_date || exp.from || exp.startDate || ''} - {exp.end_date || exp.to || exp.endDate || 'Present'}
-                        </span>
+                    <div key={index} className="bg-muted/20 p-4 rounded-lg border-l-4 border-primary">
+                      <div className="mb-3">
+                        <h4 className="font-bold text-base text-foreground">
+                          {exp.title || exp.role || exp.position || 'Position'}
+                        </h4>
+                        <p className="text-sm font-medium text-muted-foreground">
+                          {exp.company || exp.employer || 'Company'}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          📅 {exp.start_date || exp.from || exp.startDate || ''} → {exp.end_date || exp.to || exp.endDate || 'Present'}
+                          {exp.duration && ` (${exp.duration})`}
+                        </p>
                       </div>
+
                       {exp.description && (
-                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{exp.description}</p>
+                        <div className="mb-3">
+                          <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                            {exp.description}
+                          </p>
+                        </div>
                       )}
-                      {exp.responsibilities && Array.isArray(exp.responsibilities) && (
-                        <ul className="list-disc list-inside text-sm text-muted-foreground mt-2 space-y-1">
-                          {exp.responsibilities.map((resp: string, idx: number) => (
-                            <li key={idx}>{resp}</li>
-                          ))}
-                        </ul>
+
+                      {exp.responsibilities && Array.isArray(exp.responsibilities) && exp.responsibilities.length > 0 && (
+                        <div className="mb-3">
+                          <p className="text-xs font-semibold text-muted-foreground mb-2">📌 Key Responsibilities:</p>
+                          <ul className="list-disc list-outside text-sm space-y-1 ml-5">
+                            {exp.responsibilities.map((resp: string, idx: number) => (
+                              <li key={idx} className="leading-relaxed">{resp}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {exp.achievements && Array.isArray(exp.achievements) && exp.achievements.length > 0 && (
+                        <div className="mb-3">
+                          <p className="text-xs font-semibold text-muted-foreground mb-2">🏆 Key Achievements:</p>
+                          <ul className="list-disc list-outside text-sm space-y-1 ml-5">
+                            {exp.achievements.map((achievement: string, idx: number) => (
+                              <li key={idx} className="leading-relaxed">{achievement}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {exp.technologies && (
+                        <div>
+                          <p className="text-xs font-semibold text-muted-foreground mb-1">🛠️ Technologies Used:</p>
+                          <p className="text-sm">{Array.isArray(exp.technologies) ? exp.technologies.join(', ') : exp.technologies}</p>
+                        </div>
                       )}
                     </div>
                   ))}
@@ -404,24 +412,32 @@ const CandidateDetail = () => {
             {/* Education */}
             {candidate.education && candidate.education.length > 0 && (
               <div>
-                <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wide">Education</h3>
+                <h3 className="font-semibold mb-3 text-sm uppercase tracking-wide flex items-center gap-2">
+                  <span className="text-lg">🎓</span> Education
+                </h3>
                 <div className="space-y-3">
                   {candidate.education.map((edu: any, index: number) => (
-                    <div key={index} className="border-l-2 border-primary/20 pl-4">
-                      <div className="flex items-start justify-between mb-1">
-                        <div>
-                          <h4 className="font-semibold">{edu.degree || edu.qualification || 'Degree'}</h4>
-                          <p className="text-sm text-muted-foreground">{edu.institution || edu.school || edu.university || 'Institution'}</p>
-                        </div>
-                        <span className="text-xs text-muted-foreground whitespace-nowrap ml-4">
-                          {edu.graduation_date || edu.year || edu.end_date || ''}
-                        </span>
-                      </div>
+                    <div key={index} className="bg-muted/20 p-3 rounded-lg">
+                      <h4 className="font-bold text-base">
+                        {edu.degree || edu.qualification || 'Degree'}
+                      </h4>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        {edu.institution || edu.school || edu.university || 'Institution'}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        📅 {edu.start_date || edu.from || ''} {edu.start_date && edu.end_date && '→ '} {edu.graduation_date || edu.year || edu.end_date || ''}
+                      </p>
                       {edu.field && (
-                        <p className="text-sm text-muted-foreground">Field: {edu.field}</p>
+                        <p className="text-sm mt-2">📚 Field: {edu.field}</p>
                       )}
                       {edu.gpa && (
-                        <p className="text-sm text-muted-foreground">GPA: {edu.gpa}</p>
+                        <p className="text-sm">📊 GPA: {edu.gpa}</p>
+                      )}
+                      {edu.honors && (
+                        <p className="text-sm">🏅 {edu.honors}</p>
+                      )}
+                      {edu.description && (
+                        <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{edu.description}</p>
                       )}
                     </div>
                   ))}
@@ -432,14 +448,19 @@ const CandidateDetail = () => {
             {/* Certifications */}
             {candidate.certifications && candidate.certifications.length > 0 && (
               <div>
-                <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wide">Certifications</h3>
-                <div className="flex flex-wrap gap-2">
+                <h3 className="font-semibold mb-2 text-sm uppercase tracking-wide flex items-center gap-2">
+                  <span className="text-lg">🏅</span> Certifications & Licenses
+                </h3>
+                <div className="space-y-2">
                   {candidate.certifications.map((cert: any, index: number) => (
-                    <Badge key={index} variant="secondary" className="text-sm">
-                      {typeof cert === 'string' ? cert : cert.name || cert.title || 'Certification'}
-                      {cert.year && ` (${cert.year})`}
-                      {cert.issuer && ` - ${cert.issuer}`}
-                    </Badge>
+                    <div key={index} className="text-sm bg-muted/20 p-2 rounded">
+                      <span className="font-medium">
+                        {typeof cert === 'string' ? cert : cert.name || cert.title || 'Certification'}
+                      </span>
+                      {cert.issuer && <span className="text-muted-foreground"> by {cert.issuer}</span>}
+                      {cert.year && <span className="text-muted-foreground"> ({cert.year})</span>}
+                      {cert.expiry && <span className="text-muted-foreground"> • Expires: {cert.expiry}</span>}
+                    </div>
                   ))}
                 </div>
               </div>
@@ -448,26 +469,44 @@ const CandidateDetail = () => {
             {/* Languages */}
             {candidate.languages && candidate.languages.length > 0 && (
               <div>
-                <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wide">Languages</h3>
-                <div className="flex flex-wrap gap-2">
+                <h3 className="font-semibold mb-2 text-sm uppercase tracking-wide flex items-center gap-2">
+                  <span className="text-lg">🌍</span> Languages
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   {candidate.languages.map((lang: any, index: number) => (
-                    <Badge key={index} variant="outline" className="text-sm">
-                      {typeof lang === 'string' ? lang : lang.name || lang.language || 'Language'}
-                      {lang.proficiency && ` - ${lang.proficiency}`}
-                      {lang.level && ` (${lang.level})`}
-                    </Badge>
+                    <div key={index} className="text-sm bg-muted/20 p-2 rounded">
+                      <span className="font-medium">
+                        {typeof lang === 'string' ? lang : lang.name || lang.language || 'Language'}
+                      </span>
+                      {lang.proficiency && <span className="text-muted-foreground block text-xs">{lang.proficiency}</span>}
+                      {lang.level && <span className="text-muted-foreground block text-xs">Level: {lang.level}</span>}
+                    </div>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Raw CV Data (for debugging/additional info) */}
-            {candidate.cv_parsed_data && Object.keys(candidate.cv_parsed_data).length > 0 && (
+            {/* Interview Tips */}
+            <div className="mt-6 p-4 bg-primary/5 rounded-lg border-2 border-primary/20">
+              <h3 className="font-bold mb-2 text-sm flex items-center gap-2">
+                <span className="text-lg">💡</span> Interview Question Ideas
+              </h3>
+              <ul className="text-sm space-y-1 list-disc list-inside text-muted-foreground">
+                <li>Ask about specific projects and responsibilities mentioned above</li>
+                <li>Deep dive into technologies and skills - assess hands-on experience</li>
+                <li>Discuss career transitions between roles/companies - motivation & growth</li>
+                <li>Explore achievements and their measurable impact</li>
+                <li>Ask about challenges faced and how they were overcome</li>
+              </ul>
+            </div>
+
+            {/* Raw Data for Reference */}
+            {candidate.cv_parsed_data && Object.keys(candidate.cv_parsed_data).filter(k => k !== 'status_history').length > 0 && (
               <details className="mt-6">
                 <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground">
-                  View Raw CV Data (JSON)
+                  🔍 View Raw CV Data (Technical Reference)
                 </summary>
-                <pre className="mt-3 p-4 bg-muted rounded-lg text-xs overflow-auto max-h-96">
+                <pre className="mt-3 p-4 bg-muted rounded-lg text-xs overflow-auto max-h-96 font-mono">
                   {JSON.stringify(candidate.cv_parsed_data, null, 2)}
                 </pre>
               </details>
@@ -568,16 +607,16 @@ const CandidateDetail = () => {
           </CardContent>
         </Card>
 
-        {/* Candidate Summary */}
+        {/* Summary/Notes */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Candidate Summary</CardTitle>
-                <CardDescription>Overall notes and assessment</CardDescription>
+                <CardTitle>Internal Notes</CardTitle>
+                <CardDescription>Private notes about this candidate</CardDescription>
               </div>
               {!editingSummary && (
-                <Button variant="outline" onClick={() => setEditingSummary(true)}>
+                <Button variant="outline" size="sm" onClick={() => setEditingSummary(true)}>
                   <Edit className="w-4 h-4 mr-2" />
                   Edit
                 </Button>
@@ -590,7 +629,7 @@ const CandidateDetail = () => {
                 <Textarea
                   value={summaryText}
                   onChange={(e) => setSummaryText(e.target.value)}
-                  placeholder="Add your overall assessment and notes about this candidate..."
+                  placeholder="Add notes about this candidate..."
                   className="min-h-[150px]"
                 />
                 <div className="flex gap-2">
@@ -598,22 +637,21 @@ const CandidateDetail = () => {
                     <Save className="w-4 h-4 mr-2" />
                     Save
                   </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setSummaryText(candidate.summary);
-                      setEditingSummary(false);
-                    }}
-                  >
+                  <Button variant="outline" onClick={() => {
+                    setEditingSummary(false);
+                    setSummaryText(candidate.summary || '');
+                  }}>
                     <X className="w-4 h-4 mr-2" />
                     Cancel
                   </Button>
                 </div>
               </div>
             ) : (
-              <div className="text-sm whitespace-pre-wrap">
-                {candidate.summary || (
-                  <p className="text-muted-foreground italic">No summary added yet</p>
+              <div>
+                {candidate.summary ? (
+                  <p className="text-sm whitespace-pre-wrap">{candidate.summary}</p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No notes yet. Click "Edit" to add notes.</p>
                 )}
               </div>
             )}
@@ -626,33 +664,15 @@ const CandidateDetail = () => {
             <DialogHeader>
               <DialogTitle>{editingInterview ? 'Edit Interview' : 'Add Interview'}</DialogTitle>
               <DialogDescription>
-                {editingInterview ? 'Update interview details' : 'Schedule a new interview'}
+                {editingInterview ? 'Update interview details below' : 'Schedule a new interview for this candidate'}
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="space-y-4 py-4">
               <div>
-                <Label htmlFor="date">Date</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  value={interviewForm.date}
-                  onChange={(e) => setInterviewForm({ ...interviewForm, date: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="interviewer">Interviewer</Label>
-                <Input
-                  id="interviewer"
-                  value={interviewForm.interviewer}
-                  onChange={(e) => setInterviewForm({ ...interviewForm, interviewer: e.target.value })}
-                  placeholder="Enter interviewer name"
-                />
-              </div>
-              <div>
-                <Label htmlFor="type">Interview Type</Label>
+                <Label>Interview Type</Label>
                 <Select
                   value={interviewForm.type}
-                  onValueChange={(value: Interview['type']) => setInterviewForm({ ...interviewForm, type: value })}
+                  onValueChange={(value) => setInterviewForm({ ...interviewForm, type: value as Interview['type'] })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -667,13 +687,28 @@ const CandidateDetail = () => {
                 </Select>
               </div>
               <div>
-                <Label htmlFor="notes">Notes</Label>
+                <Label>Date</Label>
+                <Input
+                  type="date"
+                  value={interviewForm.date}
+                  onChange={(e) => setInterviewForm({ ...interviewForm, date: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Interviewer</Label>
+                <Input
+                  placeholder="Name of interviewer"
+                  value={interviewForm.interviewer}
+                  onChange={(e) => setInterviewForm({ ...interviewForm, interviewer: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Notes</Label>
                 <Textarea
-                  id="notes"
+                  placeholder="Interview notes, feedback, etc."
                   value={interviewForm.notes}
                   onChange={(e) => setInterviewForm({ ...interviewForm, notes: e.target.value })}
-                  placeholder="Enter interview notes and feedback..."
-                  className="min-h-[120px]"
+                  className="min-h-[100px]"
                 />
               </div>
             </div>
@@ -688,8 +723,8 @@ const CandidateDetail = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Delete Interview Dialog */}
-        <AlertDialog open={!!deleteInterviewId} onOpenChange={(open) => !open && setDeleteInterviewId(null)}>
+        {/* Delete Interview Confirmation */}
+        <AlertDialog open={deleteInterviewId !== null} onOpenChange={() => setDeleteInterviewId(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Delete Interview</AlertDialogTitle>
@@ -699,7 +734,7 @@ const CandidateDetail = () => {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteInterview} className="bg-destructive text-destructive-foreground">
+              <AlertDialogAction onClick={handleDeleteInterview} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                 Delete
               </AlertDialogAction>
             </AlertDialogFooter>
