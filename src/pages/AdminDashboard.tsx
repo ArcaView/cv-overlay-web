@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { useUser } from "@/contexts/UserContext";
 import { useImpersonation } from "@/contexts/ImpersonationContext";
+import { isAdminEmail } from "@/lib/constants";
 import {
   ArrowLeft,
   TrendingUp,
@@ -42,9 +43,6 @@ interface FeatureRequest {
   created_at: string;
 }
 
-// Admin emails - should match FeatureRequests.tsx and Navbar.tsx
-const ADMIN_EMAILS = ["admin@qualifyr.ai", "btjtownsend@outlook.com"];
-
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, isLoading: authLoading } = useUser();
@@ -56,7 +54,7 @@ const AdminDashboard = () => {
   const [isRequestingImpersonation, setIsRequestingImpersonation] = useState(false);
   const { toast } = useToast();
 
-  const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
+  const isAdmin = isAdminEmail(user?.email);
 
   // Redirect if not admin
   useEffect(() => {

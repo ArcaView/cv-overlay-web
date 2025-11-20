@@ -122,8 +122,6 @@ const BulkParse = () => {
       // Call the batch parse API (no scoring)
       const response = await parseScoreAPI.batchParse(files.map(f => f.file));
 
-      console.log('Batch parse response:', response);
-
       let successCount = 0;
 
       // Update file statuses and add candidates to role
@@ -203,8 +201,8 @@ const BulkParse = () => {
       });
 
     } catch (error: any) {
-      console.error('Batch parsing failed:', error);
-      
+      // TODO: Replace with proper error logging service (e.g., Sentry)
+
       // Mark all files as error
       setFiles(prev => prev.map(f => ({
         ...f,

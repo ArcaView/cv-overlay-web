@@ -90,6 +90,21 @@ class ParseScoreAPI {
     });
   }
 
+  async batchParse(files: File[], persist: boolean = false): Promise<any> {
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append('files', file);
+    });
+
+    return this.request(`/v1/batch-parse?persist=${persist}`, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        // Don't set Content-Type - browser will set it with boundary
+      },
+    });
+  }
+
   async scoreCandidate(request: ScoreRequest): Promise<ScoreResponse> {
     return this.request('/v1/score', {
       method: 'POST',

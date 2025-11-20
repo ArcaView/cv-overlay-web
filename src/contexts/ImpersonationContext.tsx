@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
 import type { RealtimeChannel } from "@supabase/supabase-js";
+import { isAdminEmail } from "@/lib/constants";
 
 interface ImpersonationSession {
   id: string;
@@ -32,9 +33,6 @@ interface ImpersonationContextType {
 
 const ImpersonationContext = createContext<ImpersonationContextType | undefined>(undefined);
 
-// Admin emails
-const ADMIN_EMAILS = ["admin@qualifyr.ai", "btjtownsend@outlook.com"];
-
 export const ImpersonationProvider = ({ children }: { children: ReactNode }) => {
   const { user, supabaseUser } = useUser();
   const { toast } = useToast();
@@ -42,7 +40,7 @@ export const ImpersonationProvider = ({ children }: { children: ReactNode }) => 
   const [pendingRequest, setPendingRequest] = useState<ImpersonationSession | null>(null);
   const [realtimeChannel, setRealtimeChannel] = useState<RealtimeChannel | null>(null);
 
-  const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
+  const isAdmin = isAdminEmail(user?.email);
   const isImpersonating = currentSession !== null && currentSession.status === "active" && currentSession.admin_user_id === supabaseUser?.id;
   const isBeingImpersonated = currentSession !== null && currentSession.status === "active" && currentSession.target_user_id === supabaseUser?.id;
 

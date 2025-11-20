@@ -11,16 +11,14 @@ import { Menu, X, User, LogOut, Shield } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
-
-// Admin emails - should match FeatureRequests.tsx and AdminDashboard.tsx
-const ADMIN_EMAILS = ["admin@qualifyr.ai", "btjtownsend@outlook.com"];
+import { isAdminEmail } from "@/lib/constants";
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, isAuthenticated, logout } = useUser();
   const navigate = useNavigate();
 
-  const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
+  const isAdmin = isAdminEmail(user?.email);
 
   const handleLogout = async () => {
     await logout();

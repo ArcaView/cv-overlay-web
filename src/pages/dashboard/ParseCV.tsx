@@ -68,8 +68,6 @@ const ParseCV = () => {
 
     try {
       const parseResult = await parseScoreAPI.parseCV(file);
-      
-      console.log("API Response:", parseResult);
 
       setResult(parseResult);
 
@@ -136,7 +134,7 @@ const ParseCV = () => {
       });
 
     } catch (error: any) {
-      console.error('Parse error:', error);
+      // TODO: Replace with proper error logging service (e.g., Sentry)
       toast({
         title: "Parse Failed",
         description: error.message || "Failed to parse CV. Please try again.",
@@ -204,7 +202,7 @@ const ParseCV = () => {
       });
 
     } catch (error: any) {
-      console.error('Scoring error:', error);
+      // TODO: Replace with proper error logging service (e.g., Sentry)
       toast({
         title: "Scoring Failed",
         description: error.message || "Failed to score candidate. Please try again.",

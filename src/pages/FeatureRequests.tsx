@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { useUser } from "@/contexts/UserContext";
+import { isAdminEmail } from "@/lib/constants";
 import { ChevronUp, ChevronDown, Plus, ArrowLeft, MessageCircle, Sparkles, TrendingUp, Clock, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
@@ -26,9 +27,6 @@ interface FeatureRequest {
 
 type SortBy = "newest" | "popular" | "controversial";
 type FilterStatus = "all" | "pending" | "under_review" | "planned" | "in_progress" | "completed" | "declined";
-
-// Admin emails - add your admin email here
-const ADMIN_EMAILS = ["admin@qualifyr.ai", "btjtownsend@outlook.com"];
 
 const FeatureRequests = () => {
   const navigate = useNavigate();
@@ -65,7 +63,7 @@ const FeatureRequests = () => {
   });
 
   // Check if user is admin
-  const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
+  const isAdmin = isAdminEmail(user?.email);
 
   // Get or create browser fingerprint for anonymous voting
   const getBrowserFingerprint = (): string => {
