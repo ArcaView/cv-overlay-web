@@ -242,9 +242,14 @@ const CandidateDetail = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to All Candidates
           </Button>
-          <Button variant="destructive" onClick={() => setDeleteCandidateDialogOpen(true)}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setDeleteCandidateDialogOpen(true)}
+            className="text-muted-foreground hover:text-destructive"
+          >
             <Trash2 className="w-4 h-4 mr-2" />
-            Delete Candidate
+            Delete
           </Button>
         </div>
 
