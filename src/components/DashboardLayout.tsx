@@ -86,39 +86,31 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   // Check if tour should auto-start from sidebar button click
   useEffect(() => {
-    console.log("LAYOUT: Setting up tour trigger listener...");
-
     const checkInterval = setInterval(() => {
       const shouldStartTour = localStorage.getItem("start_onboarding_tour");
       const tourActive = localStorage.getItem("onboarding_tour_active");
 
       // Don't start a new tour if one is already running
       if (tourActive === "true") {
-        console.log("LAYOUT: Tour already active, setting runTour to true");
         setRunTour(true);
         clearInterval(checkInterval);
         return;
       }
 
       if (shouldStartTour === "true") {
-        console.log("LAYOUT: Found start_onboarding_tour=true in localStorage!");
         localStorage.removeItem("start_onboarding_tour");
 
         // Navigate to main dashboard if not already there
         if (location.pathname !== "/dashboard") {
-          console.log("LAYOUT: Not on /dashboard (currently on:", location.pathname, "), navigating...");
           navigate("/dashboard");
 
           // Wait for navigation then start tour
           setTimeout(() => {
-            console.log("LAYOUT: After navigation, starting tour");
             setRunTour(true);
           }, 500);
         } else {
           // Already on dashboard, start tour after short delay
-          console.log("LAYOUT: Already on /dashboard, starting tour after 500ms delay");
           setTimeout(() => {
-            console.log("LAYOUT: Setting runTour to TRUE");
             setRunTour(true);
           }, 500);
         }
@@ -128,15 +120,9 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     }, 500);
 
     return () => {
-      console.log("LAYOUT: Cleaning up interval on unmount");
       clearInterval(checkInterval);
     };
   }, [location.pathname, navigate]);
-
-  // Log when runTour changes
-  useEffect(() => {
-    console.log("LAYOUT: runTour state changed to:", runTour);
-  }, [runTour]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -159,9 +145,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               size="sm"
               className="w-full mb-6 justify-start"
               onClick={() => {
-                console.log("SIDEBAR: Start Tour button clicked!");
                 resetOnboardingTour();
-                console.log("SIDEBAR: Flag set, NOT reloading - relying on Dashboard to pick it up");
                 // Dispatch custom event to notify Dashboard
                 window.dispatchEvent(new CustomEvent('startTour'));
               }}
@@ -216,9 +200,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 size="sm"
                 className="w-full justify-start"
                 onClick={() => {
-                  console.log("MOBILE: Start Tour button clicked!");
                   resetOnboardingTour();
-                  console.log("MOBILE: Flag set, NOT reloading - relying on Dashboard to pick it up");
                   // Dispatch custom event to notify Dashboard
                   window.dispatchEvent(new CustomEvent('startTour'));
                 }}
