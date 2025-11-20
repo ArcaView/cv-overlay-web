@@ -65,6 +65,15 @@ export interface Candidate {
   statusHistory: StatusHistoryEntry[];
   interviews: Interview[];
   summary: string;
+  // Additional CV fields
+  location?: string;
+  linkedin_url?: string;
+  portfolio_url?: string;
+  experience?: any[];
+  education?: any[];
+  certifications?: any[];
+  languages?: any[];
+  cv_parsed_data?: any;
 }
 
 export interface Role {
@@ -121,7 +130,16 @@ const transformCandidatesForRole = (candidates: any[]): { candidatesList: Candid
     status: c.status || 'new',
     statusHistory: c.cv_parsed_data?.status_history || [{ status: c.status || 'new', changedAt: c.created_at }],
     interviews: Array.isArray(c.interview_notes) ? c.interview_notes : [],
-    summary: c.notes || ''
+    summary: c.notes || '',
+    // Additional CV fields
+    location: c.location,
+    linkedin_url: c.linkedin_url,
+    portfolio_url: c.portfolio_url,
+    experience: Array.isArray(c.experience) ? c.experience : [],
+    education: Array.isArray(c.education) ? c.education : [],
+    certifications: Array.isArray(c.certifications) ? c.certifications : [],
+    languages: Array.isArray(c.languages) ? c.languages : [],
+    cv_parsed_data: c.cv_parsed_data
   }));
 
   return {

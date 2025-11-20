@@ -321,6 +321,160 @@ const CandidateDetail = () => {
           />
         )}
 
+        {/* CV Details - All in One Interview Page */}
+        <Card>
+          <CardHeader>
+            <CardTitle>CV Details</CardTitle>
+            <CardDescription>Complete candidate information for interview reference</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Contact & Links */}
+            {(candidate.location || candidate.linkedin_url || candidate.portfolio_url) && (
+              <div>
+                <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wide">Contact & Links</h3>
+                <div className="grid md:grid-cols-2 gap-3">
+                  {candidate.location && (
+                    <div>
+                      <span className="text-sm font-medium">Location:</span>
+                      <p className="text-sm text-muted-foreground">{candidate.location}</p>
+                    </div>
+                  )}
+                  {candidate.linkedin_url && (
+                    <div>
+                      <span className="text-sm font-medium">LinkedIn:</span>
+                      <a
+                        href={candidate.linkedin_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-primary hover:underline block truncate"
+                      >
+                        {candidate.linkedin_url}
+                      </a>
+                    </div>
+                  )}
+                  {candidate.portfolio_url && (
+                    <div>
+                      <span className="text-sm font-medium">Portfolio:</span>
+                      <a
+                        href={candidate.portfolio_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-primary hover:underline block truncate"
+                      >
+                        {candidate.portfolio_url}
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Work Experience */}
+            {candidate.experience && candidate.experience.length > 0 && (
+              <div>
+                <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wide">Work Experience</h3>
+                <div className="space-y-4">
+                  {candidate.experience.map((exp: any, index: number) => (
+                    <div key={index} className="border-l-2 border-primary/20 pl-4 pb-4">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <h4 className="font-semibold">{exp.title || exp.role || exp.position || 'Position'}</h4>
+                          <p className="text-sm text-muted-foreground">{exp.company || exp.employer || 'Company'}</p>
+                        </div>
+                        <span className="text-xs text-muted-foreground whitespace-nowrap ml-4">
+                          {exp.start_date || exp.from || exp.startDate || ''} - {exp.end_date || exp.to || exp.endDate || 'Present'}
+                        </span>
+                      </div>
+                      {exp.description && (
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{exp.description}</p>
+                      )}
+                      {exp.responsibilities && Array.isArray(exp.responsibilities) && (
+                        <ul className="list-disc list-inside text-sm text-muted-foreground mt-2 space-y-1">
+                          {exp.responsibilities.map((resp: string, idx: number) => (
+                            <li key={idx}>{resp}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Education */}
+            {candidate.education && candidate.education.length > 0 && (
+              <div>
+                <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wide">Education</h3>
+                <div className="space-y-3">
+                  {candidate.education.map((edu: any, index: number) => (
+                    <div key={index} className="border-l-2 border-primary/20 pl-4">
+                      <div className="flex items-start justify-between mb-1">
+                        <div>
+                          <h4 className="font-semibold">{edu.degree || edu.qualification || 'Degree'}</h4>
+                          <p className="text-sm text-muted-foreground">{edu.institution || edu.school || edu.university || 'Institution'}</p>
+                        </div>
+                        <span className="text-xs text-muted-foreground whitespace-nowrap ml-4">
+                          {edu.graduation_date || edu.year || edu.end_date || ''}
+                        </span>
+                      </div>
+                      {edu.field && (
+                        <p className="text-sm text-muted-foreground">Field: {edu.field}</p>
+                      )}
+                      {edu.gpa && (
+                        <p className="text-sm text-muted-foreground">GPA: {edu.gpa}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Certifications */}
+            {candidate.certifications && candidate.certifications.length > 0 && (
+              <div>
+                <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wide">Certifications</h3>
+                <div className="flex flex-wrap gap-2">
+                  {candidate.certifications.map((cert: any, index: number) => (
+                    <Badge key={index} variant="secondary" className="text-sm">
+                      {typeof cert === 'string' ? cert : cert.name || cert.title || 'Certification'}
+                      {cert.year && ` (${cert.year})`}
+                      {cert.issuer && ` - ${cert.issuer}`}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Languages */}
+            {candidate.languages && candidate.languages.length > 0 && (
+              <div>
+                <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wide">Languages</h3>
+                <div className="flex flex-wrap gap-2">
+                  {candidate.languages.map((lang: any, index: number) => (
+                    <Badge key={index} variant="outline" className="text-sm">
+                      {typeof lang === 'string' ? lang : lang.name || lang.language || 'Language'}
+                      {lang.proficiency && ` - ${lang.proficiency}`}
+                      {lang.level && ` (${lang.level})`}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Raw CV Data (for debugging/additional info) */}
+            {candidate.cv_parsed_data && Object.keys(candidate.cv_parsed_data).length > 0 && (
+              <details className="mt-6">
+                <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground">
+                  View Raw CV Data (JSON)
+                </summary>
+                <pre className="mt-3 p-4 bg-muted rounded-lg text-xs overflow-auto max-h-96">
+                  {JSON.stringify(candidate.cv_parsed_data, null, 2)}
+                </pre>
+              </details>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Status History */}
         <Card>
           <CardHeader>
