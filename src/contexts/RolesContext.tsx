@@ -112,35 +112,44 @@ const RolesContext = createContext<RolesContextType | undefined>(undefined);
 
 // Helper function to transform database candidates to Role format
 const transformCandidatesForRole = (candidates: any[]): { candidatesList: Candidate[], candidates: number } => {
-  const candidatesList = candidates.map(c => ({
-    id: c.id,
-    name: c.name,
-    email: c.email || '',
-    phone: c.phone || '',
-    fileName: c.cv_file_name || 'CV',
-    score: c.overall_score,
-    score_breakdown: c.cv_parsed_data?.score_breakdown,
-    prestige_score: c.cv_parsed_data?.prestige_score,
-    prestige_contribution: c.cv_parsed_data?.prestige_contribution,
-    prestige_details: c.cv_parsed_data?.prestige_details,
-    fit: c.overall_score >= 80 ? 'excellent' as const : c.overall_score >= 60 ? 'good' as const : 'fair' as const,
-    appliedDate: c.created_at.split('T')[0],
-    skills: Array.isArray(c.skills) ? c.skills : [],
-    experience_years: c.cv_parsed_data?.experience_years || 0,
-    status: c.status || 'new',
-    statusHistory: c.cv_parsed_data?.status_history || [{ status: c.status || 'new', changedAt: c.created_at }],
-    interviews: Array.isArray(c.interview_notes) ? c.interview_notes : [],
-    summary: c.notes || '',
-    // Additional CV fields
-    location: c.location,
-    linkedin_url: c.linkedin_url,
-    portfolio_url: c.portfolio_url,
-    experience: Array.isArray(c.experience) ? c.experience : [],
-    education: Array.isArray(c.education) ? c.education : [],
-    certifications: Array.isArray(c.certifications) ? c.certifications : [],
-    languages: Array.isArray(c.languages) ? c.languages : [],
-    cv_parsed_data: c.cv_parsed_data
-  }));
+  const candidatesList = candidates.map(c => {
+    // Extract arrays from database columns, or fallback to cv_parsed_data
+    const getArrayField = (directField: any, parsedDataField: any) => {
+      if (Array.isArray(directField) && directField.length > 0) return directField;
+      if (Array.isArray(parsedDataField) && parsedDataField.length > 0) return parsedDataField;
+      return [];
+    };
+
+    return {
+      id: c.id,
+      name: c.name,
+      email: c.email || '',
+      phone: c.phone || '',
+      fileName: c.cv_file_name || 'CV',
+      score: c.overall_score,
+      score_breakdown: c.cv_parsed_data?.score_breakdown,
+      prestige_score: c.cv_parsed_data?.prestige_score,
+      prestige_contribution: c.cv_parsed_data?.prestige_contribution,
+      prestige_details: c.cv_parsed_data?.prestige_details,
+      fit: c.overall_score >= 80 ? 'excellent' as const : c.overall_score >= 60 ? 'good' as const : 'fair' as const,
+      appliedDate: c.created_at.split('T')[0],
+      skills: getArrayField(c.skills, c.cv_parsed_data?.skills),
+      experience_years: c.cv_parsed_data?.experience_years || c.cv_parsed_data?.years_of_experience || 0,
+      status: c.status || 'new',
+      statusHistory: c.cv_parsed_data?.status_history || [{ status: c.status || 'new', changedAt: c.created_at }],
+      interviews: Array.isArray(c.interview_notes) ? c.interview_notes : [],
+      summary: c.notes || c.cv_parsed_data?.summary || c.cv_parsed_data?.professional_summary || '',
+      // Additional CV fields - try database columns first, then cv_parsed_data
+      location: c.location || c.cv_parsed_data?.location,
+      linkedin_url: c.linkedin_url || c.cv_parsed_data?.linkedin_url || c.cv_parsed_data?.linkedin,
+      portfolio_url: c.portfolio_url || c.cv_parsed_data?.portfolio_url || c.cv_parsed_data?.website,
+      experience: getArrayField(c.experience, c.cv_parsed_data?.experience || c.cv_parsed_data?.work_experience || c.cv_parsed_data?.employment_history),
+      education: getArrayField(c.education, c.cv_parsed_data?.education || c.cv_parsed_data?.academic_background),
+      certifications: getArrayField(c.certifications, c.cv_parsed_data?.certifications || c.cv_parsed_data?.certificates),
+      languages: getArrayField(c.languages, c.cv_parsed_data?.languages),
+      cv_parsed_data: c.cv_parsed_data
+    };
+  });
 
   return {
     candidatesList,
