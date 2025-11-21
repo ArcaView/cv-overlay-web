@@ -1,4 +1,4 @@
-import { DashboardLayout } from "@/components/DashboardLayout";
+﻿import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,63 +10,23 @@ import { User, Key, Shield, Eye, EyeOff, Copy, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/contexts/UserContext";
-
-interface ApiKey {
-  id: string;
-  name: string;
-  key: string;
-  createdAt: string;
-}
+import { supabase } from "@/lib/supabase";
+import { generateApiKey, fetchApiKeys, deleteApiKey, type ApiKey } from "@/lib/api/api-keys";
 
 const Settings = () => {
   const { toast } = useToast();
   const { user, updateProfile } = useUser();
 
   // API Keys state
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>(() => {
-    const stored = localStorage.getItem("qualifyr_api_keys");
-    if (stored) {
-      try {
-        return JSON.parse(stored);
-      } catch {
-        return [
-          {
-            id: "prod-1",
-            name: "Production API Key",
-            key: "ps_live_1234567890abcdef1234567890abcdef",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            id: "test-1",
-            name: "Test API Key",
-            key: "ps_test_9876543210fedcba9876543210fedcba",
-            createdAt: new Date().toISOString(),
-          },
-        ];
-      }
-    }
-    return [
-      {
-        id: "prod-1",
-        name: "Production API Key",
-        key: "ps_live_1234567890abcdef1234567890abcdef",
-        createdAt: new Date().toISOString(),
-      },
-      {
-        id: "test-1",
-        name: "Test API Key",
-        key: "ps_test_9876543210fedcba9876543210fedcba",
-        createdAt: new Date().toISOString(),
-      },
-    ];
-  });
-
-  const [revealedKeys, setRevealedKeys] = useState<Set<string>>(new Set());
+  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
+  const [isLoadingKeys, setIsLoadingKeys] = useState(true);
   const [isGeneratingKey, setIsGeneratingKey] = useState(false);
   const [showKeyDialog, setShowKeyDialog] = useState(false);
   const [newKeyName, setNewKeyName] = useState("");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [keyToDelete, setKeyToDelete] = useState<ApiKey | null>(null);
+  const [generatedApiKey, setGeneratedApiKey] = useState<string | null>(null);
+  const [showGeneratedKeyDialog, setShowGeneratedKeyDialog] = useState(false);
 
   // Password change state
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
@@ -78,10 +38,19 @@ const Settings = () => {
   const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
-  // Save API keys to localStorage whenever they change
+  // Fetch API keys from database on mount
   useEffect(() => {
-    localStorage.setItem("qualifyr_api_keys", JSON.stringify(apiKeys));
-  }, [apiKeys]);
+    const loadApiKeys = async () => {
+      setIsLoadingKeys(true);
+      const keys = await fetchApiKeys();
+      setApiKeys(keys);
+      setIsLoadingKeys(false);
+    };
+
+    if (user) {
+      loadApiKeys();
+    }
+  }, [user]);
 
   // Profile state - initialize from user context
   const [profileData, setProfileData] = useState({
@@ -114,8 +83,59 @@ const Settings = () => {
     setIsProfileLoading(true);
 
     try {
-      // TODO: Replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser();
+
+      if (userError || !currentUser) {
+        throw new Error("User not authenticated");
+      }
+
+      // Update email in auth.users if changed
+      if (profileData.email !== user?.email) {
+        const { error: emailError } = await supabase.auth.updateUser({
+          email: profileData.email,
+        });
+
+        if (emailError) {
+          throw emailError;
+        }
+
+        toast({
+          title: "Email Verification Required",
+          description: "A verification email has been sent to your new email address.",
+        });
+      }
+
+      // Combine first and last name
+      const fullName = `${profileData.firstName} ${profileData.lastName}`.trim();
+
+      // Update or insert user_profiles table
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .upsert({
+          id: currentUser.id,
+          full_name: fullName,
+          company_name: profileData.company,
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'id'
+        });
+
+      if (profileError) {
+        throw profileError;
+      }
+
+      // Update auth.users metadata for quick access
+      const { error: metadataError } = await supabase.auth.updateUser({
+        data: {
+          firstName: profileData.firstName,
+          lastName: profileData.lastName,
+          company: profileData.company,
+        }
+      });
+
+      if (metadataError) {
+        throw metadataError;
+      }
 
       // Update user profile in context
       updateProfile(profileData);
@@ -125,9 +145,10 @@ const Settings = () => {
         description: "Your profile information has been successfully updated.",
       });
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to update profile";
       toast({
         title: "Error",
-        description: "Failed to update profile. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -136,18 +157,6 @@ const Settings = () => {
   };
 
   // API Key functions
-  const toggleRevealKey = (keyId: string) => {
-    setRevealedKeys(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(keyId)) {
-        newSet.delete(keyId);
-      } else {
-        newSet.add(keyId);
-      }
-      return newSet;
-    });
-  };
-
   const copyToClipboard = (text: string, keyName: string) => {
     navigator.clipboard.writeText(text);
     toast({
@@ -160,25 +169,22 @@ const Settings = () => {
     setIsGeneratingKey(true);
 
     try {
-      // TODO: Replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const result = await generateApiKey(keyName);
 
-      // Generate a random API key
-      const randomKey = `ps_live_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
+      if (!result.success || !result.apiKey || !result.keyData) {
+        throw new Error(result.error || "Failed to generate API key");
+      }
 
-      const newKey: ApiKey = {
-        id: `key-${Date.now()}`,
-        name: keyName,
-        key: randomKey,
-        createdAt: new Date().toISOString(),
-      };
+      // Add new key to list
+      setApiKeys(prev => [...prev, result.keyData!]);
 
-      setApiKeys(prev => [...prev, newKey]);
-      setRevealedKeys(new Set([newKey.id])); // Auto-reveal the new key
+      // Store the plain key to show it once
+      setGeneratedApiKey(result.apiKey);
+      setShowGeneratedKeyDialog(true);
 
       toast({
         title: "API Key Generated",
-        description: "Your new API key has been created. Make sure to copy it now as it won't be shown again.",
+        description: "Your new API key has been created. Make sure to copy it now - it will not be shown again.",
       });
 
       setShowKeyDialog(false);
@@ -186,7 +192,7 @@ const Settings = () => {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to generate API key. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to generate API key. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -216,25 +222,33 @@ const Settings = () => {
     setShowDeleteDialog(true);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!keyToDelete) return;
 
-    setApiKeys(prev => prev.filter(key => key.id !== keyToDelete.id));
+    try {
+      const success = await deleteApiKey(keyToDelete.id);
 
-    // Remove from revealed keys if it was revealed
-    setRevealedKeys(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(keyToDelete.id);
-      return newSet;
-    });
+      if (!success) {
+        throw new Error("Failed to delete API key");
+      }
 
-    toast({
-      title: "API Key Deleted",
-      description: `${keyToDelete.name} has been permanently deleted.`,
-    });
+      // Remove from local state
+      setApiKeys(prev => prev.filter(key => key.id !== keyToDelete.id));
 
-    setShowDeleteDialog(false);
-    setKeyToDelete(null);
+      toast({
+        title: "API Key Deleted",
+        description: `${keyToDelete.name} has been permanently deleted.`,
+      });
+
+      setShowDeleteDialog(false);
+      setKeyToDelete(null);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete API key",
+        variant: "destructive",
+      });
+    }
   };
 
   const validatePassword = (password: string): string[] => {
@@ -294,8 +308,30 @@ const Settings = () => {
     setIsChangingPassword(true);
 
     try {
-      // TODO: Replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Step 1: Verify current password by re-authenticating
+      if (!user?.email) {
+        throw new Error("User email not found");
+      }
+
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: passwordData.currentPassword,
+      });
+
+      if (signInError) {
+        setPasswordErrors(["Current password is incorrect"]);
+        setIsChangingPassword(false);
+        return;
+      }
+
+      // Step 2: Update to new password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: passwordData.newPassword,
+      });
+
+      if (updateError) {
+        throw updateError;
+      }
 
       toast({
         title: "Password Updated",
@@ -310,9 +346,10 @@ const Settings = () => {
       });
       setPasswordErrors([]);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to update password";
       toast({
         title: "Error",
-        description: "Failed to update password. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -320,9 +357,9 @@ const Settings = () => {
     }
   };
 
-  const maskApiKey = (key: string) => {
-    const prefix = key.substring(0, 8);
-    return `${prefix}••••••••••••••••`;
+  const maskApiKey = (keyPrefix: string) => {
+    // keyPrefix is like "qfy_live_abc", show it with dots
+    return `${keyPrefix}••••••••••••••••••••`;
   };
 
   const formatDate = (dateString: string) => {
@@ -331,6 +368,11 @@ const Settings = () => {
       month: 'short',
       day: 'numeric'
     });
+  };
+
+  const handleCloseGeneratedKeyDialog = () => {
+    setShowGeneratedKeyDialog(false);
+    setGeneratedApiKey(null);
   };
 
   return (
@@ -428,68 +470,60 @@ const Settings = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-4">
-                    {apiKeys.map((apiKey) => {
-                      const isRevealed = revealedKeys.has(apiKey.id);
-                      return (
-                        <div key={apiKey.id} className="flex items-center justify-between p-4 border rounded-lg">
-                          <div className="flex-1 min-w-0 mr-4">
-                            <div className="flex items-center gap-2 mb-1">
-                              <p className="font-semibold">{apiKey.name}</p>
-                              <span className="text-xs text-muted-foreground">
-                                Created {formatDate(apiKey.createdAt)}
-                              </span>
+                  {isLoadingKeys ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      Loading API keys...
+                    </div>
+                  ) : apiKeys.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No API keys yet. Generate one to get started.
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {apiKeys.map((apiKey) => {
+                        return (
+                          <div key={apiKey.id} className="flex items-center justify-between p-4 border rounded-lg">
+                            <div className="flex-1 min-w-0 mr-4">
+                              <div className="flex items-center gap-2 mb-1">
+                                <p className="font-semibold">{apiKey.name}</p>
+                                <span className="text-xs text-muted-foreground">
+                                  Created {formatDate(apiKey.created_at)}
+                                </span>
+                                {!apiKey.is_active && (
+                                  <span className="text-xs px-2 py-1 bg-destructive/10 text-destructive rounded">
+                                    Inactive
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm text-muted-foreground font-mono truncate">
+                                  {maskApiKey(apiKey.key_prefix)}
+                                </p>
+                                <span className="text-xs text-muted-foreground">
+                                  (Only prefix shown)
+                                </span>
+                              </div>
                             </div>
                             <div className="flex items-center gap-2">
-                              <p className="text-sm text-muted-foreground font-mono truncate">
-                                {isRevealed ? apiKey.key : maskApiKey(apiKey.key)}
-                              </p>
                               <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6"
-                                onClick={() => copyToClipboard(apiKey.key, apiKey.name)}
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleDeleteKeyClick(apiKey)}
                               >
-                                <Copy className="h-3 w-3" />
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete
                               </Button>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => toggleRevealKey(apiKey.id)}
-                            >
-                              {isRevealed ? (
-                                <>
-                                  <EyeOff className="h-4 w-4 mr-2" />
-                                  Hide
-                                </>
-                              ) : (
-                                <>
-                                  <Eye className="h-4 w-4 mr-2" />
-                                  Reveal
-                                </>
-                              )}
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => handleDeleteKeyClick(apiKey)}
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete
-                            </Button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                        );
+                      })}
+                    </div>
+                  )}
                   <Separator />
                   <Button
                     variant="outline"
                     onClick={handleGenerateKeyClick}
-                    disabled={isGeneratingKey}
+                    disabled={isGeneratingKey || isLoadingKeys}
                   >
                     Generate New API Key
                   </Button>
@@ -595,10 +629,10 @@ const Settings = () => {
               </div>
               <div className="space-y-2">
                 <p className="text-sm">
-                  <span className="font-semibold">Key:</span> <span className="font-mono text-muted-foreground">{keyToDelete && maskApiKey(keyToDelete.key)}</span>
+                  <span className="font-semibold">Key:</span> <span className="font-mono text-muted-foreground">{keyToDelete && maskApiKey(keyToDelete.key_prefix)}</span>
                 </p>
                 <p className="text-sm">
-                  <span className="font-semibold">Created:</span> <span className="text-muted-foreground">{keyToDelete && formatDate(keyToDelete.createdAt)}</span>
+                  <span className="font-semibold">Created:</span> <span className="text-muted-foreground">{keyToDelete && formatDate(keyToDelete.created_at)}</span>
                 </p>
               </div>
             </div>
@@ -712,6 +746,58 @@ const Settings = () => {
                 disabled={isChangingPassword}
               >
                 {isChangingPassword ? "Updating..." : "Update Password"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog for showing the generated API key (shown only once) */}
+        <Dialog open={showGeneratedKeyDialog} onOpenChange={setShowGeneratedKeyDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>🎉 API Key Generated Successfully</DialogTitle>
+              <DialogDescription>
+                Make sure to copy your API key now. You won't be able to see it again!
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="rounded-lg border-2 border-primary bg-primary/5 p-4">
+                <p className="text-sm font-semibold mb-2">Your API Key:</p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 text-sm font-mono bg-background p-3 rounded border break-all">
+                    {generatedApiKey}
+                  </code>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => {
+                      if (generatedApiKey) {
+                        copyToClipboard(generatedApiKey, "API Key");
+                      }
+                    }}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              <div className="rounded-lg border border-yellow-500/50 bg-yellow-500/10 p-3">
+                <p className="text-sm font-semibold text-yellow-700 dark:text-yellow-500 mb-1">
+                  ⚠️ Important Security Notice
+                </p>
+                <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+                  <li>This key will only be shown once</li>
+                  <li>Store it securely (e.g., password manager, environment variables)</li>
+                  <li>Never commit it to version control</li>
+                  <li>If you lose it, you'll need to generate a new key</li>
+                </ul>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                onClick={handleCloseGeneratedKeyDialog}
+                variant="default"
+              >
+                I've Saved My API Key
               </Button>
             </DialogFooter>
           </DialogContent>
