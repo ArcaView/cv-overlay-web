@@ -1,4 +1,4 @@
-﻿-- Migration: Create subscriptions table for Stripe billing integration
+-- Migration: Create subscriptions table for Stripe billing integration
 -- Created: 2025-01-20
 -- Purpose: Track user subscription data from Stripe
 

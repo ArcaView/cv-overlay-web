@@ -1,4 +1,4 @@
-﻿-- Migration: Create api_keys table for secure API key management
+-- Migration: Create api_keys table for secure API key management
 -- Created: 2025-01-20
 -- Purpose: Store hashed API keys for user authentication
 

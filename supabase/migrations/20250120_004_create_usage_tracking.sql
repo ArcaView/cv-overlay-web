@@ -1,4 +1,4 @@
-﻿-- Migration: Create usage_tracking table for quota enforcement
+-- Migration: Create usage_tracking table for quota enforcement
 -- Created: 2025-01-20
 -- Purpose: Track monthly usage of parses and scores per user
 

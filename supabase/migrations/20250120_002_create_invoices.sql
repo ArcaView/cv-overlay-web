@@ -1,4 +1,4 @@
-﻿-- Migration: Create invoices table for payment history
+-- Migration: Create invoices table for payment history
 -- Created: 2025-01-20
 -- Purpose: Track Stripe invoice data for billing history
 

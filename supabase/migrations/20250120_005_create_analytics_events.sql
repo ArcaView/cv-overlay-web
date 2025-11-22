@@ -1,4 +1,4 @@
-﻿-- Migration: Create analytics_events table for tracking user actions
+-- Migration: Create analytics_events table for tracking user actions
 -- Created: 2025-01-20
 -- Purpose: Track user events for analytics dashboard and metrics
 
