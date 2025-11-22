@@ -50,6 +50,29 @@ const Auth = () => {
     setLoginData(prev => ({ ...prev, [field]: value }));
   };
 
+  // Password validation function
+  const validatePassword = (password: string): string[] => {
+    const errors: string[] = [];
+    
+    if (password.length < 8) {
+      errors.push("At least 8 characters");
+    }
+    if (!/[A-Z]/.test(password)) {
+      errors.push("One uppercase letter");
+    }
+    if (!/[a-z]/.test(password)) {
+      errors.push("One lowercase letter");
+    }
+    if (!/[0-9]/.test(password)) {
+      errors.push("One number");
+    }
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      errors.push("One special character");
+    }
+    
+    return errors;
+  };
+
   const handleSignUpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -59,6 +82,18 @@ const Auth = () => {
       toast({
         title: "Error",
         description: "Passwords do not match",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    // Validate password strength
+    const passwordErrors = validatePassword(signUpData.password);
+    if (passwordErrors.length > 0) {
+      toast({
+        title: "Weak Password",
+        description: `Password must contain: ${passwordErrors.join(", ")}`,
         variant: "destructive",
       });
       setIsLoading(false);
@@ -242,6 +277,9 @@ const Auth = () => {
                       required
                       minLength={8}
                     />
+                    <p className="text-xs text-muted-foreground">
+                      Must contain: 8+ characters, uppercase, lowercase, number, special character
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-confirmPassword">Confirm Password</Label>

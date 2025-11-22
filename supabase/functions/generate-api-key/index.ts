@@ -5,18 +5,17 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
-
-// CORS headers for browser requests
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders, handleCorsPreflightRequest } from "../_shared/cors.ts";
+import { checkRateLimit, getRateLimitIdentifier, createRateLimitResponse, RATE_LIMITS } from "../_shared/rate-limit.ts";
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return handleCorsPreflightRequest(req);
   }
+
+  const origin = req.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
 
   try {
     // Get authorization header
@@ -44,6 +43,14 @@ serve(async (req) => {
 
     if (userError || !user) {
       throw new Error('User not authenticated');
+    }
+
+    // Rate limiting - 10 API key generations per hour per user
+    const rateLimitId = getRateLimitIdentifier(req, user.id);
+    const rateLimit = checkRateLimit(rateLimitId, RATE_LIMITS.API_KEY_GENERATION);
+    
+    if (!rateLimit.allowed) {
+      return createRateLimitResponse(rateLimit.resetAt);
     }
 
     // Parse request body for optional key name
@@ -95,6 +102,7 @@ serve(async (req) => {
           is_active: data.is_active,
         },
         message: 'API key generated successfully. Save this key now - it will not be shown again.',
+        rateLimitRemaining: rateLimit.remaining,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

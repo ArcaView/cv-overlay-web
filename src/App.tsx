@@ -11,6 +11,7 @@ import { ScrollToTop } from "@/components/ScrollToTop";
 import { FeedbackPopup } from "@/components/FeedbackPopup";
 import { ImpersonationBanner } from "@/components/ImpersonationBanner";
 import { ImpersonationApprovalPopup } from "@/components/ImpersonationApprovalPopup";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Features from "./pages/Features";
 import Pricing from "./pages/Pricing";
@@ -53,27 +54,26 @@ const AppContent = () => {
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/docs" element={<Docs />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/dashboard" element={<Overview />} />
-          <Route path="/dashboard/parse" element={<ParseCV />} />
-          <Route path="/dashboard/bulk-parse" element={<BulkParse />} />
-          <Route path="/dashboard/developer" element={<DeveloperDashboard />} />
-          <Route path="/dashboard/roles" element={<OpenRoles />} />
-          <Route path="/dashboard/roles/:id" element={<RoleDetails />} />
-          <Route path="/dashboard/candidates" element={<AllCandidates />} />
-          <Route path="/dashboard/candidates/:candidateId/:roleId" element={<CandidateDetail />} />
-          <Route path="/dashboard/analytics" element={<Analytics />} />
-          <Route path="/dashboard/billing" element={<Billing />} />
-          <Route path="/dashboard/settings" element={<Settings />} />
-          <Route path="/upgrade" element={<UpgradePlan />} />
-          {/* <Route path="/analytics" element={<Analytics />} /> */}
-          <Route path="/billing" element={<Billing />} />
-          <Route path="/settings" element={<Settings />} />
+          <Route path="/dashboard" element={<ProtectedRoute><Overview /></ProtectedRoute>} />
+          <Route path="/dashboard/parse" element={<ProtectedRoute><ParseCV /></ProtectedRoute>} />
+          <Route path="/dashboard/bulk-parse" element={<ProtectedRoute><BulkParse /></ProtectedRoute>} />
+          <Route path="/dashboard/developer" element={<ProtectedRoute><DeveloperDashboard /></ProtectedRoute>} />
+          <Route path="/dashboard/roles" element={<ProtectedRoute><OpenRoles /></ProtectedRoute>} />
+          <Route path="/dashboard/roles/:id" element={<ProtectedRoute><RoleDetails /></ProtectedRoute>} />
+          <Route path="/dashboard/candidates" element={<ProtectedRoute><AllCandidates /></ProtectedRoute>} />
+          <Route path="/dashboard/candidates/:candidateId/:roleId" element={<ProtectedRoute><CandidateDetail /></ProtectedRoute>} />
+          <Route path="/dashboard/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+          <Route path="/dashboard/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
+          <Route path="/dashboard/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+          <Route path="/upgrade" element={<ProtectedRoute><UpgradePlan /></ProtectedRoute>} />
+          <Route path="/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
-          <Route path="/feature-requests" element={<FeatureRequests />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          {/* ParseScore API Test Route */}
-          <Route path="/test-parsescore" element={<ParseScoreTest />} />
+          <Route path="/feature-requests" element={<ProtectedRoute><FeatureRequests /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+          {/* ParseScore API Test Route - ONLY in development */}
+          {import.meta.env.DEV && <Route path="/test-parsescore" element={<ParseScoreTest />} />}
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
           </Routes>

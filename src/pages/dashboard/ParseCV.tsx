@@ -38,6 +38,7 @@ import { useState } from "react";
 import { useRoles } from "@/contexts/RolesContext";
 import { useToast } from "@/hooks/use-toast";
 import { parseScoreAPI } from "@/lib/api";
+import { validateFile, formatFileSize } from "@/lib/file-validation";
 
 const ParseCV = () => {
   const { roles, addCandidateToRole, addRole } = useRoles();
@@ -55,9 +56,30 @@ const ParseCV = () => {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+      const selectedFile = e.target.files[0];
+      
+      // Validate file before accepting
+      const validation = validateFile(selectedFile);
+      
+      if (!validation.valid) {
+        toast({
+          title: "Invalid File",
+          description: validation.error,
+          variant: "destructive",
+        });
+        e.target.value = ''; // Clear input
+        setFile(null);
+        return;
+      }
+      
+      setFile(selectedFile);
       setResult(null);
       setScoreResult(null);
+      
+      toast({
+        title: "File Selected",
+        description: `${selectedFile.name} (${formatFileSize(selectedFile.size)}) is ready to parse.`,
+      });
     }
   };
 

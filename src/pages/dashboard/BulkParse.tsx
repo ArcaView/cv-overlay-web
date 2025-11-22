@@ -39,6 +39,7 @@ import { useState } from "react";
 import { useRoles } from "@/contexts/RolesContext";
 import { useToast } from "@/hooks/use-toast";
 import { parseScoreAPI } from "@/lib/api/parsescore-client";
+import { validateFiles, formatFileSize } from "@/lib/file-validation";
 
 interface FileWithStatus {
   file: File;
@@ -60,11 +61,43 @@ const BulkParse = () => {
 
   const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const newFiles = Array.from(e.target.files).map(file => ({
+      const selectedFiles = Array.from(e.target.files);
+      
+      // Validate all files
+      const validation = validateFiles(selectedFiles);
+      
+      if (!validation.valid && validation.validFiles.length === 0) {
+        // All files are invalid
+        toast({
+          title: "Invalid Files",
+          description: validation.errors[0] || "All selected files are invalid",
+          variant: "destructive",
+        });
+        e.target.value = ''; // Clear input
+        return;
+      }
+      
+      // Add only valid files
+      const newFiles = validation.validFiles.map(file => ({
         file,
         status: 'pending' as const
       }));
+      
       setFiles(prev => [...prev, ...newFiles]);
+      
+      // Show warning if some files were rejected
+      if (validation.invalidFiles.length > 0) {
+        toast({
+          title: "Some Files Rejected",
+          description: `${validation.validFiles.length} files accepted, ${validation.invalidFiles.length} files rejected due to validation errors.`,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Files Added",
+          description: `${validation.validFiles.length} files ready for parsing.`,
+        });
+      }
     }
   };
 
