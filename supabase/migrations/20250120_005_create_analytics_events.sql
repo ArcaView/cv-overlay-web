@@ -1,4 +1,4 @@
--- Migration: Create analytics_events table for tracking user actions
+﻿-- Migration: Create analytics_events table for tracking user actions
 -- Created: 2025-01-20
 -- Purpose: Track user events for analytics dashboard and metrics
 
@@ -14,29 +14,33 @@ CREATE TABLE IF NOT EXISTS analytics_events (
 );
 
 -- Create indexes for performance
-CREATE INDEX idx_analytics_user_id ON analytics_events(user_id);
-CREATE INDEX idx_analytics_event_type ON analytics_events(event_type);
-CREATE INDEX idx_analytics_created_at ON analytics_events(created_at DESC);
-CREATE INDEX idx_analytics_user_date ON analytics_events(user_id, created_at DESC);
-CREATE INDEX idx_analytics_type_date ON analytics_events(event_type, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_analytics_user_id ON analytics_events(user_id);
+CREATE INDEX IF NOT EXISTS idx_analytics_event_type ON analytics_events(event_type);
+CREATE INDEX IF NOT EXISTS idx_analytics_created_at ON analytics_events(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_analytics_user_date ON analytics_events(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_analytics_type_date ON analytics_events(event_type, created_at DESC);
+DROP INDEX IF EXISTS idx_analytics_event_data;
 CREATE INDEX idx_analytics_event_data ON analytics_events USING GIN (event_data);
 
 -- Enable Row Level Security
 ALTER TABLE analytics_events ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policy: Users can view their own events
+DROP POLICY IF EXISTS "Users can view their own analytics events" ON analytics_events;
 CREATE POLICY "Users can view their own analytics events"
   ON analytics_events
   FOR SELECT
   USING (auth.uid() = user_id);
 
 -- RLS Policy: Service role can insert events
+DROP POLICY IF EXISTS "Service role can insert analytics events" ON analytics_events;
 CREATE POLICY "Service role can insert analytics events"
   ON analytics_events
   FOR INSERT
   WITH CHECK (true);
 
 -- RLS Policy: Service role can read all events (for admin dashboard)
+DROP POLICY IF EXISTS "Service role can read all analytics events" ON analytics_events;
 CREATE POLICY "Service role can read all analytics events"
   ON analytics_events
   FOR SELECT

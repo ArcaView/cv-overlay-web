@@ -1,4 +1,4 @@
--- Migration: Create usage_tracking table for quota enforcement
+﻿-- Migration: Create usage_tracking table for quota enforcement
 -- Created: 2025-01-20
 -- Purpose: Track monthly usage of parses and scores per user
 
@@ -17,20 +17,22 @@ CREATE TABLE IF NOT EXISTS usage_tracking (
 );
 
 -- Create indexes for performance
-CREATE INDEX idx_usage_tracking_user_id ON usage_tracking(user_id);
-CREATE INDEX idx_usage_tracking_period ON usage_tracking(period_start, period_end);
-CREATE INDEX idx_usage_tracking_user_period ON usage_tracking(user_id, period_start DESC);
+CREATE INDEX IF NOT EXISTS idx_usage_tracking_user_id ON usage_tracking(user_id);
+CREATE INDEX IF NOT EXISTS idx_usage_tracking_period ON usage_tracking(period_start, period_end);
+CREATE INDEX IF NOT EXISTS idx_usage_tracking_user_period ON usage_tracking(user_id, period_start DESC);
 
 -- Enable Row Level Security
 ALTER TABLE usage_tracking ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policy: Users can view their own usage
+DROP POLICY IF EXISTS "Users can view their own usage" ON usage_tracking;
 CREATE POLICY "Users can view their own usage"
   ON usage_tracking
   FOR SELECT
   USING (auth.uid() = user_id);
 
 -- RLS Policy: Service role can insert/update usage (increment counters)
+DROP POLICY IF EXISTS "Service role can manage usage tracking" ON usage_tracking;
 CREATE POLICY "Service role can manage usage tracking"
   ON usage_tracking
   FOR ALL
@@ -38,6 +40,7 @@ CREATE POLICY "Service role can manage usage tracking"
   WITH CHECK (true);
 
 -- Add trigger to update updated_at timestamp
+DROP TRIGGER IF EXISTS update_usage_tracking_updated_at ON usage_tracking;
 CREATE TRIGGER update_usage_tracking_updated_at
   BEFORE UPDATE ON usage_tracking
   FOR EACH ROW

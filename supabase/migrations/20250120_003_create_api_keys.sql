@@ -1,4 +1,4 @@
--- Migration: Create api_keys table for secure API key management
+﻿-- Migration: Create api_keys table for secure API key management
 -- Created: 2025-01-20
 -- Purpose: Store hashed API keys for user authentication
 
@@ -16,27 +16,32 @@ CREATE TABLE IF NOT EXISTS api_keys (
 );
 
 -- Create indexes for performance
-CREATE INDEX idx_api_keys_user_id ON api_keys(user_id);
-CREATE INDEX idx_api_keys_key_prefix ON api_keys(key_prefix);
+CREATE INDEX IF NOT EXISTS idx_api_keys_user_id ON api_keys(user_id);
+CREATE INDEX IF NOT EXISTS idx_api_keys_key_prefix ON api_keys(key_prefix);
+DROP INDEX IF EXISTS idx_api_keys_is_active;
 CREATE INDEX idx_api_keys_is_active ON api_keys(is_active) WHERE is_active = TRUE;
+DROP INDEX IF EXISTS idx_api_keys_expires_at;
 CREATE INDEX idx_api_keys_expires_at ON api_keys(expires_at) WHERE expires_at IS NOT NULL;
 
 -- Enable Row Level Security
 ALTER TABLE api_keys ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policy: Users can view their own API keys (but only prefix, not hash)
+DROP POLICY IF EXISTS "Users can view their own API keys" ON api_keys;
 CREATE POLICY "Users can view their own API keys"
   ON api_keys
   FOR SELECT
   USING (auth.uid() = user_id);
 
 -- RLS Policy: Users can create their own API keys (via Edge Function)
+DROP POLICY IF EXISTS "Users can create API keys" ON api_keys;
 CREATE POLICY "Users can create API keys"
   ON api_keys
   FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
 -- RLS Policy: Users can update their own API keys (revoke, rename)
+DROP POLICY IF EXISTS "Users can update their own API keys" ON api_keys;
 CREATE POLICY "Users can update their own API keys"
   ON api_keys
   FOR UPDATE
@@ -44,18 +49,21 @@ CREATE POLICY "Users can update their own API keys"
   WITH CHECK (auth.uid() = user_id);
 
 -- RLS Policy: Users can delete their own API keys
+DROP POLICY IF EXISTS "Users can delete their own API keys" ON api_keys;
 CREATE POLICY "Users can delete their own API keys"
   ON api_keys
   FOR DELETE
   USING (auth.uid() = user_id);
 
 -- RLS Policy: Service role can read all keys (for authentication)
+DROP POLICY IF EXISTS "Service role can read all API keys" ON api_keys;
 CREATE POLICY "Service role can read all API keys"
   ON api_keys
   FOR SELECT
   USING (true);
 
 -- RLS Policy: Service role can update last_used_at
+DROP POLICY IF EXISTS "Service role can update API key usage" ON api_keys;
 CREATE POLICY "Service role can update API key usage"
   ON api_keys
   FOR UPDATE

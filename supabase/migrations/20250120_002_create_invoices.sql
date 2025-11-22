@@ -1,4 +1,4 @@
--- Migration: Create invoices table for payment history
+﻿-- Migration: Create invoices table for payment history
 -- Created: 2025-01-20
 -- Purpose: Track Stripe invoice data for billing history
 
@@ -20,28 +20,31 @@ CREATE TABLE IF NOT EXISTS invoices (
 );
 
 -- Create indexes for performance
-CREATE INDEX idx_invoices_user_id ON invoices(user_id);
-CREATE INDEX idx_invoices_stripe_invoice_id ON invoices(stripe_invoice_id);
-CREATE INDEX idx_invoices_stripe_subscription_id ON invoices(stripe_subscription_id);
-CREATE INDEX idx_invoices_status ON invoices(status);
-CREATE INDEX idx_invoices_created_at ON invoices(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_invoices_user_id ON invoices(user_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_stripe_invoice_id ON invoices(stripe_invoice_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_stripe_subscription_id ON invoices(stripe_subscription_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices(status);
+CREATE INDEX IF NOT EXISTS idx_invoices_created_at ON invoices(created_at DESC);
 
 -- Enable Row Level Security
 ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policy: Users can view their own invoices
+DROP POLICY IF EXISTS "Users can view their own invoices" ON invoices;
 CREATE POLICY "Users can view their own invoices"
   ON invoices
   FOR SELECT
   USING (auth.uid() = user_id);
 
 -- RLS Policy: Service role can insert invoices (webhook handler)
+DROP POLICY IF EXISTS "Service role can insert invoices" ON invoices;
 CREATE POLICY "Service role can insert invoices"
   ON invoices
   FOR INSERT
   WITH CHECK (true);
 
 -- RLS Policy: Service role can update invoices (webhook handler)
+DROP POLICY IF EXISTS "Service role can update invoices" ON invoices;
 CREATE POLICY "Service role can update invoices"
   ON invoices
   FOR UPDATE
